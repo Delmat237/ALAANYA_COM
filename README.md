@@ -36,8 +36,8 @@ ALAANYA is a versatile communication system designed for secure and efficient cl
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourUsername/alaanya.git
-   cd alaanya
+   git clone https://github.com/Delmat237/ALAANYA_COM
+   cd ALAANYA_COM
    ```
 2. Set up the database:
    - The server automatically creates the necessary database and tables if they do not exist.
