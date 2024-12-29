@@ -14,6 +14,9 @@ ALAANYA is a versatile communication system designed for secure and efficient cl
 - **File Transfer:**
   - Supports file sharing between clients.
   - Saves transferred files and logs their metadata in the database.
+ -  **Audio Transfer:**
+  - Supports Audio call sharing between clients.
+  
 
 ### Client-side Features
 - **User Interface:**
@@ -36,8 +39,8 @@ ALAANYA is a versatile communication system designed for secure and efficient cl
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourUsername/alaanya.git
-   cd alaanya
+   git clone https://github.com/Delmat237/ALAANYA_COM
+   cd ALAANYA_COM
    ```
 2. Set up the database:
    - The server automatically creates the necessary database and tables if they do not exist.
@@ -62,6 +65,10 @@ ALAANYA is a versatile communication system designed for secure and efficient cl
 alaanya/
 ├── Server.java        # Main server implementation
 ├── ChatApp.java       # Client application (UI and communication logic)
+├── audio/
+│   ├── AudioReceiverThread.java  # Handles incoming audio call transfers
+|.  └── AufioSetup.java 
+│   └── AudioSendThread.java      # Manages outgoing auduo call transfers
 ├── file/
 │   ├── FileReceiverThread.java  # Handles incoming file transfers
 │   └── FileSendThread.java      # Manages outgoing file transfers
@@ -76,6 +83,8 @@ alaanya/
 
 ### Server Configuration
 - **Port:** The server listens on port `12345` by default.
+- **AudioPort:** The Audio server listens on port `12346` by defaul
+- **FilePort:** The File server listens on port `12347` by default.
 - **Database:**
   - Host: `localhost`
   - User: `delmat`
@@ -83,7 +92,7 @@ alaanya/
 
 ### Client Interaction
 1. Launch the `ChatApp` client.
-2. Connect to the server using the default hostname (`localhost`) and port (`12345`).
+2. Connect to the server using the default hostname (`localhost`) or the hostame of server's machineand port (`12345`).
 3. Use the interface to send messages or files to connected clients.
 
 ## Contributions
