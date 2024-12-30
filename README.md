@@ -66,7 +66,7 @@
 3. Compile the server and client:
 
    ```bash
-  javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
+    javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
    ```
 
 4. Run the servers:
