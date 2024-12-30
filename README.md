@@ -88,7 +88,7 @@
 5. Run the client:
 
    ```bash
-   jomment 
+   java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin alaanya.ChatApp
    ```
 
 ---
