@@ -9,33 +9,41 @@
 ### Server-side Features
 
 - **Client Management**:
+
   - Handles multiple client connections simultaneously.
   - Stores client details in a MySQL database.
 
 - **Messaging System**:
+
   - Broadcasts messages to all clients or sends them to specific clients.
   - Logs messages and file transfers in a database.
 
 - **File Transfer**:
+
   - Supports file sharing between clients.
   - Saves transferred files and logs their metadata in the database.
 
 - **Audio Calls**:
+
   - Enables real-time audio communication between clients.
 
 ### Client-side Features
 
 - **User Interface**:
+
   - Intuitive chat UI with options for text and file messaging.
   - Visual representation of sent and received messages.
 
 - **Real-time Communication**:
+
   - Sends and receives messages via a persistent socket connection.
 
 - **File Sharing**:
+
   - Allows users to share files with other clients.
 
 - **Audio Calls**:
+
   - Provides easy initiation and reception of audio calls.
 
 ---
@@ -66,21 +74,21 @@
 3. Compile the server and client:
 
    ```bash
-    javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
+   javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
    ```
 
-4. Run the servers:
+4. Run the server:
 
    ```bash
-   java -cp bin alaanya.Server
    java -cp bin alaanya.AudioRelayServer
    java -cp bin alaanya.FileRelayServer
+   java -cp bin alaanya.Server
    ```
 
 5. Run the client:
 
    ```bash
-   java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin alaanya.ChatApp
+   jomment 
    ```
 
 ---
@@ -108,15 +116,23 @@ alaanya/
 ---
 
 ## Usage
+## Application Preview
+
+Here's a preview of the Alaanya Communication System:
+
+![App Screenshot](assets/app-screenshot.png)
+
 
 ### Server Configuration
 
 - **Ports**:
+
   - Text communication: `12345`
   - Audio communication: `12346`
   - File sharing: `12347`
 
 - **Database**:
+
   - Host: `localhost`
   - User: `delmat`
   - Password: `azaleodel`
@@ -129,6 +145,55 @@ alaanya/
    - Send text messages to connected clients.
    - Share files.
    - Initiate or receive audio calls.
+
+### Setting Up JavaFX
+
+1. **Download JavaFX SDK**:
+
+   - Visit [JavaFX Downloads](https://gluonhq.com/products/javafx/) and download the appropriate version for your system.
+
+2. **Compile and Run with JavaFX**:
+
+   - Use `--module-path` to specify the JavaFX library path during compilation and execution.
+
+   **Compile Command**:
+
+   ```bash
+   javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
+   ```
+
+   **Run Command**:
+
+   ```bash
+   java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin alaanya.ChatApp
+   ```
+
+3. **Test JavaFX Configuration**:
+   Create a `HelloFX.java` file and test your setup:
+
+   ```java
+   import javafx.application.Application;
+   import javafx.scene.Scene;
+   import javafx.scene.control.Label;
+   import javafx.stage.Stage;
+
+   public class HelloFX extends Application {
+       @Override
+       public void start(Stage stage) {
+           Label label = new Label("Hello, JavaFX!");
+           Scene scene = new Scene(label, 400, 300);
+           stage.setScene(scene);
+           stage.setTitle("HelloFX");
+           stage.show();
+       }
+
+       public static void main(String[] args) {
+           launch();
+       }
+   }
+   ```
+
+   Compile and run it using the JavaFX setup instructions.
 
 ---
 
@@ -150,5 +215,9 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contact
 
-For any inquiries, contact [azangueleonel9@gmail.com](mailto:azangueleonel9@gmail.com).
+For any inquiries, feel free to reach out:
+
+- ![Gmail](https://img.icons8.com/color/48/000000/gmail--v1.png) [azangueleonel9@gmail.com](mailto:azangueleonel9@gmail.com)
+- ![WhatsApp](https://img.icons8.com/color/48/000000/whatsapp.png) +237 657450314
+
 
