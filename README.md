@@ -66,19 +66,21 @@
 3. Compile the server and client:
 
    ```bash
-   javac -d bin src/alaanya/*.java
+  javac --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -d bin src/main/java/alaanya/*.java
    ```
 
-4. Run the server:
+4. Run the servers:
 
    ```bash
    java -cp bin alaanya.Server
+   java -cp bin alaanya.AudioRelayServer
+   java -cp bin alaanya.FileRelayServer
    ```
 
 5. Run the client:
 
    ```bash
-   java -cp bin alaanya.ChatApp
+   java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin alaanya.ChatApp
    ```
 
 ---
