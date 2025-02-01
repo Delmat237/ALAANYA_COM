@@ -15,7 +15,7 @@ public class AudioSetup {
 
     public AudioSetup() {
         try {
-            format = new AudioFormat(44100.0f, 16, 1, true, true);
+            format = new AudioFormat(44100, 16, 1, true, false);
             DataLine.Info microphoneInfo = new DataLine.Info(TargetDataLine.class, format);
             DataLine.Info speakersInfo = new DataLine.Info(SourceDataLine.class, format);
 
@@ -23,7 +23,9 @@ public class AudioSetup {
             speakers = (SourceDataLine) AudioSystem.getLine(speakersInfo);
 
             microphone.open(format);
+            System.out.println("Microphone opened" );
             speakers.open(format);
+            System.out.println("Speakers opened" );
 
             microphone.start(); // Démarrer le microphone
             speakers.start();   // Démarrer les haut-parleurs

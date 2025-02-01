@@ -9,17 +9,23 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import message.MessageReadThread;
 import message.MessageWriteThread;
+
+
+import video.VideoPlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,29 +35,56 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class ChatApp extends Application {
     private static final double ICON_SIZE = 24; // Taille des icônes
     protected Socket socket;
     protected  Socket audioSocket;
     protected Socket fileSocket;
-    private static final String HOSTNAME = "localhost";
+    private static final String HOSTNAME = "localhost";//"192.168.43.223";//
     private static final int PORT = 12345;
     private static final int PORTAUDIO = 12346;
     private static final int PORTFILE = 12347;
 
 
-    public VBox chatArea;
+    public TabPane chatArea;
     private Label chatTitle;
     private TextField inputField;
+    private HBox callBar;
+    private Label callTimer;
+    private BorderPane chatBox;
+    private VBox contactList;
+    private TextField contactNameField ;
+    private TextField ContactId ;
+    private Button chatProfile;
+    private Label chatStatus;
+    private  HBox messageInput;
 
-    private final Map<String, VBox> contactChats = new HashMap<>(); // Stocker les zones de chat par contact
+    private Text defaultChatMessage;
+
+    //Table mappang
+    public Hashtable<String, Contact> contactChats = new Hashtable<>(); // Stocker les zones de chat par contact
+
+    public static class Contact{
+        private String IP;
+        private String Name;
+        private VBox chatBox;
+        private boolean status; //permet de savoir si une personne est on line ou pas
+
+        public Contact(String IP, String Name,VBox chatBox,boolean status ){
+            this.IP = IP; this.Name = Name;this.chatBox = chatBox;this.status = status;}
+
+        public Contact(String IP, String Name,VBox chatBox){
+            this.IP = IP; this.Name = Name;this.chatBox = chatBox;this.status = true;}
+
+        public VBox BoxGetter(){return this.chatBox;}
+        public String GetIP(){return this.IP;}
+        public String GetName(){return this.Name;}
+    }
     private String ServerId;
     public  String currentContactId = ServerId; // Identifiant du contact actuellement sélectionné
     public String senderId;
@@ -61,6 +94,8 @@ public class ChatApp extends Application {
     private AudioSendThread audioSendThread;
     private AudioReceiveThread audioReceiveThread;
     private String message;
+
+
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -87,18 +122,15 @@ public class ChatApp extends Application {
         FileSendThread fileSend = new FileSendThread(this,fileSocket);
         fileSend.start();
 
-        new FileReceicerThread(this,fileSocket);
+        new FileReceicerThread(this,fileSocket).start();
 
-        // Threads pour les appels audio
-        audioSetup = new AudioSetup();
-        startListeningForNotifications(audioSocket); //En attende notification pour les appels audios
 
 
         //Barre de navigation supérieure avec le nom de l'application
         HBox topNav = new HBox();
         topNav.setPadding(new Insets(10));
         topNav.setStyle("""
-                -fx-background-color: lightblue;
+                -fx-background-color: #1d6198;
                 -fx-padding: 10px;
                 """);
         Label appName = new Label("ALAANYA COM");
@@ -110,88 +142,133 @@ public class ChatApp extends Application {
 
         // Liste de contacts sur la gauche avec des boutons cliquables
 
-        VBox contactList = new VBox();
-        contactList.setStyle("-fx-background-color: #ECE5DD; -fx-padding: 10px;");
+        contactList = new VBox();
+        contactList.setMinWidth(200);
+        contactList.setStyle("-fx-background-color: rgba(24,18,78,0.62); -fx-padding: 10px;");
 
-        for (int i = 0; i <= contactChats.size(); i++) {
-            Button contactButton = new Button("SERVER");
-            contactButton.setStyle("""
-                       -fx-padding: 10px;\s
-                       -fx-background-color: rgba(28,75,108,0.22);
-                       -fx-background-radius: 5px;
-                      -fx-margin-bottom: 5px;""");
-            contactButton.setMaxWidth(Double.MAX_VALUE);
+        VBox serverBox = new VBox();
+        serverBox.getChildren().add(new Label("I am a server"));
+        contactChats.put(ServerId,new Contact(ServerId,"SERVER",new VBox()));
 
-            contactButton.setOnAction(e -> loadChatForContact(ServerId));
-            contactList.getChildren().add(contactButton);
-        }
+        //Chargement des contacts déjà enregistrés
+        Enumeration<String> contacts = contactChats.keys();
 
+//        while(contacts.hasMoreElements()){
+//            String contactId = contactChats.get(contacts.nextElement()).GetIP();
+//            String contactName = contactChats.get(contacts.nextElement()).GetName();
+//
+//            showContact(contactId,contactName);
+//        }
+        showContact(ServerId,"SERVER");
+        Tab serverTab = new Tab(ServerId);
+        serverTab.setClosable(false);
+        serverTab.setId(ServerId);
+
+        //Zone pour ajouter de nouveau contact
         VBox addContactBox = new VBox();
-        TextField contactNameField = new TextField();
-        TextField ContactId = new TextField();
+        contactNameField = new TextField();
+        ContactId = new TextField();
 
         ContactId.setPromptText("Adresse IP");
         contactNameField.setPromptText("Contact name");
 
         Button addContactButton = new Button("+");
+        addContactButton.setAlignment(Pos.CENTER_RIGHT);
         addContactButton.setStyle("""
                 -fx-padding: 10px; \
-                -fx-background-color: rgba(181,181,188,0.63); \
+                -fx-background-color: rgba(28,75,108,0.22); \
                 -fx-background-radius: 5px; \
                 -fx-margin-bottom: 5px;""");
 
+        //logique du bouton d'ajout de contact
         addContactButton.setOnAction(e -> {
             String contactName = contactNameField.getText();
             String contactId= ContactId.getText();
 
-            if (!contactName.isEmpty() && !contactId.isEmpty()) {
+            //ENREGISTRE LE CONATCT
+            contactChats.put(contactId,new Contact(contactId,contactName,new VBox()));
+            Tab contactTab = new Tab(contactId);
+            contactTab.setClosable(false);
+            contactTab.setId(contactId);
 
-                Button contactButton = createButtonWithImage("/icons/user.png");
-                contactButton.setStyle("""
-                       
-                        -fx-background-color: #B9BCC6;
-                        -fx-background-radius: 50%;
-                        -fx-min-width:40px;
-                        -fx-min-height:40px;
-                        -fx-max-width:40px;
-                        -fx-max-height:40px;
-                        """);
-                contactButton.setMaxWidth(Double.MAX_VALUE);
-
-
-                contactButton.setOnAction(ex -> loadChatForContact(contactId));
-                contactList.getChildren().add(contactButton);
-                contactNameField.clear();
-                ContactId.clear();
-            }
+            chatArea.getTabs().add(contactTab);
+            //AFFICHE LE CONTACT
+            showContact(contactId,contactName);
+            contactNameField.clear();
+            ContactId.clear();
         });
 
         addContactBox.getChildren().addAll(contactNameField,ContactId, addContactButton);
-        contactList.setSpacing(50);
+        contactList.setSpacing(20);
 
 
         // Zone de chat où les messages seront affichés
 
-        chatArea = new VBox();
-        chatArea.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 10px;");
+        chatArea = new TabPane();
+        chatArea.setStyle("-fx-background-color: rgba(225,218,218,0.58); -fx-padding: 10px;");
+        chatArea.getTabs().add(serverTab);
+        chatArea.setSide(Side.LEFT);
+        chatArea.setTabMinWidth(0);
+        chatArea.setTabMaxWidth(0);
+        chatArea.setTabMinHeight(0);
+        chatArea.setTabMaxHeight(0);
+
+        //ScrollPane du chatArea
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(chatArea);
+
+
+        scrollPane.setFitToWidth(true);
+
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         // Conteneur pour la zone de chat avec nom du contact sélectionné
 
-        VBox chatFrame = new VBox();
+        TabPane chatFrame = new TabPane();
         chatFrame.setStyle("""
-                -fx-background-color: #F0F0F0; \
+                -fx-background-color: rgba(225,218,218,0.58); \
                 -fx-padding: 10px; \
                 -fx-border-color: #BDBDBD;\
                  -fx-border-width: 1px;""");
 
         HBox chatHeader = new HBox();
 
-        chatTitle = new Label("Chat");
-        chatTitle.setStyle("-fx-fill: black;-fx-font-size: 16px;");
 
-        Button chatProfile = createButtonWithImage("/icons/user.png");
+        // Barre d'appel (invisible par défaut)
+        callBar = new HBox(10);
+        callBar.setPadding(new Insets(10));
+        callBar.setStyle("-fx-background-color: #f4f4f4;");
+        callBar.setAlignment(Pos.CENTER_LEFT);
+        callBar.setVisible(false); // Masqué par défaut
+
+        Label callUsernameLabel = new Label("usernameCall");
+        callUsernameLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #333;");
+
+        callTimer = new Label("00:00");
+        callTimer.setStyle("-fx-font-size: 14px; -fx-text-fill: #666;");
+
+        Button hangUpButton = createButtonWithImage("/icons/hangup.png");
+        hangUpButton.setStyle("-fx-background-color: #ff4c4c;"
+                + "-fx-background-radius: 50%; "
+                + "-fx-min-width: 50px; "
+                + "-fx-min-height: 50px; "
+                + "-fx-max-width: 50px; "
+                + "-fx-max-height: 50px; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0.1, 0, 2);");
+
+        hangUpButton.setOnAction(e ->{
+            callBar.setVisible(false);
+            audioSendThread.interrupt();
+            audioReceiveThread.interrupt();
+
+        });
+
+        chatProfile = createButtonWithImage("/icons/user.png");
+        chatProfile.setVisible(false);
         chatProfile.setStyle("""
-                        -fx-background-color: #B9BCC6;
+                        -fx-background-color: rgba(83,46,156,0.62);
                         -fx-background-radius: 50%;
                         -fx-min-width:40px;
                         -fx-min-height:40px;
@@ -199,14 +276,49 @@ public class ChatApp extends Application {
                         -fx-max-height:40px;
                         """);
 
+        chatProfile.setOnAction( e ->{
+            Tab profileTab = new Tab();
+            VBox profileBox = new VBox();
+            Image image = loadImage("/icons/user.png");
+            ImageView imageView = new ImageView(image);
+            Text ip = new Text(contactChats.get(currentContactId).GetIP());
+            ip.setTextAlignment(TextAlignment.CENTER);
+            Text name = new Text(contactChats.get(currentContactId).GetName());
+            name.setTextAlignment(TextAlignment.CENTER);
+
+            profileBox.getChildren().addAll(imageView,ip, name);
+            profileTab.setContent(profileBox);
+            chatArea.getTabs().add(profileTab);
+            chatArea.getSelectionModel().select(profileTab);
+        });
+
+        chatStatus = new Label();
+        chatStatus.setStyle("-fx-background-color: green;");
+        chatStatus.setAlignment(Pos.CENTER_RIGHT);
+
+        // Espaceur dynamique pour pousser le bouton à droite
+        Region spacerMainContent1 = new Region();
+        HBox.setHgrow(spacerMainContent1, Priority.ALWAYS);
+
+        Region spacerMainContent2 = new Region();
+        HBox.setHgrow(spacerMainContent2, Priority.ALWAYS);
+
+        callBar.getChildren().addAll(callUsernameLabel, spacerMainContent1, callTimer, spacerMainContent2, hangUpButton);
+        callBar.setSpacing(20);
+
         //Boutons d'appel vidéo et audio
         Button audioCallButton = createButtonWithImage("/icons/phone-call.png");
-        Button settingButton =createButtonWithImage("/icons/video-camera-alt.png");
+        Button videoCallButton =createButtonWithImage("/icons/video-camera-alt.png");
+        Button settingButton =createButtonWithImage("/icons/settings.png");
 
         // Gestion des appels audio
         audioCallButton.setOnAction(e -> {
             Platform.runLater(() -> {
                 try {
+
+                    // Threads pour les appels audio
+                    audioSetup = new AudioSetup();
+                    startListeningForNotifications(audioSocket); //En attende notification pour les appels audios
                     startCall(currentContactId);
                 } catch (Exception ex) {
                     showError("Erreur lors de la gestion de l'appel audio : " + ex.getMessage());
@@ -214,21 +326,62 @@ public class ChatApp extends Application {
             });
         });
 
+        videoCallButton.setOnAction(e -> {
+            launchVideoPlayer();
+        });
+
+
+
         //ESpaceur dynamique pour pousser les boutons à droite
-        Region spacer = new Region(); //Espace séparant le nom + pp et le bouton d'appel ou setting
+        Region spacer = new Region(); //Escape séparant le nom + pp et le bouton d'appel ou setting
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region spacer2 = new Region(); //Escape séparant le nom + pp et le bouton d'appel ou setting
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        chatHeader.getChildren().addAll(chatProfile,chatTitle,spacer,audioCallButton,settingButton);
+        //Message par default
+        defaultChatMessage = new Text("Sélectionnez un contact pour commencer à discuter.");
+        defaultChatMessage.setStyle("-fx-font-size: 16px;-fx-fill:#666;-fx-text-alignment: center");
+        ImageView bg= new ImageView(loadImage("/icons/paper-plane.png"));
+
+        Tab Acceuil = new Tab("Acceuil");
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(defaultChatMessage,bg);
+        Acceuil.setContent(vBox);
+        Acceuil.setClosable(false);
+        chatArea.getTabs().add(Acceuil);
+        chatArea.getSelectionModel().select(Acceuil);
+        
+        chatTitle = new Label();
+        chatTitle.setStyle("-fx-fill: black;-fx-font-size: 16px;");
+
+        chatHeader.getChildren().addAll(chatProfile,chatTitle,spacer2,chatStatus,spacer,audioCallButton,videoCallButton,settingButton);
         chatHeader.setAlignment(Pos.TOP_RIGHT);
-        chatFrame.getChildren().addAll(chatHeader,chatArea);
-        chatFrame.setSpacing(10);
+
+        Tab mainTap = new Tab("Chat");
+        VBox mainFrame = new VBox();
+        mainFrame.getChildren().addAll(chatHeader,scrollPane);
+        mainFrame.setSpacing(10);
+        mainTap.setClosable(false);
+        mainTap.setContent(mainFrame);
+
+        Tab settingTab = new Tab("Settings");
+        VBox settingFrame = new VBox(10);
+        settingFrame.getChildren().add(settings());
+        settingFrame.setSpacing(10);
+        settingTab.setContent(settingFrame);
+        settingTab.setClosable(false);
+
+        chatFrame.setSide(Side.RIGHT);
+        chatFrame.getTabs().addAll(mainTap,settingTab);
+        chatFrame.getSelectionModel().select(mainTap);
+        settingButton.setOnAction(e ->{ chatFrame.getSelectionModel().select(settingTab);});
 
         // Zone de saisie du message avec effet flottant
 
-        HBox messageInput = new HBox();
+        messageInput = new HBox();
         messageInput.setStyle("""
             -fx-padding: 10px;
-             -fx-background-color: rgb(255,255,255);
+             -fx-background-color: rgba(225,218,218,0.58);
             \s""");
 
         HBox messageInputLayout = new  HBox();
@@ -295,7 +448,7 @@ public class ChatApp extends Application {
                     throw new RuntimeException(ex);
                 }
                 //Ajoute le message dans le chatArea et le contactChats
-                addMessage(getChatBox(currentContactId),currentContactId,message, true); // Message envoyé
+                addMessage(contactChats.get(currentContactId).BoxGetter(),currentContactId,message, true); // Message envoyé
                 inputField.clear();
             }
         });
@@ -309,7 +462,8 @@ public class ChatApp extends Application {
                     showError("Impossible d'envoyer le message :"+ex.getMessage());
                 }
                 //Ajoute le message dans le chatArea et le contactChats
-                addMessage(getChatBox(currentContactId),currentContactId,message, true); // Message envoyé
+                addMessage(contactChats.get(currentContactId).BoxGetter(),currentContactId,message, true); // Message envoyé
+
                 inputField.clear();
             }
         });
@@ -322,14 +476,12 @@ public class ChatApp extends Application {
 
             if (file != null){
                 String  filePath = file.getAbsolutePath();
-                //Envoie les meta données
+
                 try {
-
-                    messageSend.send(currentContactId+"&&FILE"); // Indique un fichier en cours d'envoi
-                    messageSend.send(file.getName()); // Envoie le nom du fichier
-                    messageSend.sendLong(file.length()); // Envoie la taille totale du fichier
-
+                    //Envoie les meta données
+                    fileSend.sendMetadata(currentContactId+"&&FILE",file.getName(),file.length());
                     fileSend.send(file,progressBar);
+                   
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -343,10 +495,11 @@ public class ChatApp extends Application {
         messageInput.getChildren().addAll(messageInputLayout, voiceButton,sendButton);//,progressBar);
 
         messageInput.setSpacing(20);
-
+        messageInput.setVisible(false);
         // Combiner la zone de chat et la zone de saisie dans un BorderPane
 
-        BorderPane chatBox = new BorderPane();
+        chatBox = new BorderPane();
+        chatBox.setStyle("-fx-background-color: rgba(225,218,218,0.58);");
         chatBox.setCenter(chatFrame);
         chatBox.setBottom(messageInput);
         BorderPane.setMargin(messageInput, new Insets(10));
@@ -371,6 +524,16 @@ public class ChatApp extends Application {
         stage.setTitle("ALAANYA COM");
         stage.show();
 
+    }
+
+    private void launchVideoPlayer() {
+        //Créer un nouveau thread pour lancer le lecteur video
+        Thread videoPlayerThread = new Thread(() -> {
+            VideoPlayer videoPlayer = new VideoPlayer();
+            videoPlayer.start(new Stage());
+        });
+        videoPlayerThread.setDaemon(true); //aSSURER QUE LE THREAD SE TERMINE QUAND L'APPLICATION SE TERMINE
+        videoPlayerThread.start();
     }
 
 
@@ -405,33 +568,75 @@ public class ChatApp extends Application {
         return button;
     }
 
-    // Charger une image depuis les ressources
-    private Image loadImage(String path) {
-        return new Image(Objects.requireNonNull(getClass().getResourceAsStream(path)));
-    }
 
+    // Charger une image depuis les ressources
+   private Image loadImage(String path) {
+   InputStream stream = getClass().getResourceAsStream(path);
+	if (stream == null) {
+	    System.out.println("Resource not found: " + path);
+	    throw new NullPointerException("Resource not found: " + path);
+	    
+	}
+	return new Image(stream);
+
+ 
+}
+
+    private void showContact(String contactId,String contactName){
+        if (!contactName.isEmpty() && !contactId.isEmpty()) {
+
+            Button contactButton = createButtonWithImage("/icons/user.png");
+            contactButton.setStyle("""
+                       
+                        -fx-background-color: #B9BCC6;
+                        -fx-background-radius: 50%;
+                        -fx-min-width:40px;
+                        -fx-min-height:40px;
+                        -fx-max-width:40px;
+                        -fx-max-height:40px;
+                        """);
+            contactButton.setMaxWidth(Double.MAX_VALUE);
+
+            contactButton.setOnAction(ex -> loadChatForContact(contactId));
+
+            HBox contact = new HBox();
+            Button contactNam = new Button(contactName);
+            contactNam.setStyle("""
+                       -fx-padding: 10px;\s
+                       -fx-background-color: rgba(28,75,108,0.22);
+                       -fx-background-radius: 5px;
+                      -fx-margin-bottom: 5px;""");
+            contactNam.setMaxWidth(Double.MAX_VALUE);
+            contactNam.setOnAction(ex -> loadChatForContact(contactId));
+            contact.getChildren().addAll(contactButton,contactNam);
+
+            contactList.getChildren().add(contact);
+
+        }
+    }
 
     private void loadChatForContact(String contactId) {
         currentContactId = contactId;
+        for (Tab tab : chatArea.getTabs()){
+            if (contactId.equals(tab.getId())){
 
-        VBox chatBox = getChatBox(contactId); // Récupère ou crée la boîte de chat pour le contact
+                tab.setContent(contactChats.get(contactId).BoxGetter());
+                chatArea.getSelectionModel().select(tab);
+            }
+        }
+        chatTitle.setText(contactChats.get(currentContactId).GetName());
 
-        Platform.runLater(() -> {
-            chatArea.getChildren().clear(); // Efface uniquement la zone d'affichage actuelle
-            chatArea.getChildren().addAll(chatBox.getChildren()); // Charge les messages du contact
-        });
-
-        chatTitle.setText("Chat avec Contact " + contactId);
+        chatProfile.setVisible(true);
+        chatStatus.setText(contactChats.get(currentContactId).status ? "Online":"Last seen today at ");
+        messageInput.setVisible(true);
     }
 
     // Ajouter un message dans la boîte de messages
     public void addMessage(VBox chatBox,String senderId,String message, boolean isSentByUser) {
 
         VBox messageBox = new VBox(2);
-
         // Création d'un HBox pour contenir le message et l'heure
         HBox bubbleContent = new HBox(1);
-
         HBox bottomLine = new HBox(1);
         bottomLine.setAlignment(Pos.CENTER_RIGHT);
 
@@ -446,54 +651,51 @@ public class ChatApp extends Application {
         timeStamp.setStyle("-fx-fill: #666666; -fx-font-size: 10px;");
 
         bubbleContent.getChildren().addAll(messageText);
-        if (isSentByUser){
-            bubbleContent.setAlignment(Pos.CENTER_RIGHT);
-        }else{
-            bubbleContent.setAlignment(Pos.CENTER_LEFT);
-        }
-
 
         bottomLine.getChildren().add(timeStamp);
 
+
         VBox messageBubble = new VBox(1);
+
         messageBubble.setPadding(new Insets(10));
         messageBubble.setStyle(MessageFormat.format("-fx-background-color: {0};{1}", isSentByUser ? "#DCF8C6" : "#FFFFFF",
-                isSentByUser ? "-fx-border-radius: 15 0 15 15;" : "-fx-background-radius: 0 15 15 15; -fx-border-radius: 0 15 15 15;"));
+                "-fx-background-radius: 0 15 15 15; -fx-border-radius: 0 15 15 15;"));
 
-        String user = (isSentByUser ? "Vous" : senderId);
+        String senderName  = contactChats.get(senderId).GetName();
+        String user = (isSentByUser ? "Vous" : senderName);
         TextFlow userName = new TextFlow(new Text(user));
         userName.setPadding(new Insets(5));
         userName.setStyle("-fx-background-color : #ECE5DD");
 
+
         Region spacer = new Region();
         spacer.minHeight(1);
 
+        if (isSentByUser){
+            userName.setTextAlignment(TextAlignment.RIGHT);
+            bubbleContent.setAlignment(Pos.CENTER_RIGHT);
+
+        }else{
+            userName.setTextAlignment(TextAlignment.LEFT);
+            bubbleContent.setAlignment(Pos.CENTER_LEFT);
+        }
         messageBubble.getChildren().addAll(bubbleContent, spacer, bottomLine);
         messageBox.getChildren().addAll(userName, messageBubble);
 
+        chatBox.getChildren().add(messageBox);
+        
+        Platform.runLater(() ->contactChats.put(senderId,new Contact(senderId,senderName,chatBox))); //ajoute dans le contactChats
 
-        alignMessageContent(isSentByUser, messageBox);
-
-        //Enregistre le message
-        Platform.runLater(() ->chatBox.getChildren().add(messageBox)); //Ajoute dans le chatBox correspondant
-        Platform.runLater(() ->contactChats.put(currentContactId, chatBox)); //ajoute dans le contactChats
-        Platform.runLater(() -> loadChatForContact(currentContactId)); //Charge automatiquement a l'ecran
-
-    }
-
-    private void alignMessageContent(boolean isSentByUser, VBox messageBox) {
-        if (isSentByUser) {
-            messageBox.setAlignment(Pos.CENTER_RIGHT);
-        } else {
-            messageBox.setAlignment(Pos.CENTER_LEFT);
+        if (senderId.equals(currentContactId)){
+            Platform.runLater(() -> loadChatForContact(senderId)); //Charge automatiquement a l'ecran
         }
     }
+
 
     // Ajouter un fichier dans la boîte de messages
 
     public void addFile(VBox chatBox,String iconPath, String fileName, boolean isSentByUser) {
-
-
+	
         VBox messageBox = new VBox(2);
 
         // Conteneur principal de la bulle
@@ -546,7 +748,24 @@ public class ChatApp extends Application {
         userName.setPadding(new Insets(5));
         userName.setStyle("-fx-background-color : #ECE5DD");
 
-        messageBox.getChildren().addAll(userName, fileBubble);
+
+        Image fileImage = loadImage("/icons/document-signed.png");
+        Button fileLabel = createButtonWithImage("/icons/document-signed.png");
+        Label filename = new Label(fileName);
+        fileLabel.setStyle("-fx-font-weight: bold;");
+
+       if (isSentByUser) {
+            //Button downloadButton = getDownloadButton(fileName, new File(fileName));
+
+            //messageBox.getChildren().addAll(userName, fileBubble, downloadButton);
+            messageBox.getChildren().addAll(userName, fileBubble);
+            fileInfoLine.setAlignment(Pos.CENTER_RIGHT);
+           userName.setTextAlignment(TextAlignment.RIGHT);
+        } else {
+            messageBox.getChildren().addAll(userName, fileBubble);
+           userName.setTextAlignment(TextAlignment.LEFT);
+           fileInfoLine.setAlignment(Pos.CENTER_LEFT);
+        }
 
         // Ajout d'un effet de survol pour indiquer que c'est cliquable
         fileBubble.setOnMouseEntered(e
@@ -560,38 +779,11 @@ public class ChatApp extends Application {
         // Ajout d'un curseur pointer pour indiquer que c'est cliquable
         fileBubble.setStyle(fileBubble.getStyle() + "-fx-cursor: hand;");
 
-        // Gestion de l'alignement
-        alignMessageContent(isSentByUser, messageBox);
 
         //Enregistre le message
         Platform.runLater(() -> chatBox.getChildren().add(messageBox));
     }
 
-    private void addFileToChat(VBox chatBox, String fileName, File file, boolean isSender, Stage stage) {
-        VBox fileBox = new VBox();
-        fileBox.setAlignment(isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-        fileBox.setSpacing(10);
-
-        Image fileImage = loadImage("/icons/document-signed.png");
-        Button fileLabel = createButtonWithImage("/icons/document-signed.png");
-        Label filename = new Label(fileName);
-        fileLabel.setStyle("-fx-font-weight: bold;");
-
-        if (!isSender) {
-            Button downloadButton = getDownloadButton(fileName, file, stage);
-
-            fileBox.getChildren().addAll(fileLabel,filename, downloadButton);
-        } else {
-            fileBox.getChildren().addAll(fileLabel,filename);
-        }
-
-        // Ajoute le conteneur de fichier au chatBox
-        Platform.runLater(() -> {
-            if (!chatBox.getChildren().contains(fileBox)) {
-                chatBox.getChildren().add(fileBox);
-            }
-        });
-    }
 
     private static Button getDownloadButton(String fileName, File file, Stage stage) {
         Button downloadButton = new Button("Télécharger");
@@ -612,16 +804,6 @@ public class ChatApp extends Application {
         return downloadButton;
     }
 
-    //Methode pour recuperer ou creer la boite de chat d'un contact
-    public VBox getChatBox(String contactId) {
-        // Vérifie si une boîte de chat existe déjà pour le contact
-        if (!contactChats.containsKey(contactId)) {
-            VBox chatBox = new VBox();
-            chatBox.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 10px;");
-            contactChats.put(contactId, chatBox);
-        }
-        return contactChats.get(contactId);
-    }
 
     //Thread pour écouter les notifications du serveur Audio
     public void startListeningForNotifications(Socket socket) {
@@ -644,30 +826,54 @@ public class ChatApp extends Application {
         }).start();
     }
 
+
     private void handleIncomingCall(String callerId) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Incoming call");
-            alert.setHeaderText("Call of "+callerId);
+            alert.setTitle("Incoming Call");
+            alert.setHeaderText("Call from " + callerId);
             alert.setContentText("Do you want to accept this call?");
 
-            ButtonType acceptButtonType = new ButtonType("Accept");
-            ButtonType denyButtonType = new ButtonType("Deny");
+            // Bouton Accept avec une icône
+            Image acceptImage = new Image("file:icons/accept.png");
+            ImageView acceptIcon = new ImageView(acceptImage);
+            acceptIcon.setFitWidth(16); // Taille de l'icône
+            acceptIcon.setFitHeight(16);
+            ButtonType acceptButtonType = new ButtonType("Accept", ButtonBar.ButtonData.OK_DONE);
+            alert.getDialogPane().setGraphic(acceptIcon);//lookupButton(acceptButtonType);
+
+            // Bouton Deny avec une icône
+            Image denyImage = new Image("file:icons/deny.png"); // Remplacez par le chemin de l'icône
+            ImageView denyIcon = new ImageView(denyImage);
+            denyIcon.setFitWidth(16); // Taille de l'icône
+            denyIcon.setFitHeight(16);
+            ButtonType denyButtonType = new ButtonType("Deny", ButtonBar.ButtonData.CANCEL_CLOSE);
+            //alert.getDialogPane().lookupButton(denyButtonType).setGraphic(denyIcon);
+
+            // Ajoutez les boutons à l'alerte
             alert.getButtonTypes().setAll(acceptButtonType, denyButtonType);
 
+            // Gérer la réponse de l'utilisateur
             Optional<ButtonType> result = alert.showAndWait();
-            if(result.isPresent()  && result.get() == acceptButtonType) {
+            if (result.isPresent() && result.get() == acceptButtonType) {
                 startAudioCall(callerId);
-            }else declineAudioCall(callerId);
+            } else {
+                declineAudioCall(callerId);
+            }
         });
     }
-
     private void declineAudioCall(String callerId) {
         showError(callerId + "is busy at the moment");
     }
 
     private void startAudioCall(String callerId) {
 
+        callBar.setVisible(true); //
+        chatBox.setTop(callBar);
+        LocalTime currentTime = LocalTime.now();
+        callTimer.setText(String.valueOf(Duration.between(currentTime, LocalTime.now())));
+
+        System.out.println("Call accepted from: " + callerId);
         if (audioSendThread == null || !audioSendThread.isAlive()) {
             // Démarrer les threads audio
             audioSendThread = new AudioSendThread(audioSocket, audioSetup.microphone);
@@ -688,12 +894,77 @@ public class ChatApp extends Application {
 
     public void startCall(String receiverId) throws IOException {
         try {
+
             OutputStream out = audioSocket.getOutputStream();
             String callRequest = "START_CALL:" + receiverId;
+
             out.write(callRequest.getBytes());
             out.flush();
         }catch (IOException ex) {showError("Erreur lors de l'initiation de l'appel : "+ex.getMessage());}
     }
+
+    public TabPane settings(){
+        TabPane tabPane = new TabPane();
+
+        //Créer un onglet profil
+        Tab profilTab = new Tab("Profil");
+        VBox profilContent = createProfileTab();
+        profilTab.setContent(profilContent);
+
+        //Créer un onglet pour nitification
+        Tab notificationsTab = new Tab("Notifications");
+        VBox notificationsContent = createNotificationsTab();
+        notificationsTab.setContent(notificationsContent);
+
+        //Créer un onglet pour confidentialité
+        Tab privacyTab = new Tab("Confidatialité");
+        VBox privacyContent = createPrivacyTab();
+        privacyTab.setContent(privacyContent);
+
+        //Ajouter les onglets au TabPane
+        tabPane.getTabs().addAll(profilTab,notificationsTab,privacyTab);
+
+       return tabPane;
+    }
+
+    private VBox createPrivacyTab() {
+        VBox privacyBox = new VBox();
+        CheckBox lastSeenVisibity = new CheckBox("Afficher l'heure e la dernière connexion");
+        CheckBox readReceipts = new CheckBox("Receevoir des accusés de reception");
+
+        Button saveButton =  new Button("Enregistrer");
+
+        privacyBox.getChildren().addAll(lastSeenVisibity,readReceipts,saveButton);
+        return privacyBox;
+    }
+
+    private VBox createNotificationsTab() {
+        VBox notificationBox = new VBox(10);
+        CheckBox messageNotifications = new CheckBox("Rcevoir des notifications de message");
+        CheckBox groupNotifications = new CheckBox("Recevoir des notifications de groupe");
+
+        Slider soundVolumeSlider = new Slider(0,100,50);
+        soundVolumeSlider.setShowTickLabels(true);
+        soundVolumeSlider.setBlockIncrement(10);
+
+        Button saveButton = new Button("Enregister");
+
+        notificationBox.getChildren().addAll(messageNotifications, groupNotifications,new Label("Volume Sonore") ,soundVolumeSlider, saveButton);
+        return notificationBox;
+    }
+
+    private VBox createProfileTab() {
+        VBox profilBox = new VBox(10);
+        Label nameLabel = new Label("Nom");
+        TextField nameField = new TextField("A.L.D");
+        Label statusLabel = new Label("Status");
+        TextField statusField = new TextField("Je suis occupé");
+        Button updateProfileButton = new Button("Mise à jour");
+        profilBox.getChildren().addAll(nameLabel,nameField,statusLabel,statusField,updateProfileButton);
+        return profilBox;
+    }
+
+
 
     public static void main(String[] args) {
 

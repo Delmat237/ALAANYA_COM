@@ -23,11 +23,12 @@ public class AudioReceiveThread extends Thread
             byte[] buffer = new byte[1024];
             InputStream in = socket.getInputStream();
 
-            while (!Thread.currentThread().isInterrupted() ) {
-                int count = in.read(buffer, 0, buffer.length);
-                if (count > 0)
-                    speakers.write(buffer, 0, count);
-                System.out.println("en ecoute");
+            while (true){
+                int bytesRead = in.read(buffer, 0, buffer.length);
+                if (bytesRead > 0){
+                    speakers.write(buffer, 0, bytesRead);
+                    System.out.println("read"+buffer);
+                }
             }
         } catch (IOException e) {
             System.out.println("Erreur dans la réception des packets audio : " + e.getMessage());

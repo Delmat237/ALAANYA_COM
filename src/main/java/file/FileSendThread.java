@@ -31,7 +31,7 @@ public class FileSendThread extends  Thread{
             byte[] buffer = new byte[8192];
             int bytesRead;
 
-            Platform.runLater(() -> progressBar.setProgress(0));
+            //Platform.runLater(() -> progressBar.setProgress(0));
 
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
@@ -42,13 +42,23 @@ public class FileSendThread extends  Thread{
             }
 
             out.flush();
-            Platform.runLater(() ->this.chatApp.addFile(this.chatApp.getChatBox(this.chatApp.currentContactId), "/icons/document-signed.png", file.getName(), true));
-
             System.out.println("Fichier envoyé avec succès : " + file.getName());
+
+            Platform.runLater(() ->this.chatApp.addFile(this.chatApp.contactChats.get(this.chatApp.currentContactId).BoxGetter(), "/icons/document-signed.png", file.getName(), true)
+            );
+
 
         } catch (IOException e) {
             System.out.println("Erreur lors de l'envoi du fichier : " + e.getMessage());
         }
+    }
+
+    public void sendMetadata(String senderId,String fileName, long size) throws IOException {
+        System.out.println(senderId + "envoie "+fileName );
+        out.writeUTF(senderId);
+        out.writeUTF(fileName);
+        out.writeLong(size);
+
     }
 
 

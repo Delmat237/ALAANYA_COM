@@ -1,4 +1,4 @@
-package org.example.alaanya;
+package ald.alaanya_com;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

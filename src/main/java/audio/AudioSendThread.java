@@ -23,11 +23,11 @@ public class AudioSendThread extends Thread
             byte[] buffer = new byte[1024];
             OutputStream out = socket.getOutputStream();
 
-            while (!Thread.currentThread().isInterrupted() ) {
-                int count = microphone.read(buffer, 0, buffer.length);
-                if (count > 0)
-                    out.write(buffer, 0, count);
-                System.out.println("envoie");
+            int byteRead ;
+            while ((byteRead = microphone.read(buffer,0,buffer.length)) != -1) {
+                out.write(buffer,0,byteRead);
+                System.out.println("send"+buffer);
+
             }
         } catch (IOException e) {
             System.out.println("Erreur lors de l'envoi des packets audio : " + e.getMessage());

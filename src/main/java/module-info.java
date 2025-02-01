@@ -1,13 +1,14 @@
-module org.example.alaanya {
-    //requires javafx.graphics;
+module alaanya {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.sql;
     requires java.desktop;
+    requires java.sql;
+    requires opencv;
 
 
-    opens org.example.alaanya to javafx.fxml;
-    exports org.example.alaanya;
+   /* opens ald.alaanya_com to javafx.fxml;
+    exports ald.alaanya_com;*/
     exports alaanya;
     opens alaanya to javafx.fxml;
+    exports video to javafx.graphics;
 }

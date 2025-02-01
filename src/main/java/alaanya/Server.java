@@ -14,7 +14,6 @@ import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.net.InetAddress;
 
 public class Server extends ServerSocket {
@@ -56,7 +55,7 @@ public class Server extends ServerSocket {
                 clients.add(clientHandler);
                 clientHandler.start();
             } catch (IOException e) {
-                System.out.println("Erreur lors de l'acceptation de la connexion : " + e.getMessage());
+                System.err.println("Erreur lors de l'acceptation de la connexion : " + e.getMessage());
             }
         }
     }
@@ -97,19 +96,14 @@ public class Server extends ServerSocket {
                 //Création des  bases de données
 
                 stmt.execute(createDatabaseSQL);
-                System.out.println("Base de données créée ou existant.");
-
                 stmt.execute(changeDatabaseSQL);
-                System.out.println("Changement de database");
                 stmt.execute(createTableSQLClients);
-                System.out.println("Creation de la table Clients");
                 stmt.execute(createTableSQLMessages);
-                System.out.println("Creation de la table Messages");
 
                 return DriverManager.getConnection(URL+databaseName, USER, PASSWORD);
 
             } catch (SQLException e) {
-                System.out.println("Erreur lors de la création de la base de données  ou des tables : " +e.getMessage());;
+                System.err.println("Erreur lors de la création de la base de données  ou des tables : " +e.getMessage());;
             }
 
             return null;
@@ -126,13 +120,6 @@ public class Server extends ServerSocket {
         }
     }
 
-    public static void broadcastFile(File file,ClientHandler sender){
-        for (ClientHandler client : clients) {
-            if (client != sender) {
-                client.sendFile(file);
-            }
-        }
-    }
 
 
     public static void sendMessageToClient(ClientHandler sender, String receiverId, String msg) {
@@ -152,24 +139,6 @@ public class Server extends ServerSocket {
         }
     }
 
-    public static void sendFileToClient(ClientHandler sender,String receiverId, String  filePath){
-        boolean flag = false;
-        System.out.println("recherche de "+receiverId);
-        for (ClientHandler client : clients) {
-            if (client.getClientId().equals(receiverId)) {
-                client.sendMessage(sender.getClientId()+ "&&FILE"); //Signale qu'il s'agit d'un fichier
-                
-                File file = new File(filePath);
-                client.sendFile(file); //le Thread qui s'occupe du client destinataire envoie le fichier
-                flag = true;
-                break;
-            }
-        }
-        if (!flag) {
-            System.out.println("client pas trouvé");
-            sender.sendMessage(Server.addressServer+"&&Destinataire introuvable...");
-        }
-    }
 
     static class ClientHandler extends Thread {
 
@@ -191,7 +160,9 @@ public class Server extends ServerSocket {
         @Override
         public void run() {
             try {
-                out.writeUTF(Server.addressServer +"&& Bienvenue sur ALAANYA COM ! Votre IP est " + clientId);
+                out.writeUTF(Server.addressServer +"&& Bienvenue sur ALAANYA COM! Votre IP est " + clientId);
+                //Signaler aux autres clients qu'il est online
+                Server.broadcastMessage("STATUS&&"+clientId+"1&&",this);
 
                 while (true) {
                     String messageType = in.readUTF(); //lIRE LE TYPE DE MESSAGE
@@ -201,34 +172,16 @@ public class Server extends ServerSocket {
                     String receiverId = parts[0];
                     String messageContent = parts[1];
 
-                   if (messageContent.equals("FILE")) {
-                        String filename = in.readUTF(); // Lire le nom du fichier
-                        long totalFileSize = in.readLong(); // Taille totale du fichier
-                        System.out.println("Réception d'un fichier de la part du client " + clientId + " : " + filename + " (" + totalFileSize + " octets)");
+                    System.out.println("[Client " + clientId + "] -> [" +receiverId +" ]: " + receiverId+" && "+messageContent);
 
-                        File receivedFile = new File("Downloads/" + filename);
-                        receivedFile.getParentFile().mkdirs(); // Créer le répertoire Downloads si nécessaire
-
-                        try (FileOutputStream fileOutputStream = new FileOutputStream(receivedFile)) {
-                            FileReceicerThread.metadata(totalFileSize, receivedFile, fileOutputStream, in);
-
-                            //Diffuser le fichier
-
-                        Server.sendFileToClient(this,receiverId,receivedFile.getAbsolutePath());
-                        saveFileToDatabase(this.clientId, receiverId, filename);
-                        }
-                    }
-
-                    else{ //Gérer les messages textes
-
-                        System.out.println("[Client " + clientId + "] -> [" +receiverId +" ]: " + receiverId+" && "+messageContent);
-
-                        Server.sendMessageToClient(this,receiverId,messageContent);
-                       saveMessageToDatabase(this.clientId, receiverId, messageContent);
-                    }
+                    Server.sendMessageToClient(this,receiverId,messageContent);
+                    saveMessageToDatabase(this.clientId, receiverId, messageContent);
                 }
             } catch (IOException e) {
-                System.out.println("Erreur de communication avec le client " + clientId + " : " + e.getMessage());
+
+                System.err.println("Erreur de communication avec le client " + clientId + " : " + e.getMessage());
+                //SIGNALER AUX AUTRES CLIENTS QU'IL DECONNECTÉ
+                Server.broadcastMessage("STATUS&&"+clientId+"0&&",this);
             } finally {
                 try {
                     clients.remove(this);
@@ -236,7 +189,7 @@ public class Server extends ServerSocket {
                     out.close();
                     clientSocket.close();
                 } catch (IOException e) {
-                    System.out.println("Erreur lors de la fermeture des ressources : " + e.getMessage());
+                    System.err.println("Erreur lors de la fermeture des ressources : " + e.getMessage());
                 }
             }
         }
@@ -246,27 +199,7 @@ public class Server extends ServerSocket {
             try {
                 out.writeUTF(msg);
             } catch (IOException e) {
-                System.out.println("Erreur d'envoi au client " + clientId + " : " + e.getMessage());
-            }
-        }
-
-        public void sendFile(File file) {
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-               
-                out.writeUTF(file.getName()); // Envoyer le nom du fichier
-                out.writeLong(file.length());
-
-                byte[] buffer = new byte[8192]; // Taille du buffer optimisée
-                int bytesRead;
-
-                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
-                }
-                out.flush();
-               
-                System.out.println("Fichier envoyé avec succès : " + file.getName());
-            } catch (IOException e) {
-                System.out.println("Erreur lors de l'envoi du fichier : " + e.getMessage());
+                System.err.println("Erreur d'envoi au client " + clientId + " : " + e.getMessage());
             }
         }
 
@@ -283,7 +216,7 @@ public class Server extends ServerSocket {
                 stmt.setString(2, client_name);
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                System.out.println("Erreur lors de l'enregistrement du client : " + e.getMessage());
+                System.err.println("Erreur lors de l'enregistrement du client : " + e.getMessage());
             }
         }
 
@@ -299,25 +232,11 @@ public class Server extends ServerSocket {
                     stmt.executeUpdate();
                 }
             } catch (SQLException e) {
-                System.out.println("Erreur lors de l'enregistrement du message : " + e.getMessage());
+                System.err.println("Erreur lors de l'enregistrement du message : " + e.getMessage());
             }
         }
 
-        private void saveFileToDatabase(String senderId, String receiverId, String filePath) {
-            String sql = "INSERT INTO Clients.messages (sender_id, receiver_id, file_path) VALUES (?, ?, ?)";
 
-            try (Connection conn = Database.getConnection()) {
-                assert conn != null;
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, senderId);
-                    stmt.setString(2, receiverId);
-                    stmt.setString(3, filePath);
-                    stmt.executeUpdate();
-                }
-            } catch (SQLException e) {
-                System.out.println("Erreur lors de l'enregistrement du fichier : " + e.getMessage());
-            }
-        }
 
         public String getClientId() {
             return clientId;
@@ -329,14 +248,14 @@ public class Server extends ServerSocket {
         try {
 
             //LANCEMENT DES DIFFERENTS SOUS SERVEUR
+            Server server = new Server(12345);
+            AudioRelayServer ars = new AudioRelayServer(12346);
+            FileRelayServer frl = new FileRelayServer(12347);
 
 
-            new Server(12345);
-            new FileRelayServer(12347);
-            new AudioRelayServer(12346);
 
         } catch (IOException e) {
-            System.out.println("Erreur lors du démarrage du serveur : " + e.getMessage());
+            System.err.println("Erreur lors du démarrage du serveur : " + e.getMessage());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

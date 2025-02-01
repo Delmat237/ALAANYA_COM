@@ -98,29 +98,12 @@ public class FileRelayServer extends ServerSocket {
     }
 
 
-    public static void sendMessageToClient(ClientHandler sender, String receiverId, String msg) {
-        boolean flag = false;
-        for (ClientHandler client : clients) {
-
-            if (client.getClientId().equals(receiverId)) {
-
-                client.sendMessage(sender.getClientId()+ "&&"+msg);
-
-                flag = true;
-                break;
-            }
-        }
-        if (!flag) {
-            sender.sendMessage(Server.addressServer+"&&Destinataire introuvable...");
-        }
-    }
-
     public static void sendFileToClient(ClientHandler sender,String receiverId, String  filePath){
         boolean flag = false;
         System.out.println("recherche de "+receiverId);
         for (ClientHandler client : clients) {
             if (client.getClientId().equals(receiverId)) {
-                client.sendMessage(sender.getClientId()+ "&&FILE"); //Signale qu'il s'agit d'un fichier
+                //client.sendMessage(sender.getClientId()+ "&&FILE"); //Signale qu'il s'agit d'un fichier
 
                 File file = new File(filePath);
                 client.sendFile(file); //le Thread qui s'occupe du client destinataire envoie le fichier
@@ -144,7 +127,6 @@ public class FileRelayServer extends ServerSocket {
 
         public ClientHandler(Socket socket) throws IOException {
             this.clientSocket = socket;
-            //this.clientId = idCounter.incrementAndGet();
             this.clientId = socket.getInetAddress().getHostAddress();
             this.out = new DataOutputStream(this.clientSocket.getOutputStream());
             this.in = new DataInputStream(this.clientSocket.getInputStream());
@@ -154,7 +136,6 @@ public class FileRelayServer extends ServerSocket {
         @Override
         public void run() {
             try {
-                out.writeUTF(Server.addressServer +"&& Bienvenue sur ALAANYA COM ! Votre IP est " + clientId);
 
                 while (true) {
                     String messageType = in.readUTF(); //lIRE LE TYPE DE MESSAGE
@@ -169,7 +150,7 @@ public class FileRelayServer extends ServerSocket {
                         long totalFileSize = in.readLong(); // Taille totale du fichier
                         System.out.println("Réception d'un fichier de la part du client " + clientId + " : " + filename + " (" + totalFileSize + " octets)");
 
-                        File receivedFile = new File("Downloads/" + filename);
+                        File receivedFile = new File("DownloadServer/" + filename);
                         receivedFile.getParentFile().mkdirs(); // Créer le répertoire Downloads si nécessaire
 
                         try (FileOutputStream fileOutputStream = new FileOutputStream(receivedFile)) {
@@ -182,12 +163,7 @@ public class FileRelayServer extends ServerSocket {
                         }
                     }
 
-                    else{ //Gérer les messages textes
 
-                        System.out.println("[Client " + clientId + "] -> [" +receiverId +" ]: " + receiverId+" && "+messageContent);
-
-                        FileRelayServer.sendMessageToClient(this,receiverId,messageContent);
-                    }
                 }
             } catch (IOException e) {
                 System.out.println("Erreur de communication avec le client " + clientId + " : " + e.getMessage());

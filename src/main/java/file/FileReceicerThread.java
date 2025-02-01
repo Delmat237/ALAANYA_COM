@@ -29,9 +29,9 @@ public class FileReceicerThread extends Thread{
         long totalFileSize = 0; // Lire la taille totale du fichier
 
 
-
         try {
             filename = in.readUTF();
+
             totalFileSize = in.readLong();
         } catch (IOException e) {
             System.out.println("Erreur lors de la lecture des metadonnées");;
@@ -48,14 +48,9 @@ public class FileReceicerThread extends Thread{
             // Ajouter le fichier reçu au chat
 
             String finalFilename = filename;
-            Platform.runLater(() -> {
-                VBox chatBox = this.chatApp.getChatBox(this.chatApp.senderId);
-                this.chatApp.addFile(chatBox, "/icons/document-signed.png", finalFilename, false); // Passez le Stage principal ici
 
-                if (Objects.equals(this.chatApp.currentContactId, this.chatApp.senderId)) {
-                    this.chatApp.chatArea.getChildren().addAll(chatBox.getChildren());
-                }
-            });
+            Platform.runLater(() ->this.chatApp.addFile(this.chatApp.contactChats.get(this.chatApp.senderId).BoxGetter(), "/icons/document-signed.png", finalFilename, false));
+            System.out.println("Fichier recu avec succès : " + finalFilename);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -68,6 +63,7 @@ public class FileReceicerThread extends Thread{
         long bytesReadTotal = 0;
 
         while (bytesReadTotal < totalFileSize) {
+            System.out.println((bytesReadTotal / totalFileSize)*100);
             int bytesToRead = (int) Math.min(buffer.length, totalFileSize - bytesReadTotal);
 
             int bytesRead = in.read(buffer, 0, bytesToRead);
