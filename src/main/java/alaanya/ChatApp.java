@@ -25,7 +25,7 @@ import message.MessageReadThread;
 import message.MessageWriteThread;
 
 
-import video.VideoPlayer;
+//import video.VideoPlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -529,8 +529,8 @@ public class ChatApp extends Application {
     private void launchVideoPlayer() {
         //Créer un nouveau thread pour lancer le lecteur video
         Thread videoPlayerThread = new Thread(() -> {
-            VideoPlayer videoPlayer = new VideoPlayer();
-            videoPlayer.start(new Stage());
+            /*VideoPlayer videoPlayer = new VideoPlayer();
+            videoPlayer.start(new Stage());*/
         });
         videoPlayerThread.setDaemon(true); //aSSURER QUE LE THREAD SE TERMINE QUAND L'APPLICATION SE TERMINE
         videoPlayerThread.start();

@@ -3,12 +3,12 @@ module alaanya {
     requires javafx.fxml;
     requires java.desktop;
     requires java.sql;
-    requires opencv;
+    //requires opencv;
 
 
    /* opens ald.alaanya_com to javafx.fxml;
     exports ald.alaanya_com;*/
     exports alaanya;
     opens alaanya to javafx.fxml;
-    exports video to javafx.graphics;
+    //exports video to javafx.graphics;
 }
