@@ -25,7 +25,7 @@ import message.MessageReadThread;
 import message.MessageWriteThread;
 
 
-import video.VideoPlayer;
+//import video.VideoPlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class ChatApp extends Application {
     protected  Socket audioSocket;
     protected Socket fileSocket;
     private static final String HOSTNAME = "localhost";//"192.168.43.223";//
-    private static final int PORT = 12345;
+    private static final int PORT = 12348;
     private static final int PORTAUDIO = 12346;
     private static final int PORTFILE = 12347;
 
@@ -522,6 +522,10 @@ public class ChatApp extends Application {
         Scene scene = new Scene(rootLayout, 800, 600);
         stage.setScene(scene);
         stage.setTitle("ALAANYA COM");
+
+        //Lier la page css
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        //Affiche la page
         stage.show();
 
     }
@@ -529,8 +533,8 @@ public class ChatApp extends Application {
     private void launchVideoPlayer() {
         //Créer un nouveau thread pour lancer le lecteur video
         Thread videoPlayerThread = new Thread(() -> {
-            VideoPlayer videoPlayer = new VideoPlayer();
-            videoPlayer.start(new Stage());
+            /*VideoPlayer videoPlayer = new VideoPlayer();
+            videoPlayer.start(new Stage());*/
         });
         videoPlayerThread.setDaemon(true); //aSSURER QUE LE THREAD SE TERMINE QUAND L'APPLICATION SE TERMINE
         videoPlayerThread.start();
