@@ -120,7 +120,7 @@ alaanya/
 
 Here's a preview of the Alaanya Communication System:
 
-![App Screenshot](assets/app-screenshot.png)
+![App Screenshot](asserts/GUI.png)
 
 
 ### Server Configuration
