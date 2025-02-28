@@ -1,0 +1,71 @@
+/* Appliquer un style global à tout le TabPane */
+.tab-pane {
+    -fx-background-color: #f5f5f5;
+    -fx-tab-min-width: 100px;
+    -fx-tab-max-width: 200px;
+    -fx-tab-min-height: 40px;
+    -fx-padding: 10px;
+}
+
+/* Style des onglets */
+.tab {
+    -fx-background-color: #e0e0e0;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333;
+}
+
+/* Onglet sélectionné */
+.tab:selected {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+}
+
+/* Contenu de chaque onglet */
+.vbox {
+    -fx-spacing: 15px;
+    -fx-padding: 20px;
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* Boutons */
+.button {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+    -fx-border: none;
+    -fx-cursor: hand;
+}
+.button:hover {
+    -fx-background-color: #0056b3;
+}
+
+/* Labels */
+.label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+}
+
+/* Champs de texte */
+.text-field {
+    -fx-padding: 5px;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 3px;
+    -fx-font-size: 14px;
+}
+
+/* Checkboxes */
+.check-box {
+    -fx-font-size: 14px;
+}
+
+/* Sliders */
+.slider {
+    -fx-pref-width: 200px;
+}
