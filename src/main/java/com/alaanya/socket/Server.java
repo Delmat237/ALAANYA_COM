@@ -1,14 +1,13 @@
 package com.alaanya.socket;
 
-import com.alaanya.database.Database;
-
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,9 +17,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.File;
+import com.alaanya.database.Database;
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
 
 public class Server {
 
@@ -173,37 +172,35 @@ public class Server {
                 while (true) {
                     Object request = in.readObject();
 
-                    if (request instanceof Message) {
-                        Message message = (Message) request;
+                    if (request instanceof Message message) {
                         System.out.println("[SERVER] Received message: " + message.getContent() +
                                 " from: " + message.getSender());
                         System.out.println(message.getType());
 
                         switch (message.getType()) {
-                            case "MESSAGE":
+                            case "MESSAGE" -> {
                                 // Enregistrement dans la base de données (Section 4 du cahier des charges)
                                 saveMessage(message);
 
                                 // Envoi au destinataire spécifique
                                 sendMessageToRecipient(message);
-                                break;
-                            case "ADD_CONTACT":
+                            }
+                            case "ADD_CONTACT" -> {
                                 // Ajouter un contact dans la base de données
                                 String[] contactInfo = message.getContent().split(":");
                                 String userId = contactInfo[0];
                                 String contactId = contactInfo[1];
                                 addContactToDatabase(userId, contactId);
-                                break;
-                            case "FILE_UPLOAD":
-                                if (message instanceof FileMessage) {
-                                    FileMessage fileMessage = (FileMessage) message;
+                            }
+                            case "FILE_UPLOAD" -> {
+                                if (message instanceof FileMessage fileMessage) {
 
                                     // Enregistrement dans la base de données (Section 4 du cahier des charges)
                                     saveMessage(fileMessage);
                                 } else {
                                     System.err.println("[SERVER] Expected FileMessage but received Message");
                                 }
-                                break;
+                            }
                         }
                     } else if (request == null) {
                         break;
@@ -216,9 +213,10 @@ public class Server {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (out != null) out.close();
-                    if (in != null) in.close();
-                    client.close();
+                    try (client) {
+                        if (out != null) out.close();
+                        if (in != null) in.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

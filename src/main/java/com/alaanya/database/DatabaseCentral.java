@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
+
 public class DatabaseCentral {
     private static final String DB_PROPERTIES_FILE = "dbCentral.properties";
     private static String URL;
@@ -26,8 +28,6 @@ public class DatabaseCentral {
             URL = props.getProperty("db.url");
             USER = props.getProperty("db.user");
             PASSWORD = props.getProperty("db.password");
-
-            System.out.println("[DatabaseCentral] Configuration chargée : URL=" + URL);
         } catch (IOException ex) {
             System.err.println("[DatabaseCentral] Erreur chargement fichier db.properties : " + ex.getMessage());
             ex.printStackTrace();
@@ -36,7 +36,9 @@ public class DatabaseCentral {
 
         // Vérifier la connexion à la BD
         try (Connection testConn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            System.out.println("[DatabaseCentral] Connexion réussie à la base de données !");
+        System.out.println("[DatabaseCentral] Configuration chargée : URL=" + URL);
+
+        // Vérifier la connexion à la BD
         } catch (SQLException e) {
             System.err.println("[DatabaseCentral] Échec de connexion à la base de données : " + e.getMessage());
             e.printStackTrace();

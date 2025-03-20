@@ -1,8 +1,9 @@
 package com.alaanya.socket;
 
-import java.io.File;
 import java.io.Serial;
 import java.io.Serializable;
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","override"})
 
 public class FileMessage extends Message implements Serializable {
     @Serial

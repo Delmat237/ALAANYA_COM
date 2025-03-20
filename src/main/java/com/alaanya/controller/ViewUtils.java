@@ -9,9 +9,9 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class ViewUtils {
 

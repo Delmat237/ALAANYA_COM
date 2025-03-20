@@ -1,16 +1,14 @@
 package com.alaanya.model;
 
-import com.alaanya.database.Database;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.util.Base64;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Base64;
 
-import com.alaanya.socket.Client;
+import com.alaanya.database.Database;
 public class User {
 
     private String militaryId;
@@ -126,14 +124,4 @@ public class User {
     public String getUsername() {
         return username;
     }
-
-    // Méthode save() pour enregistrer l'utilisateur dans la base de données
-    public void save() throws SQLException, NoSuchAlgorithmException {
-        System.out.println("Enregistrement de "+militaryId);
-
-        //l'enregistrement se fait dans la bd du serveur distants
-        Client.addUserRequest(this.militaryId,this.passwordHash,this.grade,this.division,this.clearanceLevel,this.username);
-
-    }
-
 }

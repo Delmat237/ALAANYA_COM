@@ -1,9 +1,15 @@
 package com.alaanya.controller;
 
-import com.alaanya.MainApp;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.alaanya.model.User;
 import com.alaanya.socket.Client;
 import com.alaanya.socket.Notification;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,28 +20,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","UseSpecificCatch","exports"})
 
 public class LoginController {
 
-    @FXML
-    private TextField militaryIdField;
-    @FXML
-    private PasswordField passwordField;
-    @FXML
-    private Label errorLabel;
+    @FXML private TextField militaryIdField;
+    @FXML private PasswordField passwordField;
+    @FXML private Label errorLabel;
 
-    @FXML
-    public void initialize() {
-        Scene scene = militaryIdField.getScene();
-        if (scene != null) {
-            scene.getStylesheets().add(MainApp.class.getResource("/com/alaanya/view/css/style.css").toExternalForm());
-        }
-    }
+
 
     @FXML
     private void handleLogin() {
@@ -64,7 +57,7 @@ public class LoginController {
             } else {
                 errorLabel.setText(authResult.getErrorMessage());
             }
-        } catch (Exception e) {
+        } catch ( Exception e) {
             errorLabel.setText("Erreur de connexion à la base de données.");
             e.printStackTrace();
         }
@@ -116,13 +109,19 @@ public class LoginController {
 
         System.out.println("Final REP " + errorMessage.get());
 
-        if ("TRUE".equals(errorMessage.get())) {
-            System.out.println("on continue");
-            return new AuthenticationResult(true, null);
-        } else if ("MOT DE PASSE INCORRECT".equals(errorMessage.get())) {
-            return new AuthenticationResult(false, "Mot de passe incorrect.");
-        } else {
+        if (null == errorMessage.get()) {
             return new AuthenticationResult(false, "Identifiant militaire incorrect.");
+        } else switch (errorMessage.get()) {
+            case "TRUE" -> {
+                System.out.println("on continue");
+                return new AuthenticationResult(true, null);
+            }
+            case "MOT DE PASSE INCORRECT" -> {
+                return new AuthenticationResult(false, "Mot de passe incorrect.");
+            }
+            default -> {
+                return new AuthenticationResult(false, "Identifiant militaire incorrect.");
+            }
         }
     }
 

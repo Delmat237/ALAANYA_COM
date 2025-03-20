@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
 
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
+
 public class Client {
 
     private static final int SERVER_PORT = 12345;
@@ -53,6 +56,7 @@ public class Client {
     //Connection au serveur centrale
     public static boolean connectToServer(){
         try {
+            @SuppressWarnings("resource")
             Socket socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
             outCentral = new ObjectOutputStream(socketCentral.getOutputStream());
             inCentral = new ObjectInputStream(socketCentral.getInputStream());
@@ -200,16 +204,14 @@ public class Client {
                             break;
                         }
 
-                        if (receivedObject instanceof Message) {
-                            Message receivedMessage = (Message) receivedObject;
+                        if (receivedObject instanceof Message receivedMessage) {
                             System.out.println("[CLIENT] Received message: " + receivedMessage.getContent() + " from " + receivedMessage.getSender());
 
                             Platform.runLater(() -> {
                                 // Code to access and update UI
                                 System.out.println("[CLIENT] Message Received");
                             });
-                        } else if (receivedObject instanceof Notification) {
-                            Notification notification = (Notification) receivedObject;
+                        } else if (receivedObject instanceof Notification notification) {
                             System.out.println("[CLIENT] Received notification: " + notification.getMessage() + " type " + notification.getType());
 
                             if (notificationListener != null) {
@@ -282,8 +284,7 @@ public class Client {
 
             // Read response
             Object response = inCentral.readObject();
-            if (response instanceof Notification) {
-                Notification notification = (Notification) response;
+            if (response instanceof Notification notification) {
                 listener.onNotificationReceived(notification); // Notify listener with the response
                 System.out.println("[CLIENT] Received address response: " + notification.getMessage());
             } else {
@@ -366,17 +367,17 @@ public class Client {
             // Read response
             Object response = inCentral.readObject();
             System.out.println("Requete d'authentification envoyé , reception de reponse");
-            if (response instanceof Notification) {
+            if (response instanceof Notification notification) {
 
-                if (((Notification) response).getMessage() == null) {
+                if (notification.getMessage() == null) {
                     System.out.println("Aucune notification reçu");
                     return null;
                 }else{
-                    return new User(((Notification) response).getMessage().split("&&")[0],
-                            ((Notification) response).getMessage().split("&&")[1],
-                            ((Notification) response).getMessage().split("&&")[2],
-                            Integer.parseInt(((Notification) response).getMessage().split("&&")[3]),
-                            ((Notification) response).getMessage().split("&&")[4]);
+                    return new User(notification.getMessage().split("&&")[0],
+                            notification.getMessage().split("&&")[1],
+                            notification.getMessage().split("&&")[2],
+                            Integer.parseInt(notification.getMessage().split("&&")[3]),
+                            notification.getMessage().split("&&")[4]);
                 }
 
             } else {

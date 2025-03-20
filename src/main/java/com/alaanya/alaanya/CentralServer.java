@@ -1,21 +1,26 @@
 package com.alaanya.alaanya;
 
 
-import com.alaanya.database.DatabaseCentral;
-import com.alaanya.socket.Notification;
-
-import com.alaanya.socket.Message;
-
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alaanya.database.DatabaseCentral;
+import com.alaanya.socket.Message;
+import com.alaanya.socket.Notification;
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
+
 public class CentralServer {
     private static final int PORT = 8080;
+    
     private static ConcurrentHashMap<String, String> userIPs = new ConcurrentHashMap<>(); // Maps user IDs to IP addresses
 
     public static void main(String[] args) {
@@ -41,17 +46,18 @@ public class CentralServer {
         }
 
         @Override
+        
         public void run() {
             try (ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
                  ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream())) {
 
                 Object request = in.readObject();
 
-                if (request instanceof Message) {
-                    System.out.println("type de message reçu "+ ((Message) request).getType());
-                    switch (((Message) request).getType()) {
-                        case "REQUEST_ADDRESS":
-                            String requestedUserId = ((Message) request).getContent();
+                if (request instanceof Message message) {
+                    System.out.println("type de message reçu "+ message.getType());
+                    switch (message.getType()) {
+                        case "REQUEST_ADDRESS" -> {
+                            String requestedUserId = message.getContent();
                             String userAddress = getUserAddress(requestedUserId);
                             if (userAddress != null) {
                                 out.writeObject(new Notification("ADDRESS_RESPONSE", userAddress,5,"CENTRAL SERVER"));
@@ -60,16 +66,16 @@ public class CentralServer {
                                 out.writeObject(new Notification("ADDRESS_NOT_FOUND", "Address not found for user: " + requestedUserId,5,"CENTRAL SERVER"));
                                 System.out.println("[SERVER] Address not found for user: " + requestedUserId);
                             }
-                            break;
-                        case "AUTHENTICATE_USER":
+                        }
+                        case "AUTHENTICATE_USER" -> {
                             System.out.println("AUTHENNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTIFICATE");
-                            String militaryId = ((Message) request).getContent().split("&&")[0];
-                            String password = ((Message) request).getContent().split("&&")[1];
+                            String militaryId = message.getContent().split("&&")[0];
+                            String password = message.getContent().split("&&")[1];
 
                             System.out.println("[CENTRAL SERVER] Authrnification to client: " +militaryId + " : " +clientSocket.getInetAddress());
                             userIPs.put(militaryId,clientSocket.getInetAddress().getHostAddress());
-
-
+                            
+                            
                             //cONNECTION A LA BD POUR VERIFIER LES INFOS
                             try (Connection conn = DatabaseCentral.getConnection()) {
                                 String sql = "SELECT * FROM users WHERE military_id = ?";
@@ -100,25 +106,24 @@ public class CentralServer {
                                 }
                                 System.err.println("[CENTRAL SERVER] Error during authentication: " + e.getMessage());
                             }
+                        }
 
-                            break;
-
-                        case "SAVE_USER" :
+                        case "SAVE_USER" -> {
                             System.out.println("SAVE USER BEGIN");
 
                             //recuperation des inforamtions
-                            String militaryid = ((Message) request).getContent().split("&&")[0];
-                            String passwordHash = ((Message) request).getContent().split("&&")[1];
-                            String grade =  ((Message) request).getContent().split("&&")[2];
-                            String division =  ((Message) request).getContent().split("&&")[3];
-                            int clearanceLevel = Integer.parseInt(((Message) request).getContent().split("&&")[4]);
-                            String username =  ((Message) request).getContent().split("&&")[5];
+                            String militaryid = message.getContent().split("&&")[0];
+                            String passwordHash = message.getContent().split("&&")[1];
+                            String grade =  message.getContent().split("&&")[2];
+                            String division =  message.getContent().split("&&")[3];
+                            int clearanceLevel = Integer.parseInt(message.getContent().split("&&")[4]);
+                            String username =  message.getContent().split("&&")[5];
 
                             String sql = "INSERT INTO users (military_id, password_hash, grade, division, clearance_level, username) VALUES (?, ?, ?, ?, ?, ?)";
 
                             try (Connection conn = DatabaseCentral.getConnection();
-                                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
+                                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+                                
                                 stmt.setString(1, militaryid);
                                 stmt.setString(2, passwordHash);
                                 stmt.setString(3, grade);
@@ -128,20 +133,20 @@ public class CentralServer {
 
                                 stmt.executeUpdate();
                                 out.writeObject(new Notification("SAVE_SUCCES", "TRUE",5,"CENTRAL SERVER")); //SIGNALE QUE TOUT C'EST BIEN PASSÉ
-                                System.out.println("[CENTRAL SERVER] Authentication success (user not found) for: " + militaryid);
+                                System.out.println("[CENTRAL SERVER] Authentication success (user found) for: " + militaryid);
                             }
                             catch (SQLException e) {
                                 throw new SQLException("Erreur lors de l'enregistrement de l'utilisateur : " + e.getMessage());
                             }
-                            break;
+                        }
                             
-                        case "GET_USER":
-                            String militaryID = ((Message) request).getContent();
+                        case "GET_USER" -> {
+                            String militaryID = message.getContent();
                             String sql1 = "SELECT military_id, grade, division, clearance_level, username FROM users WHERE military_id = ?";
                             
                             try (Connection conn = DatabaseCentral.getConnection();
-                                 PreparedStatement stmt = conn.prepareStatement(sql1)) {
-
+                                    PreparedStatement stmt = conn.prepareStatement(sql1)) {
+                                
                                 stmt.setString(1, militaryID);
                                 ResultSet rs = stmt.executeQuery();
 
@@ -162,7 +167,7 @@ public class CentralServer {
 
                                 }
                             }
-                            break;
+                        }
                     }
 
                 }

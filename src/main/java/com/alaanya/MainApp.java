@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class MainApp extends Application {
 

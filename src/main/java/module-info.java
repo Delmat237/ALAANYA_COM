@@ -14,5 +14,5 @@ module com.alaanya.alaanya {
     opens com.alaanya.model to javafx.base;
     exports com.alaanya.model;
 
-    opens com.alaanya.view to javafx.fxml;
+
 }

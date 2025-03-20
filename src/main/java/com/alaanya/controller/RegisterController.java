@@ -1,17 +1,22 @@
 package com.alaanya.controller;
 
-import com.alaanya.database.Database;
-import com.alaanya.database.DatabaseCentral;
-import com.alaanya.model.User;
-import com.alaanya.socket.Client;
-import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.security.NoSuchAlgorithmException;
+
+import com.alaanya.database.DatabaseCentral;
+import com.alaanya.model.User;
+import com.alaanya.socket.Client;
+
+import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+
+@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
 
 public class RegisterController {
     @FXML private TextField militaryIdField;
@@ -66,7 +71,10 @@ public class RegisterController {
 
             System.out.println("REGISTRATION : " +User.hashPassword(passwordField.getText()));
             if (Client.connectToServer()){
-                user.save();
+               
+                //l'enregistrement se fait dans la bd du serveur distants
+                Client.addUserRequest(user.getMilitaryId(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getClearanceLevel(),user.getUsername());
+
             }
 
             // Ajout du contact par défaut après l'enregistrement réussi de l'utilisateur
