@@ -1,0 +1,235 @@
+/* style.css */
+
+/* -------------------------------------------------------
+   Couleurs principales (basées sur le cahier des charges)
+   ------------------------------------------------------- */
+.root {
+    -fx-base: #34495E; /* Bleu marine sombre (couleur de base) */
+    -fx-background: #2C3E50; /* Fond plus foncé pour l'application */
+    -fx-control-inner-background: #34495E; /* Arrière-plan des zones de contrôle (champs, listes) */
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); /* Arrière-plan alternatif pour les zones de contrôle */
+}
+
+/* -------------------------------------------------------
+   Éléments d'accentuation (pour l'interactivité)
+   ------------------------------------------------------- */
+.button {
+    -fx-background-color: #777; /* Gris kaki (couleur principale des boutons) */
+    -fx-text-fill: white; /* Texte blanc sur les boutons */
+    -fx-font-weight: bold; /* Texte en gras */
+    -fx-padding: 0.5em 1em; /* Espacement intérieur pour une meilleure apparence */
+    -fx-background-radius: 5px; /* Bords légèrement arrondis */
+    -fx-border-radius: 5px;
+}
+
+.button:hover {
+    -fx-background-color: #555; /* Gris kaki plus foncé au survol */
+}
+
+/* -------------------------------------------------------
+   Texte (lisibilité améliorée)
+   ------------------------------------------------------- */
+.label {
+    -fx-text-fill: #ECF0F1; /* Gris clair pour le texte principal */
+    -fx-font-size: 1em; /* Taille de police standard */
+}
+
+/* -------------------------------------------------------
+   Liste des contacts (style personnalisé)
+   ------------------------------------------------------- */
+.contact-list-view {
+    -fx-background-color: transparent; /* Fond transparent pour la liste elle-même */
+    -fx-padding: 0; /* Suppression des marges internes par défaut */
+}
+
+.contact-list-view .list-cell {
+    -fx-background-color: transparent; /* Fond transparent pour chaque cellule */
+    -fx-text-fill: #ECF0F1; /* Couleur du texte dans les cellules */
+    -fx-padding: 0.5em; /* Espacement intérieur pour chaque cellule */
+}
+
+.contact-list-view .list-cell:hover {
+    -fx-background-color: #34495E; /* Couleur de fond au survol */
+}
+
+/* -------------------------------------------------------
+   Barre de statut (informations importantes)
+   ------------------------------------------------------- */
+.status-bar {
+    -fx-background-color: #222; /* Fond sombre pour la barre de statut */
+    -fx-padding: 0.5em; /* Espacement intérieur */
+}
+
+.status-text {
+    -fx-text-fill: #ECF0F1; /* Texte clair pour la barre de statut */
+    -fx-font-size: 0.85em; /* Taille de police légèrement plus petite */
+}
+
+.user-label {
+    -fx-text-fill: rgba(17, 77, 168, 0.64); /* Couleur personnalisée pour le nom d'utilisateur */
+}
+
+/* -------------------------------------------------------
+   Image de profil arrondie (apparence soignée)
+   ------------------------------------------------------- */
+.profile-image {
+    -fx-border-radius: 50%; /* Bords arrondis pour un cercle */
+    -fx-background-radius: 50%; /* Fond arrondi */
+    -fx-background-color: transparent; /* Fond transparent pour afficher l'image */
+    -fx-background-clip: content-box; /* Empêche le débordement */
+    -fx-padding: 0; /* Suppression des marges */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 5, 0, 0, 3); /* Ombre légère */
+}
+
+/* -------------------------------------------------------
+   Messages d'erreur (clarté et visibilité)
+   ------------------------------------------------------- */
+.error-message {
+    -fx-text-fill: #ff4444; /* Rouge vif pour les erreurs */
+    -fx-font-weight: bold; /* Texte en gras */
+    -fx-font-size: 0.9em; /* Taille de police légèrement plus grande */
+    -fx-padding: 0.5em; /* Espacement intérieur */
+}
+
+/* -------------------------------------------------------
+   Grille (pour une structure claire)
+   ------------------------------------------------------- */
+.grid {
+    -fx-background-color: rgba(17, 77, 168, 0.15); /* Bleu subtil pour la grille */
+    -fx-padding: 1em; /* Espacement intérieur */
+    -fx-hgap: 0.75em; /* Espacement horizontal entre les éléments */
+    -fx-vgap: 0.75em; /* Espacement vertical entre les éléments */
+}
+
+/* -------------------------------------------------------
+   Titre de l'application (mis en évidence)
+   ------------------------------------------------------- */
+.app-title {
+    -fx-font-size: 1.5em; /* Taille de police plus grande */
+    -fx-font-weight: bold; /* Texte en gras */
+    -fx-text-fill: #ECF0F1; /* Gris clair */
+    -fx-padding: 0 0 0.5em 0; /* Marge inférieure */
+}
+
+/* -------------------------------------------------------
+   Zone de chat (style personnalisé)
+   ------------------------------------------------------- */
+.chat-area {
+    -fx-background-color: #2C3E50; /* Fond de la zone de chat */
+    -fx-padding: 1em; /* Espacement intérieur */
+}
+
+.chat-area .text-area {
+    -fx-background-color:  #779cc3; /* Fond de la zone de texte */
+    -fx-text-fill: #ECF0F1; /* Couleur du texte */
+}
+
+.chat-area .text-area .content {
+    -fx-background-color: transparent; /* Fond transparent pour le contenu */
+}
+
+.chat-area .text-field  {
+    -fx-background-color: #779cc3; /* Fond des champs de texte */
+    -fx-text-fill: #ECF0F1; /* Couleur du texte */
+}
+
+/* -------------------------------------------------------
+   Zone de profil (style personnalisé)
+   ------------------------------------------------------- */
+.profile-area {
+    -fx-background-color: #2C3E50; /* Fond de la zone de profil */
+    -fx-padding: 1em; /* Espacement intérieur */
+}
+/* style.css - Ajouts pour LoginView */
+
+/* -------------------------------------------------------
+   Vue de connexion (LoginView)
+   ------------------------------------------------------- */
+
+/* Conteneur principal (GridPane) */
+.login-grid {
+    -fx-background-color: rgba(17, 77, 168, 0.2); /* Bleu subtil pour la grille */
+    -fx-padding: 2em; /* Espacement intérieur */
+    -fx-hgap: 1em; /* Espacement horizontal entre les éléments */
+    -fx-vgap: 1em; /* Espacement vertical entre les éléments */
+    -fx-alignment: center; /* Centrer le contenu */
+}
+
+/* Labels */
+.login-label {
+    -fx-font-size: 1.1em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222121;
+}
+
+/* Champs de texte */
+.login-text-field {
+    -fx-pref-width: 250px; /* Largeur préférée */
+    -fx-padding: 0.5em;
+    -fx-background-color: #455A64; /* Couleur de fond */
+    -fx-text-fill: #ECF0F1; /* Couleur du texte */
+    -fx-border-color: #78909C; /* Couleur de la bordure */
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* Bouton de connexion */
+.login-button {
+    -fx-background-color: #4CAF50; /* Vert */
+    -fx-text-fill: white;
+    -fx-font-size: 1.2em;
+    -fx-font-weight: bold;
+    -fx-padding: 0.75em 1.5em;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+}
+
+.login-button:hover {
+    -fx-background-color: #388E3C; /* Vert plus foncé au survol */
+}
+
+/* Lien "Créer un compte" */
+.create-account-link {
+    -fx-text-fill: rgba(17, 77, 168, 0.64); /* Bleu clair */
+    -fx-font-size: 0.9em;
+}
+
+.create-account-link:hover {
+    -fx-text-fill: #062260; /* Bleu plus vif au survol */
+}
+
+/* Message d'erreur */
+.login-error-message {
+    -fx-text-fill: #FF5252; /* Rouge */
+    -fx-font-size: 1em;
+    -fx-font-weight: bold;
+    -fx-padding: 0.5em;
+}
+
+/* style.css - Ajouts pour MainView */
+
+.section-title {
+    -fx-font-size: 1.2em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ECF0F1;
+    -fx-padding: 0 0 5px 0;
+}
+
+
+.image-button {
+    -fx-content-display: top; /* Display image above text */
+    -fx-graphic-text-gap: 5px; /* Spacing between image and text */
+}
+
+.image-button .image-view {
+    -fx-image: url("images/dot.png"); /* Set a default image */
+    -fx-fit-width: 24px; /* Adjust as needed */
+    -fx-fit-height: 24px; /* Adjust as needed */
+    -fx-preserve-ratio: true;
+}
+.icon {
+    -fx-fit-width: 24px;
+    -fx-fit-height: 24px;
+    -fx-preserve-ratio: true;
+    -fx-background-color: transparent;
+}

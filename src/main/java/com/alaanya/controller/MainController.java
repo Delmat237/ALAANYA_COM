@@ -1,0 +1,497 @@
+package com.alaanya.controller;
+
+import com.alaanya.MainApp;
+import com.alaanya.database.Database;
+import com.alaanya.database.DatabaseCentral;
+import com.alaanya.model.User;
+import com.alaanya.socket.Client;
+import com.alaanya.socket.Message;
+import com.alaanya.socket.FileMessage;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import java.io.File;
+import java.nio.file.Files;
+
+
+public class MainController {
+
+    @FXML private Label userLabel;
+    @FXML private Label gradeLabel;
+    @FXML private Label divisionLabel;
+    @FXML private Label idLabel;
+    @FXML private Label selectedUserLabel;
+    @FXML private ListView<String> contactListView;
+    @FXML private TextArea chatTextArea;
+    @FXML private TextField messageTextField;
+    @FXML private TextField searchTextField;
+    @FXML private ListView<String> searchResultsListView;
+    @FXML private VBox defaultCenterVBox;
+    @FXML private VBox chatAreaVBox;
+
+    private User user;
+    private ObservableList<String> contacts = FXCollections.observableArrayList();
+    private ObservableList<String> contactList = FXCollections.observableArrayList();
+
+    @FXML
+    public void initialize() {
+        // observe contactListView
+        contactListView.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        setSelectedUsername(newValue); // Set the username in the label
+                        showChatArea(true); // Show chat area when contact is selected
+                        String userId =  extractContactIdFromContactList(newValue.substring(0, newValue.length() - 1));
+
+                        Client.requestAddress(userId, notification -> {
+                            Platform.runLater(() -> {
+                                if ("ADDRESS_RESPONSE".equals(notification.getType())) {
+                                    String userAddress = notification.getMessage();
+                                    System.out.println("[CLIENT] Address for " + newValue + ": " + userAddress);
+                                    // Use this address for further actions like starting an audio call
+                                } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
+                                    System.err.println("[CLIENT] Address not found for user: " + newValue);
+                                }
+                            });
+                        });
+                    } else {
+                        showChatArea(false); // Hide chat area when no contact is selected
+                    }
+                }
+        );
+        // Initially hide the chat area
+        showChatArea(false);
+    }
+
+    public void setSelectedUsername(String username) {
+        selectedUserLabel.setText(username);
+    }
+
+    private void showChatArea(boolean show) {
+        chatAreaVBox.setVisible(show);
+        defaultCenterVBox.setVisible(!show);
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        Platform.runLater(() -> {
+            userLabel.setText(user.getUsername());
+            gradeLabel.setText("Grade: " + user.getGrade());
+            divisionLabel.setText("Division: " + user.getDivision());
+            idLabel.setText("Identifiant Militaire: " + user.getMilitaryId());
+
+            try {
+                contacts.clear();
+                getContactsFromDatabase(user.getMilitaryId(), contacts);
+                contactListView.setItems(contacts);
+
+                contactListView.setOnMouseClicked(event -> {
+
+                    String selectedContact = contactListView.getSelectionModel().getSelectedItem(); //RECUPERATION DU CONTACT SELECTIONNÉ
+                    if (selectedContact != null) {
+                        String contactId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1)); // Utiliser la méthode extractContactIdFromContactList
+                        System.out.println("lE CONTACT SELECTIONNÉ EST " + contactId);
+                        //Envoie une requete au serveur pour recuperer l'adress IP du contact selectionné
+
+                        loadConversation(user.getMilitaryId(), contactId); //Recuperation des messages
+                    }
+                });
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la récupération des contacts : " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+    public User getUser() {
+        return user;
+    }
+
+    private void getContactsFromDatabase(String militaryId, List<String> contactsList) throws SQLException {
+        String sql = "SELECT u.username, u.division, u.military_id " + // Ajouter u.military_id
+                "FROM users u " +
+                "INNER JOIN contacts c ON u.military_id = c.contact_id " +
+                "WHERE c.user_id = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, militaryId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String division = rs.getString("division");
+                String contactId = rs.getString("military_id"); // Récupérer l'ID militaire
+                contactsList.add(username + " (" + division + " - " + contactId + ")"); // Ajouter l'ID militaire à la chaîne
+            }
+        }
+    }
+
+
+    /**
+     * Ajoute un contact à la liste de contacts de l'utilisateur.
+     */
+    @FXML
+    private void addContact() {
+        String selectedContact = searchResultsListView.getSelectionModel().getSelectedItem(); //rECUPERE LE CONTACT SELECTIONNÉ
+        System.out.println("Ajout de "+selectedContact);
+        if ((selectedContact = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1))) != null) {
+            // Remove the extra parenthesis if it exists
+            if (selectedContact.endsWith(")")) {
+                selectedContact = selectedContact.substring(0, selectedContact.length() - 1);
+            }
+            String contactId = selectedContact.trim(); // Remove leading/trailing whitespace
+            System.out.println("Le contact de la personne est "+contactId);
+
+            // Now add the contact to the database and contact list view
+            if (user!= null) {
+                contactListView.getItems().add(user.getUsername());
+
+                //Recupere l'id de l'utilisateur
+                String userId = user.getMilitaryId();
+                System.out.println("Table de conatact "+ userId + ": "+ contactId);
+                addContactToDatabase(userId, contactId);
+
+            } else {
+                System.err.println("[ERROR] No user logged in");
+                //Handle the error by notifying the user that they must log in to add
+            }
+
+        } else {
+            System.err.println("[ERROR] No contact selected");
+            //Handle the error by notifiying the user that they did not select the text
+        }
+    }
+
+
+    /**
+     * Ajoute un contact à la base de données.
+     * @param userId L'ID militaire de l'utilisateur actuel.
+     * @param contactId L'ID militaire du contact à ajouter.
+     * @throws SQLException Si une erreur de base de données se produit.
+     */
+
+    private void addContactToDatabase(String userId, String contactId) {
+        if (!userExists(contactId)) {
+            System.err.println("[SERVER] Contact ID " + contactId + " does not exist in the users table.");
+            // Handle the error appropriately.  For example, show an error message to the user.
+            return; // Do not proceed with the insertion
+        }
+
+        String sql = "INSERT INTO contacts (user_id, contact_id) VALUES (?, ?)";
+
+        //aPRES je vais retirer ca ici (Factory)
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, userId);
+            stmt.setString(2, contactId);
+
+            stmt.executeUpdate();
+            System.out.println("[SERVER] Contact added: " + userId + " -> " + contactId);
+
+            // Update the contact list
+            //loadContacts();
+
+        } catch (SQLException e) {
+            System.err.println("[SERVER] Error adding contact: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loadContacts() {
+
+        contactList.clear(); // Clear the previous list
+
+        String sql = "SELECT u.military_id FROM users u " +
+                "INNER JOIN contacts c ON u.military_id = c.contact_id " +
+                "WHERE c.user_id = ?";  // Assuming c.user_id is the current user
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, user.getMilitaryId());  //  userID of the currently logged-in user
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                contactList.add(rs.getString("military_id"));
+                contactListView.getItems().add(rs.getString("military_id"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error loading contacts: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    // Helper method to check if a user exists in the users table
+    private boolean userExists(String militaryId) {
+        String sql = "SELECT 1 FROM users WHERE military_id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, militaryId);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); // Returns true if a user with the given militaryId exists
+        } catch (SQLException e) {
+            System.err.println("[SERVER] Error checking if user exists: " + e.getMessage());
+            e.printStackTrace();
+            return false; // Assume user doesn't exist in case of an error
+        }
+    }
+
+    /**
+     * Sends a message to the selected contact.
+     */
+    @FXML
+    private void sendMessage() {
+        String messageText = messageTextField.getText(); //recuperation du message saisir
+        String selectedContact = contactListView.getSelectionModel().getSelectedItem(); //recuperation de l'ID du destinataire
+
+        if (!messageText.isEmpty() && selectedContact != null) {
+            // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
+            String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
+
+            if (recipientId != null) {
+                Message message = new Message(user.getMilitaryId(), "MESSAGE",messageText, recipientId);
+                //Recupération de l'address IP actuell du destinataire
+                // String SERVER_ADDRESS = Client.sendMessageToServer(
+                //Client.sentMessage(message,SERVER_ADDRESS)
+                Client.sendMessage(message); // Envoi du message via la classe Client
+
+                chatTextArea.appendText("Vous (à " + selectedContact + "): " + messageText + "\n");
+                messageTextField.clear();
+            } else {
+                System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
+                // Afficher un message d'erreur à l'utilisateur
+            }
+        } else {
+            System.out.println("Veuillez sélectionner un contact et saisir un message.");
+        }
+    }
+
+    // Method to select a file and send it
+    @FXML
+    private void sendFile() {
+        if (user != null) {
+            String sender = user.getMilitaryId(); //recupere l'ID du user
+            String selectedContact = contactListView.getSelectionModel().getSelectedItem();
+            // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
+            String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
+            System.out.println(recipientId);
+            sendFile(sender, recipientId); // Call the sendFile method
+        } else {
+            System.err.println("No user logged in");
+        }
+    }
+    private void sendFile(String sender,String recipientId) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File to Send");
+        File selectedFile = fileChooser.showOpenDialog(null);
+
+        if (selectedFile != null) {
+            try {
+                byte[] fileData = Files.readAllBytes(selectedFile.toPath());
+                String fileName = selectedFile.getName();
+                FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "file upload", fileName, fileData,recipientId);
+                Client.sendMessage(fileMessage); // Use your sendMessage method to send the file
+                System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
+            } catch (IOException e) {
+                System.err.println("[CLIENT] Error reading file: " + e.getMessage());
+            }
+        } else {
+            System.out.println("[CLIENT] File selection cancelled.");
+        }
+    }
+
+
+/**
+     * Loads the conversation between the current user and the selected contact.
+     * @param currentUserId The military ID of the current user.
+     * @param contactId The military ID of the selected contact.
+     */
+    private void loadConversation(String currentUserId, String contactId) {
+        try {
+            chatTextArea.clear();
+
+            List<Message> conversation = getConversationFromDatabase(currentUserId, contactId);
+
+            for (Message message : conversation) {
+                String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
+                System.out.println("msg lu :" +  message.getContent());
+                chatTextArea.appendText(sender + ": " + message.getContent() + "\n");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors du chargement de la conversation : " + e.getMessage());
+            e.printStackTrace();
+            // Afficher un message d'erreur à l'utilisateur
+        }
+    }
+
+    /**
+     * Retrieves the conversation between two users from the database.
+     * @param currentUserId The military ID of the current user.
+     * @param contactId The military ID of the selected contact.
+     * @return A list of Message objects representing the conversation.
+     * @throws SQLException If a database error occurs.
+     */
+    private List<Message> getConversationFromDatabase(String currentUserId, String contactId) throws SQLException {
+        List<Message> conversation = new ArrayList<>();
+        String sql = "SELECT sender, content FROM messages " +
+                "WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) " +
+                "ORDER BY timestamp";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, currentUserId);
+            stmt.setString(2, contactId);
+            stmt.setString(3, contactId);
+            stmt.setString(4, currentUserId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Message message = new Message(
+                        rs.getString("sender"),
+                        "MESSAGE",
+                        rs.getString("content")
+
+                );
+                conversation.add(message);
+            }
+        }
+        return conversation;
+    }
+
+    @FXML
+    private void logout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/alaanya/view/LoginView.fxml"));
+            GridPane loginView = (GridPane) loader.load();
+
+            Scene scene = new Scene(loginView);
+            Stage stage = MainApp.getPrimaryStage();
+            stage = (Stage) userLabel.getScene().getWindow();
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Extracts the contact ID from the contact list string format.
+     * @param contactString The string representation of the contact in the list.
+     * @return The contact ID, or null if it cannot be extracted.
+     */
+    private String extractContactIdFromContactList(String contactString) {
+        if (contactString != null && contactString.contains(" - ")) {
+            return contactString.substring(contactString.lastIndexOf(" - ") + 3).trim();
+        }
+        return null;
+    }
+
+    /**
+     * Extracts the contact ID from the search results list string format.
+     * @param resultString The string representation of the search result.
+     * @return The contact ID, or null if it cannot be extracted.
+     */
+    private String extractContactIdFromResultList(String resultString) {
+        if (resultString != null && resultString.contains(" - ")) {
+            return resultString.substring(resultString.lastIndexOf(" - ") + 3).trim();
+        }
+        return null;
+    }
+
+
+
+    public void sendMessageKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            sendMessage();
+        }
+    }
+
+    /*
+    Methode relative à la recherche de conatact
+     */
+
+    @FXML
+    private void handleSearchKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            System.out.println("Recherche d'un contact");
+            searchUsers();
+        }
+    }
+    @FXML
+    public void searchContacts(ActionEvent event) {
+        System.out.println("Recherche d'un contact");
+        searchUsers();
+    }
+    /**
+     * Recherche des utilisateurs par ID militaire ou nom d'utilisateur.
+     */
+    @FXML
+    private void searchUsers() {
+        String searchTerm = searchTextField.getText();
+        if (!searchTerm.isEmpty()) {
+            try {
+                List<String> searchResultsList = searchUsersInDatabase(searchTerm);
+                System.out.println("Ajout des contacts trouvé , j'ai trouvé "+searchResultsList.size());
+
+                searchResultsListView.getItems().addAll(searchResultsList);
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la recherche d'utilisateurs : " + e.getMessage());
+                e.printStackTrace();
+                // Afficher un message d'erreur à l'utilisateur
+            }
+        }
+    }
+    /**
+     * Effectue la recherche d'utilisateurs dans la base de données.
+     * @param searchTerm Le terme de recherche saisi par l'utilisateur.
+     * @return Une liste de chaînes de caractères représentant les résultats de la recherche.
+     * @throws SQLException Si une erreur de base de données se produit.
+     */
+    private List<String> searchUsersInDatabase(String searchTerm) throws SQLException {
+        List<String> searchResultsList = new ArrayList<>();
+        /*
+         * l'acces a la bd ne doit pas se faire ici*/
+        String sql = "SELECT military_id, username, division FROM users " +
+                "WHERE military_id LIKE ? OR username LIKE ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String militaryId = rs.getString("military_id");
+                String username = rs.getString("username");
+                String division = rs.getString("division");
+                searchResultsList.add(username + " (" + division + " - " + militaryId + ")");
+            }
+        }
+        return searchResultsList;
+    }
+}
