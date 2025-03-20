@@ -16,7 +16,6 @@ public class Client {
 
     private static final int SERVER_PORT = 12345;
     private static Socket socket;
-    private static Socket socketCentral;
     private static ObjectOutputStream out;
     private static ObjectOutputStream outCentral;
     private static ObjectInputStream in;
@@ -54,7 +53,7 @@ public class Client {
     //Connection au serveur centrale
     public static boolean connectToServer(){
         try {
-            socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
+            Socket socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
             outCentral = new ObjectOutputStream(socketCentral.getOutputStream());
             inCentral = new ObjectInputStream(socketCentral.getInputStream());
 
@@ -126,7 +125,7 @@ public class Client {
 
 
     // Method to select a file and send it
-    public void sendFile(String sender,String recipient) {
+    public void sendFile(String sender,String recipient, String recipientAddress) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select File to Send");
         File selectedFile = fileChooser.showOpenDialog(null);
@@ -136,7 +135,7 @@ public class Client {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
                 FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "File Upload", fileName, fileData,recipient);
-                Client.sendMessage(fileMessage); // Use your sendMessage method to send the file
+                Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
                 System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
                 System.err.println("[CLIENT] Error reading file: " + e.getMessage());
@@ -390,13 +389,5 @@ public class Client {
         }
         return null;
     }
-    public static void main(String[] args) {
-        if (connect()) {
-            // Example of sending a message
-            Message message = new Message("ClientApp", "TEXT", "Hello Server!");
-            sendMessage(message);
-        } else {
-            System.err.println("Failed to connect to the server.");
-        }
-    }
+
 }
