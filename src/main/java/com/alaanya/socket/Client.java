@@ -14,7 +14,6 @@ import java.nio.file.Files;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int SERVER_PORT = 12345;
     private static Socket socket;
     private static Socket socketCentral;
@@ -35,10 +34,10 @@ public class Client {
 
     private static NotificationListener notificationListener;
 
-    public static boolean connect() {
+    public static boolean connect(String recipientAddress) {
         //Connection au serveur d'un client pour echanger
         try {
-            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+            socket = new Socket(recipientAddress, SERVER_PORT);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
             isConnected = true;
@@ -58,10 +57,6 @@ public class Client {
             socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
             outCentral = new ObjectOutputStream(socketCentral.getOutputStream());
             inCentral = new ObjectInputStream(socketCentral.getInputStream());
-
-            //Envoie du userId
-            outCentral.writeObject((String) userId);
-            outCentral.flush();
 
             isConnectedToServer = true;
             System.out.println("[CLIENT] Connected to central server");
@@ -101,10 +96,10 @@ public class Client {
 //            isConnected = false;
 //        }
 //    }
-    public static void sendMessage(Message message) {
+    public static void sendMessage(Message message, String recipientAddress) {
         if (!isConnected) {
-            System.err.println("[CLIENT] Not connected to server.  Attempting to reconnect.");
-            if (!connect()) {
+            System.err.println("[CLIENT] Not connected to server recipient.  Attempting to reconnect.");
+            if (!connect(recipientAddress)) {
                 System.err.println("[CLIENT] Reconnection failed. Message not sent.");
                 return;
             }
@@ -117,10 +112,10 @@ public class Client {
         } catch (SocketException se) {
             System.err.println("[CLIENT] SocketException while sending. Reconnecting..." + se.getMessage());
             isConnected = false;
-            if (!connect()) {
+            if (!connect(recipientAddress)) {
                 System.err.println("[CLIENT] Reconnection failed. Message not sent.");
             } else {
-                sendMessage(message); // Try sending again after reconnecting
+                sendMessage(message,recipientAddress); // Try sending again after reconnecting
             }
         } catch (IOException e) {
             System.err.println("[CLIENT] Error sending message: " + e.getMessage());
@@ -311,7 +306,7 @@ public class Client {
         try {
             // Send request for user's address
             Message requestMessage = new Message("SERVER", "AUTHENTICATE_USER", userId+"&&"+password);
-            connectToServer();
+            //connectToServer();
             outCentral.writeObject(requestMessage);
             outCentral.flush();
             System.out.println("[CLIENT] Authentificate request starting for : " + userId);
@@ -364,7 +359,7 @@ public class Client {
         try {
             // Send request for user's address
             Message requestMessage = new Message("SERVER", "GET_USER", military_id);
-            connectToServer();
+            //connectToServer();
             outCentral.writeObject(requestMessage);
             outCentral.flush();
             System.out.println("[CLIENT] GETTING request starting for : " + military_id);

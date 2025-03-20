@@ -53,6 +53,7 @@ public class MainController {
     @FXML private VBox chatAreaVBox;
 
     private User user;
+    private static String recipientAddress;
     private ObservableList<String> contacts = FXCollections.observableArrayList();
     private ObservableList<String> contactList = FXCollections.observableArrayList();
 
@@ -69,8 +70,8 @@ public class MainController {
                         Client.requestAddress(userId, notification -> {
                             Platform.runLater(() -> {
                                 if ("ADDRESS_RESPONSE".equals(notification.getType())) {
-                                    String userAddress = notification.getMessage();
-                                    System.out.println("[CLIENT] Address for " + newValue + ": " + userAddress);
+                                    recipientAddress = notification.getMessage();
+                                    System.out.println("[CLIENT] Address for " + newValue + ": " + recipientAddress);
                                     // Use this address for further actions like starting an audio call
                                 } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
                                     System.err.println("[CLIENT] Address not found for user: " + newValue);
@@ -275,9 +276,8 @@ public class MainController {
             if (recipientId != null) {
                 Message message = new Message(user.getMilitaryId(), "MESSAGE",messageText, recipientId);
                 //Recupération de l'address IP actuell du destinataire
-                // String SERVER_ADDRESS = Client.sendMessageToServer(
-                //Client.sentMessage(message,SERVER_ADDRESS)
-                Client.sendMessage(message); // Envoi du message via la classe Client
+                //RecipentAddress
+                Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
 
                 chatTextArea.appendText("Vous (à " + selectedContact + "): " + messageText + "\n");
                 messageTextField.clear();
@@ -314,7 +314,7 @@ public class MainController {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
                 FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "file upload", fileName, fileData,recipientId);
-                Client.sendMessage(fileMessage); // Use your sendMessage method to send the file
+                Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
                 System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
                 System.err.println("[CLIENT] Error reading file: " + e.getMessage());

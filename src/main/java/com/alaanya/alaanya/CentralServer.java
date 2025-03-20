@@ -46,11 +46,6 @@ public class CentralServer {
                  ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream())) {
 
                 Object request = in.readObject();
-                if (request instanceof String){
-                    String userId = (String)request;
-                    System.out.println("[CENTRAL SERVER] Connected to client: " +userId + " : " +clientSocket.getInetAddress());
-                    userIPs.put(userId,clientSocket.getInetAddress().getHostAddress());
-                }
 
                 if (request instanceof Message) {
                     System.out.println("type de message reçu "+ ((Message) request).getType());
@@ -70,6 +65,11 @@ public class CentralServer {
                             System.out.println("AUTHENNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTIFICATE");
                             String militaryId = ((Message) request).getContent().split("&&")[0];
                             String password = ((Message) request).getContent().split("&&")[1];
+
+                            System.out.println("[CENTRAL SERVER] Authrnification to client: " +militaryId + " : " +clientSocket.getInetAddress());
+                            userIPs.put(militaryId,clientSocket.getInetAddress().getHostAddress());
+
+
                             //cONNECTION A LA BD POUR VERIFIER LES INFOS
                             try (Connection conn = DatabaseCentral.getConnection()) {
                                 String sql = "SELECT * FROM users WHERE military_id = ?";
