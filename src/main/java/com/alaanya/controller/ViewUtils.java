@@ -1,21 +1,25 @@
 package com.alaanya.controller;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import com.alaanya.model.User;
 import com.alaanya.socket.Client;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class ViewUtils {
 
-    public static void loadMainView(String militaryId, Label errorLabel) {
+    public static void loadMainView(String militaryId, Label errorLabel , int statut) {
+        /*
+         * statut 1 = online , 0 = notonline
+         */
         try {
             FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource("/com/alaanya/view/MainView.fxml"));
             Parent root = loader.load();
@@ -23,11 +27,12 @@ public class ViewUtils {
             MainController mainController = loader.getController();
 
             // Récupérer l'utilisateur depuis la base de données
+          
             System.out.println("Recuperation des données depuis la bd centrale");
             User user = getUserByMilitaryId(militaryId);
             if (user != null) {
                 System.out.println("Données recu : acces à l'application");
-                mainController.setUser(user);
+                mainController.setUser(user,statut);
             } else {
                 errorLabel.setText("Utilisateur introuvable dans la base de données.");
                 return;

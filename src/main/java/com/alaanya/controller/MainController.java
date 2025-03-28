@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.alaanya.MainApp;
 import com.alaanya.database.Database;
+import com.alaanya.model.Contact;
 import com.alaanya.model.User;
 import com.alaanya.socket.Client;
 import com.alaanya.socket.FileMessage;
@@ -43,14 +44,17 @@ public class MainController {
     @FXML private Label gradeLabel;
     @FXML private Label divisionLabel;
     @FXML private Label idLabel;
+    @FXML private Label statut;
     @FXML private Label selectedUserLabel;
     @FXML private ListView<String> contactListView;
     @FXML private TextArea chatTextArea;
+     @FXML private VBox chatVBox;
     @FXML private TextField messageTextField;
     @FXML private TextField searchTextField;
     @FXML private ListView<String> searchResultsListView;
     @FXML private VBox defaultCenterVBox;
     @FXML private VBox chatAreaVBox;
+   
 
     private User user;
     private static String recipientAddress;
@@ -67,6 +71,7 @@ public class MainController {
                         showChatArea(true); // Show chat area when contact is selected
                         String userId =  extractContactIdFromContactList(newValue.substring(0, newValue.length() - 1));
 
+                        //envoie une requete de recupperation d'addresse IP
                         Client.requestAddress(userId, notification -> {
                             Platform.runLater(() -> {
                                 if ("ADDRESS_RESPONSE".equals(notification.getType())) {
@@ -93,21 +98,28 @@ public class MainController {
 
     private void showChatArea(boolean show) {
         chatAreaVBox.setVisible(show);
+       
         defaultCenterVBox.setVisible(!show);
     }
 
-    public void setUser(User user) {
+    public void setUser(User user,int state) {
         this.user = user;
         Platform.runLater(() -> {
             userLabel.setText(user.getUsername());
             gradeLabel.setText("Grade: " + user.getGrade());
             divisionLabel.setText("Division: " + user.getDivision());
             idLabel.setText("Identifiant Militaire: " + user.getMilitaryId());
+           if (state == 1)
+            statut.setText("STATE :online");
+           else
+           statut.setText("STATE : disconnected");
 
             try {
                 contacts.clear();
-                getContactsFromDatabase(user.getMilitaryId(), contacts);
-                contactListView.setItems(contacts);
+            
+                contactList.add(Contact.getContactsFromDatabase(user.getMilitaryId(), contacts));
+
+                contactListView.setItems(contactList);
 
                 contactListView.setOnMouseClicked(event -> {
 
@@ -130,25 +142,7 @@ public class MainController {
         return user;
     }
 
-    private void getContactsFromDatabase(String militaryId, List<String> contactsList) throws SQLException {
-        String sql = "SELECT u.username, u.division, u.military_id " + // Ajouter u.military_id
-                "FROM users u " +
-                "INNER JOIN contacts c ON u.military_id = c.contact_id " +
-                "WHERE c.user_id = ?";
 
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, militaryId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String username = rs.getString("username");
-                String division = rs.getString("division");
-                String contactId = rs.getString("military_id"); // Récupérer l'ID militaire
-                contactsList.add(username + " (" + division + " - " + contactId + ")"); // Ajouter l'ID militaire à la chaîne
-            }
-        }
-    }
 
 
     /**
@@ -156,7 +150,7 @@ public class MainController {
      */
     @FXML
     private void addContact() {
-        String selectedContact = searchResultsListView.getSelectionModel().getSelectedItem(); //rECUPERE LE CONTACT SELECTIONNÉ
+        String selectedContact = searchResultsListView.getSelectionModel().getSelectedItem(); //RECUPERE LE CONTACT SELECTIONNÉ
         System.out.println("Ajout de "+selectedContact);
         if ((selectedContact = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1))) != null) {
             // Remove the extra parenthesis if it exists
@@ -173,7 +167,12 @@ public class MainController {
                 //Recupere l'id de l'utilisateur
                 String userId = user.getMilitaryId();
                 System.out.println("Table de conatact "+ userId + ": "+ contactId);
-                addContactToDatabase(userId, contactId);
+                try{
+                    Contact.addContactToDatabase(userId, contactId);
+                } catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+              
 
             } else {
                 System.err.println("[ERROR] No user logged in");
@@ -187,41 +186,7 @@ public class MainController {
     }
 
 
-    /**
-     * Ajoute un contact à la base de données.
-     * @param userId L'ID militaire de l'utilisateur actuel.
-     * @param contactId L'ID militaire du contact à ajouter.
-     * @throws SQLException Si une erreur de base de données se produit.
-     */
-
-    private void addContactToDatabase(String userId, String contactId) {
-        if (!userExists(contactId)) {
-            System.err.println("[SERVER] Contact ID " + contactId + " does not exist in the users table.");
-            // Handle the error appropriately.  For example, show an error message to the user.
-            return; // Do not proceed with the insertion
-        }
-
-        String sql = "INSERT INTO contacts (user_id, contact_id) VALUES (?, ?)";
-
-        //aPRES je vais retirer ca ici (Factory)
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, userId);
-            stmt.setString(2, contactId);
-
-            stmt.executeUpdate();
-            System.out.println("[SERVER] Contact added: " + userId + " -> " + contactId);
-
-            // Update the contact list
-            //loadContacts();
-
-        } catch (SQLException e) {
-            System.err.println("[SERVER] Error adding contact: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
+    
     private void loadContacts() {
 
         contactList.clear(); // Clear the previous list
@@ -246,20 +211,7 @@ public class MainController {
             e.printStackTrace();
         }
     }
-    // Helper method to check if a user exists in the users table
-    private boolean userExists(String militaryId) {
-        String sql = "SELECT 1 FROM users WHERE military_id = ?";
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, militaryId);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next(); // Returns true if a user with the given militaryId exists
-        } catch (SQLException e) {
-            System.err.println("[SERVER] Error checking if user exists: " + e.getMessage());
-            e.printStackTrace();
-            return false; // Assume user doesn't exist in case of an error
-        }
-    }
+    
 
     /**
      * Sends a message to the selected contact.
@@ -279,7 +231,8 @@ public class MainController {
                 //RecipentAddress
                 Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
 
-                chatTextArea.appendText("Vous (à " + selectedContact + "): " + messageText + "\n");
+                MessageController.addMessage(chatVBox,user.getMilitaryId(),message.getContent(),true);
+
                 messageTextField.clear();
             } else {
                 System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
@@ -332,14 +285,16 @@ public class MainController {
      */
     private void loadConversation(String currentUserId, String contactId) {
         try {
-            chatTextArea.clear();
+            //chatTextArea.clear();
 
             List<Message> conversation = getConversationFromDatabase(currentUserId, contactId);
 
             for (Message message : conversation) {
                 String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
                 System.out.println("msg lu :" +  message.getContent());
-                chatTextArea.appendText(sender + ": " + message.getContent() + "\n");
+                //chatTextArea.appendText(sender + ": " + message.getContent() + "\n");
+                MessageController.addMessage(chatVBox,sender,message.getContent(),sender.equals("Vous")?true:false);
+              
             }
         } catch (SQLException e) {
             System.err.println("Erreur lors du chargement de la conversation : " + e.getMessage());

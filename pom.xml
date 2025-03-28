@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>8.3.0</version> <!-- Utilisez la dernière version stable -->
+            <version>8.3.0</version>
         </dependency>
 
         <dependency>
@@ -49,6 +49,8 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        
+
     </dependencies>
 
     <build>

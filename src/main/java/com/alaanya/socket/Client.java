@@ -1,16 +1,20 @@
 package com.alaanya.socket;
 
-import com.alaanya.model.User;
-import javafx.application.Platform;
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-
-import javafx.stage.FileChooser;
-import java.io.IOException;
-import java.io.File;
 import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import com.alaanya.database.Database;
+import com.alaanya.model.User;
+
+import javafx.application.Platform;
+import javafx.stage.FileChooser;
 
 
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
@@ -297,9 +301,13 @@ public class Client {
             throw new RuntimeException(e);
         }
     }
-    public static void authUserRequest(String userId,String password, NotificationListener listener) {
+    public static void authUserRequest(String userId,String password, NotificationListener listener) throws SQLException{
         if (!isConnectedToServer) {
             System.err.println("[CLIENT] Not connected to central server.");
+            //RECUPERER LES INFORMATIONS EN LOCAL
+            String msg =  Database.authUser(userId, password);
+            listener.onNotificationReceived(new Notification(msg.split("&&")[0], msg.split("&&")[1],5,"LOCALHOST")); // Notify listener with the response
+            System.out.println("[CLIENT] Authentification response: "+msg.split("&&")[0] +" : "+msg.split("&&")[1]);
             return;
         }
 
@@ -315,7 +323,7 @@ public class Client {
             Object response = inCentral.readObject();
             if (response instanceof Notification notification) {
                 listener.onNotificationReceived(notification); // Notify listener with the response
-                System.out.println("[CLIENT] Authentificate response: " + notification.getMessage());
+                System.out.println("[CLIENT] Authentification response: " + notification.getMessage());
             } else {
                 System.err.println("[CLIENT] Unexpected response type: " + response.getClass().getName());
             }
@@ -324,7 +332,7 @@ public class Client {
         }
     }
 
-    public static void addUserRequest(String military_id, String password_hash, String grade, String division, int clearance_level, String username ){
+    public static void addUserRequest(String military_id, String password_hash, String grade, String division, int clearance_level, String username ) throws SQLException,NoSuchAlgorithmException{
         if (!isConnectedToServer) {
             System.err.println("[CLIENT] Not connected to central server.");
             return;
@@ -341,6 +349,20 @@ public class Client {
 
             // Read response
             Object response = inCentral.readObject();
+            if (response instanceof Notification notification) {
+               
+                System.out.println("[CLIENT] Authentificate response: " + notification.getMessage());
+                if (notification.getMessage().equals("TRUE")){
+                    //ENREGISTREMENT DE L'USER EN LOCAL
+                    
+                    User user = new User(military_id, grade, division, clearance_level, username);
+                    user.setPasswordHash(password_hash);
+                    Database.addUser(user);
+                }
+
+            } else {
+                System.err.println("[CLIENT] Unexpected response type: " + response.getClass().getName());
+            }
 //
         } catch (IOException e) {
             System.err.println("[CLIENT] Error requesting SAVE: " + e.getMessage());
@@ -348,15 +370,17 @@ public class Client {
             throw new RuntimeException(e);
         }
     }
-    public static User getUserRequest(String military_id){
+    public static User getUserRequest(String military_id) throws SQLException{
         //METHODE PERMETTANT DE RECUPERER LES INFORMATINOS SUR L'USER
-        if (!isConnectedToServer) {
-            // VERIFICATION DE LA CONNEXION AVEC LA SERVEEUR CENTRAL
-            System.err.println("[CLIENT] Not connected to central server.");
-            return null;
+         if (!isConnectedToServer) {
+             // VERIFICATION DE LA CONNEXION AVEC LA SERVEEUR CENTRAL
+             
+             System.err.println("[CLIENT] Not connected to central server.");
+            return Database.getUser(military_id);
         }
 
         try {
+            connectToServer();
             // Send request for user's address
             Message requestMessage = new Message("SERVER", "GET_USER", military_id);
             //connectToServer();

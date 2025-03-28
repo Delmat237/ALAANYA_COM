@@ -1,13 +1,13 @@
 package com.alaanya;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
+@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","exports"})
 
 public class MainApp extends Application {
 
@@ -31,8 +31,6 @@ public class MainApp extends Application {
 
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);
-            //add style sheet
-            //scene.getStylesheets().add(MainApp.class.getResource("/com/alaanya/view/css/style.css").toExternalForm());
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IOException e) {

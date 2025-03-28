@@ -28,6 +28,8 @@ public class RegisterController {
 
     @FXML
     public void initialize() {
+
+        //Initialisation des grades
         gradeCombo.getItems().addAll(
                 "Soldat", "Caporal", "Sergent", "Lieutenant",
                 "Capitaine", "Commandant", "Colonel", "Général"
@@ -43,6 +45,8 @@ public class RegisterController {
     private void handleRegistration() {
         try {
             String militaryId = militaryIdField.getText().toUpperCase();
+            //Mise à jour de la variable static, userId , permettant de savoir l'utilisateur courant
+
             Client.userId = militaryId;
             // 1. Validation du format AA-12345 (section 4.1)
             if (!militaryId.matches("[A-Z]{2}-\\d{5}")) {
@@ -59,6 +63,8 @@ public class RegisterController {
                 throw new IllegalArgumentException("Mot de passe trop faible (5 caractères minimum)");
             }
 
+            //instanciation d'un utilisateur
+
             User user = new User(
                     militaryIdField.getText().toUpperCase(), // Normalisation de l'ID
                     gradeCombo.getValue(),
@@ -67,23 +73,27 @@ public class RegisterController {
                     usernameIdField.getText()
             );
 
+            //AJout du mot de passe haché en avance
             user.setPasswordHash(User.hashPassword(passwordField.getText()));
 
             System.out.println("REGISTRATION : " +User.hashPassword(passwordField.getText()));
+
+            //verification prealable si une connection peut etre etablit avec le serveur centrale
             if (Client.connectToServer()){
                
-                //l'enregistrement se fait dans la bd du serveur distants
+                //l'enregistrement se fait dans la bd du serveur distants et en local  si tous se passe bien du coté serveur centrale
                 Client.addUserRequest(user.getMilitaryId(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getClearanceLevel(),user.getUsername());
 
             }
 
+          
+
             // Ajout du contact par défaut après l'enregistrement réussi de l'utilisateur
-            addDefaultContact(militaryId); //ceci sera supprimer ou amelioré
+            //addDefaultContact(militaryId); //ceci sera supprimer ou amelioré
 
             // Utilisation de la méthode de ViewUtils pour charger la vue principale
-            ViewUtils.loadMainView(user.getMilitaryId(), errorLabel);
-
             errorLabel.setText("Compte créé avec succès !");
+            ViewUtils.loadMainView(user.getMilitaryId(), errorLabel,1);
 
         } catch (SQLException | NoSuchAlgorithmException e) {
             errorLabel.setText("Erreur : " + e.getMessage());
@@ -101,7 +111,7 @@ public class RegisterController {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             // Ajouter l'ID militaire de l'utilisateur comme contact par défaut (exemple)
-            String defaultContactId = "AA-12345"; // ID militaire du contact par défaut
+            String defaultContactId = "QQ-12345"; // ID militaire du contact par défaut
             stmt.setString(1, militaryId);
             stmt.setString(2, defaultContactId);
             stmt.executeUpdate();

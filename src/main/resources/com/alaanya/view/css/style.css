@@ -111,6 +111,8 @@
     -fx-padding: 0 0 0.5em 0; /* Marge inférieure */
 }
 
+
+
 /* -------------------------------------------------------
    Zone de chat (style personnalisé)
    ------------------------------------------------------- */
@@ -131,6 +133,11 @@
 .chat-area .text-field  {
     -fx-background-color: #779cc3; /* Fond des champs de texte */
     -fx-text-fill: #ECF0F1; /* Couleur du texte */
+}
+.state{
+    -fx-text-fill: #4CAF50;
+    -fx-background-color: #2143a1; /* Vert */
+    -fx-border-radius :50%;
 }
 
 /* -------------------------------------------------------
