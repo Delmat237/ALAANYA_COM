@@ -98,7 +98,6 @@ public class MainController {
 
     private void showChatArea(boolean show) {
         chatAreaVBox.setVisible(show);
-       
         defaultCenterVBox.setVisible(!show);
     }
 
@@ -117,7 +116,8 @@ public class MainController {
             try {
                 contacts.clear();
             
-                contactList.add(Contact.getContactsFromDatabase(user.getMilitaryId(), contacts));
+                //Recupération des contacts de l'utilisateur
+                contactList.add(Database.getContacts(user.getMilitaryId(), contacts));
 
                 contactListView.setItems(contactList);
 
@@ -142,9 +142,6 @@ public class MainController {
         return user;
     }
 
-
-
-
     /**
      * Ajoute un contact à la liste de contacts de l'utilisateur.
      */
@@ -168,11 +165,12 @@ public class MainController {
                 String userId = user.getMilitaryId();
                 System.out.println("Table de conatact "+ userId + ": "+ contactId);
                 try{
-                    Contact.addContactToDatabase(userId, contactId);
+                    //Enregistre le contact dans la BD
+                    Database.addContact(userId,contactId,0,"New Contact");
+
                 } catch(Exception e){
                     System.out.println(e.getMessage());
                 }
-              
 
             } else {
                 System.err.println("[ERROR] No user logged in");
@@ -184,34 +182,6 @@ public class MainController {
             //Handle the error by notifiying the user that they did not select the text
         }
     }
-
-
-    
-    private void loadContacts() {
-
-        contactList.clear(); // Clear the previous list
-
-        String sql = "SELECT u.military_id FROM users u " +
-                "INNER JOIN contacts c ON u.military_id = c.contact_id " +
-                "WHERE c.user_id = ?";  // Assuming c.user_id is the current user
-
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, user.getMilitaryId());  //  userID of the currently logged-in user
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                contactList.add(rs.getString("military_id"));
-                contactListView.getItems().add(rs.getString("military_id"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error loading contacts: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    
 
     /**
      * Sends a message to the selected contact.
@@ -228,9 +198,13 @@ public class MainController {
             if (recipientId != null) {
                 Message message = new Message(user.getMilitaryId(), "MESSAGE",messageText, recipientId);
                 //Recupération de l'address IP actuell du destinataire
+                //LOGIQUE ICI
+
+
                 //RecipentAddress
                 Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
 
+                //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getMilitaryId(),message.getContent(),true);
 
                 messageTextField.clear();
@@ -267,7 +241,13 @@ public class MainController {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
                 FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "file upload", fileName, fileData,recipientId);
+
                 Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
+
+                //Ajout du fichier dans la zone de chat
+
+                FileController.addFile(chatVBox,"com/alaanya/view/images/file.png",fileName,true);
+
                 System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
                 System.err.println("[CLIENT] Error reading file: " + e.getMessage());
@@ -285,14 +265,13 @@ public class MainController {
      */
     private void loadConversation(String currentUserId, String contactId) {
         try {
-            //chatTextArea.clear();
 
             List<Message> conversation = getConversationFromDatabase(currentUserId, contactId);
 
             for (Message message : conversation) {
                 String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
                 System.out.println("msg lu :" +  message.getContent());
-                //chatTextArea.appendText(sender + ": " + message.getContent() + "\n");
+
                 MessageController.addMessage(chatVBox,sender,message.getContent(),sender.equals("Vous")?true:false);
               
             }

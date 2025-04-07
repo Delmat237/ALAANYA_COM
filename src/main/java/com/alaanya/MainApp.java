@@ -1,25 +1,34 @@
 package com.alaanya;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+
 @SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","exports"})
 
 public class MainApp extends Application {
 
+    private static final Logger LOGGER = Logger.getLogger(MainApp.class.getName());
     private static Stage primaryStage;
     private GridPane rootLayout;
 
     @Override
     public void start(Stage primaryStage) {
         MainApp.primaryStage = primaryStage;
-        MainApp.primaryStage.setTitle("ALAANYA-COM - Application de Communication Militaire");
-
+        configureStage();
         initRootLayout();
+    }
+
+    private void configureStage() {
+        primaryStage.setTitle("ALAANYA-COM - Application de Communication Militaire");
+        //primaryStage.getIcons().add(new Image("/com/alaanya/resources/com/alaanya/view/images/alaanya-com.png"));
+       // primaryStage.setResizable(false);
     }
 
     public void initRootLayout() {
@@ -33,8 +42,10 @@ public class MainApp extends Application {
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
+            
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Erreur de chargement FXML", e);
+            System.exit(1);
         }
     }
 

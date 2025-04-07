@@ -17,7 +17,7 @@ import javafx.application.Platform;
 import javafx.stage.FileChooser;
 
 
-@SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
+@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal"})
 
 public class Client {
 
@@ -77,32 +77,11 @@ public class Client {
     }
 
 
-
-//    public static void sendMessageToServer(Message message){
-//        if (!isConnectedToServer) {
-//            System.err.println("[CLIENT] Not connected to central server.  Attempting to reconnect.");
-//            if (!connectToServer()) {
-//                System.err.println("[CLIENT] Reconnection failed. Message not sent.");
-//                return;
-//            }
-//        }
-//        try {
-//            outCentral.writeObject(message);
-//            outCentral.flush();
-//            System.out.println("[CLIENT] Message sent: " + message.getContent());
-//        } catch (SocketException se) {
-//            System.err.println("[CLIENT] SocketException while sending. Reconnecting..." + se.getMessage());
-//            isConnectedToServer = false;
-//            if (!connectToServer()) {
-//                System.err.println("[CLIENT] Reconnection failed. Message not sent.");
-//            } else {
-//                sendMessageToServer(message); // Try sending again after reconnecting
-//            }
-//        } catch (IOException e) {
-//            System.err.println("[CLIENT] Error sending message: " + e.getMessage());
-//            isConnected = false;
-//        }
-//    }
+    /*
+     * params 
+     * message : Message tha we want to send 
+     * recipientAddress : Current address of receiver
+     */
     public static void sendMessage(Message message, String recipientAddress) {
         if (!isConnected) {
             System.err.println("[CLIENT] Not connected to server recipient.  Attempting to reconnect.");
@@ -110,6 +89,8 @@ public class Client {
                 System.err.println("[CLIENT] Reconnection failed. Message not sent.");
                 return;
             }
+
+            //sI LE CLIENT N'EST PAS ONLINE LE MESSAGE N'EST PAS ENVOYÉ
         }
 
         try {
@@ -153,48 +134,6 @@ public class Client {
         }
     }
 
-//    private static void startCentralReceiving() {
-//        Thread receiveThread = new Thread(() -> {
-//            try {
-//                while (isConnectedToServer) {
-//                    try {
-//                        Object receivedObject = inCentral.readObject();
-//
-//                        if (receivedObject == null) {
-//                            System.err.println("[CLIENT] Received null object.  Connection may be closed.");
-//                            isConnectedToServer = false;
-//                            break;
-//                        }
-//
-//                        if (receivedObject instanceof Message) {
-//                            Message receivedMessage = (Message) receivedObject;
-//                            System.out.println("[CLIENT] Received message: " + receivedMessage.getContent() + " from " + receivedMessage.getSender());
-//
-//                        } else {
-//                            System.err.println("[CLIENT] Received unknown object type: " + receivedObject.getClass().getName());
-//                        }
-//
-//                    } catch (ClassNotFoundException e) {
-//                        System.err.println("[CLIENT] ClassNotFoundException: " + e.getMessage());
-//                        isConnectedToServer = false;
-//                        break;
-//                    } catch (SocketException e) {
-//                        System.err.println("[CLIENT] SocketException while receiving: " + e.getMessage());
-//                        isConnectedToServer = false;
-//                        break;
-//                    } catch (IOException e) {
-//                        System.err.println("[CLIENT] IOException while receiving: " + e.getMessage());
-//                        isConnectedToServer = false;
-//                        break;
-//                    }
-//                }
-//            } finally {
-//                closeConnection();
-//            }
-//        });
-//        receiveThread.setDaemon(true);
-//        receiveThread.start();
-//    }
     private static void startReceiving() {
         Thread receiveThread = new Thread(() -> {
             try {
@@ -270,6 +209,13 @@ public class Client {
         notificationListener = listener;
     }
 
+    /*
+     * params
+     * userId : id of the user
+     * NotificationListener : listener to notify when the address is received
+     * ACTION :  
+     * allow to take user address
+     */
     public static void requestAddress(String userId, NotificationListener listener) {
         if (!isConnectedToServer) {
             System.err.println("[CLIENT] Not connected to central server.");
@@ -302,6 +248,8 @@ public class Client {
         }
     }
     public static void authUserRequest(String userId,String password, NotificationListener listener) throws SQLException{
+         connectToServer(); //etablir la connection avec le server centrale
+
         if (!isConnectedToServer) {
             System.err.println("[CLIENT] Not connected to central server.");
             //RECUPERER LES INFORMATIONS EN LOCAL
@@ -321,18 +269,26 @@ public class Client {
 
             // Read response
             Object response = inCentral.readObject();
+
             if (response instanceof Notification notification) {
                 listener.onNotificationReceived(notification); // Notify listener with the response
                 System.out.println("[CLIENT] Authentification response: " + notification.getMessage());
+
+                 //start server 
+                new Thread(() -> {
+                    System.out.println("Server started :");
+                new Server().main(null);
+                }).start();
             } else {
                 System.err.println("[CLIENT] Unexpected response type: " + response.getClass().getName());
             }
+
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("[CLIENT] Error requesting authentificate: " + e.getMessage());
         }
     }
 
-    public static void addUserRequest(String military_id, String password_hash, String grade, String division, int clearance_level, String username ) throws SQLException,NoSuchAlgorithmException{
+    public static void addUserRequest(String military_id, String password_hash, String grade, String division, String username ) throws SQLException,NoSuchAlgorithmException{
         if (!isConnectedToServer) {
             System.err.println("[CLIENT] Not connected to central server.");
             return;
@@ -341,7 +297,7 @@ public class Client {
         try {
             // Send request for user's address
             Message requestMessage = new Message("SERVER", "SAVE_USER", military_id+"&&"+
-                    password_hash+"&&"+grade+"&&"+division+"&&"+ clearance_level+"&&"+ username);
+                    password_hash+"&&"+grade+"&&"+division+"&&"+ "&&"+ username);
             connectToServer();
             outCentral.writeObject(requestMessage);
             outCentral.flush();
@@ -351,11 +307,11 @@ public class Client {
             Object response = inCentral.readObject();
             if (response instanceof Notification notification) {
                
-                System.out.println("[CLIENT] Authentificate response: " + notification.getMessage());
+                System.out.println("[CLIENT] SAVING response: " + notification.getMessage());
                 if (notification.getMessage().equals("TRUE")){
                     //ENREGISTREMENT DE L'USER EN LOCAL
                     
-                    User user = new User(military_id, grade, division, clearance_level, username);
+                    User user = new User(military_id, grade, division, username);
                     user.setPasswordHash(password_hash);
                     Database.addUser(user);
                 }
@@ -400,8 +356,7 @@ public class Client {
                     return new User(notification.getMessage().split("&&")[0],
                             notification.getMessage().split("&&")[1],
                             notification.getMessage().split("&&")[2],
-                            Integer.parseInt(notification.getMessage().split("&&")[3]),
-                            notification.getMessage().split("&&")[4]);
+                            notification.getMessage().split("&&")[3]);
                 }
 
             } else {

@@ -11,27 +11,25 @@ import java.util.Base64;
 import com.alaanya.database.Database;
 public class User {
 
-    private String militaryId;
+    private String militaryId; //numero telephone
     private String passwordHash;
     private String grade;
     private String division;
-    private int clearanceLevel;
     private boolean twoFactorEnabled;
     private String sessionToken;
     private String lastLogin;
     private String username;
 
 
-    public User(String militaryId, String grade, String division, int clearanceLevel, String username) {
+    public User(String militaryId, String grade, String division,String username) {
         this.militaryId = militaryId;
         this.grade = grade;
         this.division = division;
-        this.clearanceLevel = clearanceLevel;
         this.username = username;
     }
 
     public static boolean exists(String militaryId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM users WHERE military_id = ?";
+        String sql = "SELECT COUNT(*) FROM users WHERE phone_number = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -58,9 +56,9 @@ public class User {
     }
 
     public void setMilitaryId(String militaryId) {
-        if (!militaryId.matches("[A-Z]{2}-\\d{5}")) {
-            throw new IllegalArgumentException("Format d'ID militaire invalide (AA-12345)");
-        }
+        // if (!militaryId.matches("[A-Z]{2}-\\d{5}")) {
+        //     throw new IllegalArgumentException("Format d'ID militaire invalide (AA-12345)");
+        // }
         this.militaryId = militaryId;
     }
 
@@ -89,13 +87,6 @@ public class User {
         this.division = division;
     }
 
-    public int getClearanceLevel() {
-        return clearanceLevel;
-    }
-
-    public void setClearanceLevel(int clearanceLevel) {
-        this.clearanceLevel = clearanceLevel;
-    }
 
     public boolean isTwoFactorEnabled() {
         return twoFactorEnabled;

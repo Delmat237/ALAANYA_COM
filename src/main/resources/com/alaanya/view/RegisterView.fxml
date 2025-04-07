@@ -13,8 +13,9 @@
 
     <Label text="Enregistrement Militaire" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
 
-    <Label text="ID Militaire (AA-12345):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="militaryIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+    <Label text="TELEPHONE (+2376********):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="militaryIdField" GridPane.columnIndex="1" GridPane.rowIndex="1" 
+    text="+2376"/>
 
     <Label text="USERNAME :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
     <TextField fx:id="usernameIdField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>

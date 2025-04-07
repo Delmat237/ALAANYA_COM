@@ -1,20 +1,21 @@
 package com.alaanya.controller;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import com.alaanya.database.DatabaseCentral;
 import com.alaanya.model.User;
 import com.alaanya.socket.Client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
 
@@ -48,14 +49,14 @@ public class RegisterController {
             //Mise à jour de la variable static, userId , permettant de savoir l'utilisateur courant
 
             Client.userId = militaryId;
-            // 1. Validation du format AA-12345 (section 4.1)
-            if (!militaryId.matches("[A-Z]{2}-\\d{5}")) {
-                throw new IllegalArgumentException("Format ID militaire invalide");
-            }
+            // 1. Validation du format + 2376********
+            // if (!militaryId.matches("s{1}\\d{12}")) {
+            //     throw new IllegalArgumentException("Numéro telephone invalide");
+            // }
 
             // 2. Vérification existence utilisateur (section 7 - Sécurité)
             if(User.exists(militaryId)) {
-                throw new SQLException("ID militaire déjà enregistré");
+                throw new SQLException("Numéro déjà enregistré");
             }
 
             // 3. Vérification complexité mot de passe (section 7)
@@ -66,10 +67,9 @@ public class RegisterController {
             //instanciation d'un utilisateur
 
             User user = new User(
-                    militaryIdField.getText().toUpperCase(), // Normalisation de l'ID
+                    militaryIdField.getText(), 
                     gradeCombo.getValue(),
                     divisionField.getText().trim(),
-                    calculateClearanceLevel(gradeCombo.getValue()),
                     usernameIdField.getText()
             );
 
@@ -82,56 +82,32 @@ public class RegisterController {
             if (Client.connectToServer()){
                
                 //l'enregistrement se fait dans la bd du serveur distants et en local  si tous se passe bien du coté serveur centrale
-                Client.addUserRequest(user.getMilitaryId(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getClearanceLevel(),user.getUsername());
+                Client.addUserRequest(user.getMilitaryId(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getUsername());
 
             }
 
-          
-
-            // Ajout du contact par défaut après l'enregistrement réussi de l'utilisateur
-            //addDefaultContact(militaryId); //ceci sera supprimer ou amelioré
-
             // Utilisation de la méthode de ViewUtils pour charger la vue principale
             errorLabel.setText("Compte créé avec succès !");
-            ViewUtils.loadMainView(user.getMilitaryId(), errorLabel,1);
+
+            //Renvoyer sur la page de Login
+            loadLoginView();
+            // ViewUtils.loadMainView(user.getMilitaryId(), errorLabel,1);
 
         } catch (SQLException | NoSuchAlgorithmException e) {
             errorLabel.setText("Erreur : " + e.getMessage());
         }
     }
 
-    /**
-     * Adds a default contact to the user after registration.
-     * @param militaryId The military ID of the registered user.
-     * @throws SQLException If a database error occurs.
-     */
-    private void addDefaultContact(String militaryId) throws SQLException {
-        String sql = "INSERT INTO contacts (user_id, contact_id) VALUES (?, ?)";
-        try (Connection conn = DatabaseCentral.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            // Ajouter l'ID militaire de l'utilisateur comme contact par défaut (exemple)
-            String defaultContactId = "QQ-12345"; // ID militaire du contact par défaut
-            stmt.setString(1, militaryId);
-            stmt.setString(2, defaultContactId);
-            stmt.executeUpdate();
-
-            System.out.println("Contact par défaut ajouté pour l'utilisateur : " + militaryId);
-
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de l'ajout du contact par défaut : " + e.getMessage());
+    @FXML
+    private void loadLoginView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/LoginView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) militaryIdField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
             e.printStackTrace();
-            // Gérer l'erreur (par exemple, afficher un message à l'utilisateur)
         }
     }
 
-    private int calculateClearanceLevel(String grade) {
-        return switch (grade) {
-            case "Général" -> 5;
-            case "Colonel" -> 4;
-            case "Commandant" -> 3;
-            case "Capitaine" -> 2;
-            default -> 1;
-        };
-    }
 }

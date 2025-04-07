@@ -17,7 +17,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","UseSpecificCatch","exports"})
+@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","unused","UseSpecificCatch","exports"})
 
 public class LoginController {
 
@@ -47,13 +47,14 @@ public class LoginController {
             //Recuperation du resultat d'authentification
             AuthenticationResult authResult = AuthentificateUser.auth(militaryId, password);
 
-            System.out.println(authResult.isAuthenticated());
+            System.out.println(authResult.isAuthenticated()); //aFFICHE LA REPONSE D'AUTHENTIFICATION
 
             if (authResult.isAuthenticated()) {
                
                 //Nous devons pouvoir acceder a la plateforme meme sans etre connecté , mais enregistré oui
                 
                 boolean isConnected = Client.connectToServer(); //verifie la connexion au serveur centrale
+                
                 if (isConnected) {
                     System.out.println("openning view");
 

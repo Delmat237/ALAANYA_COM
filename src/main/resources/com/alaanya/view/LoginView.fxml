@@ -13,7 +13,7 @@
         <URL value="@css/style.css"/>
     </stylesheets>
 
-    <Label text="Identifiant Militaire:" styleClass="login-label"
+    <Label text="TELEPHONE :" styleClass="login-label"
            GridPane.columnIndex="0" GridPane.rowIndex="0"/>
     <TextField fx:id="militaryIdField" styleClass="login-text-field"
                GridPane.columnIndex="1" GridPane.rowIndex="0"/>

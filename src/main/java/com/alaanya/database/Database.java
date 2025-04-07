@@ -8,15 +8,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 import com.alaanya.model.User;
 
 public class Database {
-    private static final String DB_PROPERTIES_FILE = "db.properties";
+    private static final String DB_PROPERTIES_FILE = "dbSqlite.properties";
     private static String URL;
-    private static String USER;
-    private static String PASSWORD;
+  
 
     static {
         Properties props = new Properties();
@@ -29,8 +29,7 @@ public class Database {
             }
             props.load(input);
             URL = props.getProperty("db.url");
-            USER = props.getProperty("db.user");
-            PASSWORD = props.getProperty("db.password");
+         
         } catch (IOException ex) {
             System.err.println("Erreur lors du chargement du fichier de configuration : " + ex.getMessage());
             ex.printStackTrace();
@@ -56,78 +55,82 @@ public class Database {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(URL);
     }
 
     private static void createDatabaseAndTable() throws SQLException {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306?allowMultiQueries=true", USER, PASSWORD); // Connexion sans base de données spécifiée
+        try (Connection conn = DriverManager.getConnection(URL);
              Statement stmt = conn.createStatement()) {
-
-            // Créer la base de données si elle n'existe pas
-            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS alaanya_db");
-
-            // Utiliser la base de données
-            stmt.executeUpdate("USE alaanya_db");
-
-            // Créer la table users si elle n'existe pas
+    
+            // Création table users
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS users (\
-                military_id VARCHAR(8) PRIMARY KEY,\
-                password_hash VARCHAR(64) NOT NULL,\
-                grade VARCHAR(50) NOT NULL,\
-                division VARCHAR(50) NOT NULL,\
-                clearance_level INT NOT NULL,\
-                username VARCHAR(255) NOT NULL\
+                CREATE TABLE IF NOT EXISTS users (
+                    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    phone_Number TEXT NOT NULL UNIQUE,
+                    password_hash TEXT NOT NULL,
+                    grade TEXT NOT NULL,
+                    division TEXT NOT NULL,
+                    profilePicture TEXT,
+                    username TEXT NOT NULL
                 )""");
-            //Créer la table contacts si elle n"existe pas
+    
+            // Création table contacts
             stmt.executeUpdate("""
-                               CREATE TABLE IF NOT EXISTS contacts (
-                                   user_id VARCHAR(8) NOT NULL,
-                                   contact_id VARCHAR(8) NOT NULL,
-                                   PRIMARY KEY (user_id, contact_id),
-                                   FOREIGN KEY (user_id) REFERENCES users(military_id),
-                                   FOREIGN KEY (contact_id) REFERENCES users(military_id)
-                               );
-                               """);
-
-            //Créer la table message
+                CREATE TABLE IF NOT EXISTS contacts (
+                    contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    contact_user_id INTEGER NOT NULL,
+                    nick_name TEXT NOT NULL,
+                    statut INTEGER CHECK(statut IN (0, 1)) DEFAULT 0,
+                    FOREIGN KEY (user_id) REFERENCES users(user_id),
+                    FOREIGN KEY (contact_user_id) REFERENCES users(user_id),
+                    UNIQUE(user_id, contact_user_id)
+                )""");
+    
+            // Création table messages
             stmt.executeUpdate("""
-                               CREATE TABLE IF NOT EXISTS messages (
-                                   id INT AUTO_INCREMENT PRIMARY KEY,
-                                   sender VARCHAR(8) NOT NULL,
-                                   recipient VARCHAR(8) NOT NULL,
-                                   content TEXT NOT NULL,
-                                   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                   FOREIGN KEY (sender) REFERENCES users(military_id),
-                                   FOREIGN KEY (recipient) REFERENCES users(military_id)
-                               );
-                               """);
+                CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_id INTEGER NOT NULL,
+                    receiver_id INTEGER NOT NULL,
+                    content TEXT NOT NULL,
+                    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+                    statut TEXT CHECK(statut IN ('sent', 'delivered', 'read')) DEFAULT 'sent',
+                    FOREIGN KEY (sender_id) REFERENCES users(user_id),
+                    FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+                )""");
         }
     }
+    
 
-    public static void addUser(User user) throws SQLException{
-        //Methode permettant d'ajouter les utilisateur
-        String sql = "INSERT INTO users (military_id, password_hash, grade, division, clearance_level, username) VALUES (?, ?, ?, ?, ?, ?)";
+    @SuppressWarnings("CallToPrintStackTrace")
+    public static void addContact(String userId,String contact_user_id,int statut,String nick_name){
+    String sql = "INSERT INTO contacts (user_id, contact_user_id,statut,nick_name) VALUES (?, ?, ? ,?)";
+        //aPRES je vais retirer ca ici (Factory)
+        try (Connection conn = Database.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                            try (Connection conn = Database.getConnection();
-                                PreparedStatement stmt = conn.prepareStatement(sql)) {
-                                
-                                stmt.setString(1, user.getMilitaryId());
-                                stmt.setString(2, user.getPasswordHash());
-                                stmt.setString(3, user.getGrade());
-                                stmt.setString(4, user.getDivision());
-                                stmt.setInt(5, user.getClearanceLevel());
-                                stmt.setString(6, user.getUsername());  // Ajout du nom d'utilisateur
+       stmt.setString(1, userId);
+       stmt.setString(2, contact_user_id);
+       stmt.setLong(3, statut);
+       stmt.setString(4,nick_name);
 
-                                stmt.executeUpdate();
- 
-    }
+       stmt.executeUpdate();
+       System.out.println("[SERVER] Contact added: " + userId + " -> " + contact_user_id);
+
+       // Update the contact list
+       //loadContacts();
+
+   } catch (SQLException e) {
+       System.err.println("[SERVER] Error adding contact: " + e.getMessage());
+       e.printStackTrace();
+   }
 }
 
  public static String authUser(String militaryId, String password) throws SQLException{
             Connection conn = Database.getConnection();
          
-            String sql = "SELECT * FROM users WHERE military_id = ?";
+            String sql = "SELECT * FROM users WHERE phone_number= ?";
              PreparedStatement stmt = conn.prepareStatement(sql);
              stmt.setString(1, militaryId);
 
@@ -152,9 +155,33 @@ public class Database {
             
         }
 
+        public static String getContacts(String militaryId, List<String> contactsList) throws SQLException {
+        System.out.println("recherche des contacts");
+
+        String sql = "SELECT u.username, u.division, u.phone_number" + // Ajouter u.phone_number
+                "FROM users u " +
+                "INNER JOIN contacts c ON u.phone_number= c.contact_id " +
+                "WHERE c.user_id = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, militaryId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String division = rs.getString("division");
+                String contactId = rs.getString("phone_number"); // Récupérer l'ID militaire
+               
+                return (username + " (" + division + " - " + contactId + ")"); // Ajouter l'ID militaire à la chaîne
+            }
+        }
+                return null;
+    }
+
         public static User getUser(String militaryId) throws SQLException{
-            String sql = "SELECT military_id, grade, division, clearance_level, username FROM users WHERE military_id = ?";
-            Connection conn = DatabaseCentral.getConnection();
+            String sql = "SELECT phone_number, grade, division, clearance_level, username FROM users WHERE phone_number= ?";
+            Connection conn = Database.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql);
               stmt.setString(1, militaryId);
             
@@ -164,8 +191,8 @@ public class Database {
              if (rs.next()) {
                                 System.out.println("[LOCALHOST] getting success (user found) for: " + militaryId);
                                 
-                                return new User( rs.getString("military_id"), rs.getString("grade"), 
-                                rs.getString("division"),rs.getInt("clearance_level"),   rs.getString("username"));
+                                return new User( rs.getString("phone_number"), rs.getString("grade"), 
+                                rs.getString("division"),  rs.getString("username"));
                                   
               } else {
                                     System.out.println("[LOCALHOST] getting FAILED (user not found) for: " + militaryId);
@@ -174,6 +201,28 @@ public class Database {
 
              }
                                
+        }
+
+    @SuppressWarnings("CallToPrintStackTrace")
+        public static void addUser(User user) {
+            String sql = "INSERT INTO users (phone_number, password_hash, grade, division, profilePicture, username) VALUES (?, ?, ?, ?, ?, ?)";
+
+            try(Connection conn = Database.getConnection()){
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, user.getMilitaryId());
+                stmt.setString(2, user.getPasswordHash());
+                stmt.setString(3, user.getGrade());
+                stmt.setString(4, user.getDivision());
+                stmt.setString(5, "user.getProfilePicture()");
+                stmt.setString(6, user.getUsername());
+
+                stmt.executeUpdate();
+                System.out.println("[SERVER] User added: " + user.getMilitaryId());
+
+            } catch (SQLException e) {
+                System.err.println("[SERVER] Error adding user: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
 
 }

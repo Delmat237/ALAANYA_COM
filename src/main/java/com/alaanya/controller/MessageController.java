@@ -1,13 +1,13 @@
 package com.alaanya.controller;
 
-import java.text.MessageFormat;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
+
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -17,18 +17,20 @@ public class MessageController{
 
         public static void addMessage(@SuppressWarnings("exports") VBox chatBox, String senderId, String message, boolean isSentByUser) {
                 VBox messageBox = new VBox(8);
+                messageBox.setAlignment(isSentByUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT); // Alignement du conteneur parent
 
                 // Création d'une bulle de message
                 VBox messageBubble = new VBox(4);
                 messageBubble.setPadding(new Insets(12));
                 messageBubble.setStyle(String.format(
-                        "-fx-background-color: %s; -fx-background-radius: 15; -fx-border-radius: 15;",
+                        "-fx-background-color: %s; -fx-background-radius: 15; -fx-border-radius: 15 ;",
                         isSentByUser ? "#DCF8C6" : "#FFFFFF"
                 ));
+                messageBubble.setMaxWidth(250); // Limite de largeur cohérente
 
                 // Texte du message
                 Text messageText = new Text(message);
-                messageText.setWrappingWidth(250); // Retour à la ligne si nécessaire
+                messageText.setWrappingWidth(250);
                 messageText.setStyle("-fx-font-size: 14px; -fx-font-family: 'Arial';");
 
                 // Heure d'envoi
@@ -53,7 +55,10 @@ public class MessageController{
                 messageBubble.getChildren().addAll(messageText, timeText);
                 messageBox.getChildren().addAll(userName, messageBubble);
 
-                chatBox.getChildren().add(messageBox);
+                Platform.runLater(() -> chatBox.getChildren().add(messageBox));
         }
+
+
+
 
 }
