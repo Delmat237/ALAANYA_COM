@@ -19,21 +19,26 @@ public class VideoReceiver extends Thread {
 
     @Override
     public void run() {
-        if (running) {
-            try (ServerSocket server = new ServerSocket(port)) {
+        try (ServerSocket server = new ServerSocket(port)) {
+            Socket client = server.accept();
+            InputStream in = client.getInputStream();
 
-                Socket client = server.accept();
-                InputStream in = client.getInputStream();
-
-                while (!interrupted()) {
-                    BufferedImage img = ImageIO.read(in);
-                    if (img != null) consumer.accept(img);
+            while (running && !interrupted()) {
+                try {
+                    BufferedImage img = ImageIO.read(in); // bloque si le flux n'est pas bien structuré
+                    if (img != null) {
+                        consumer.accept(img);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break; // quitte si une erreur survient
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
     public void stopReceiving() {
         running = false;
     }

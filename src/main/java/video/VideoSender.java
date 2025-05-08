@@ -30,6 +30,7 @@ public class VideoSender extends Thread {
                     BufferedImage frame = camera.grabCurrentFrame();
                     if (frame != null) {
                         ImageIO.write(frame, "jpg", out);
+                        out.flush(); // très important
                     }
                     Thread.sleep(100); // 10 FPS
                 }

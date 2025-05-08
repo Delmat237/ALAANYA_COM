@@ -15,6 +15,7 @@ import database.Database;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import model.User;
 import socket.Client;
 import model.Message;
@@ -428,6 +429,26 @@ public class MainController {
     }
 
     public void startVideoCall(ActionEvent actionEvent) {
+
+
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
+
+                VideoChatController controller = loader.getController();
+                controller.initialize(); // Tu peux l'appeler si besoin, mais normalement il sera invoqué automatiquement si annoté @FXML
+
+                Stage stage = new Stage();
+                stage.setTitle("Appel Vidéo");
+                Parent root = loader.load();
+                stage.setScene(new Scene(root));
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.show();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
     }
 
     public void showOptions(ActionEvent actionEvent) {

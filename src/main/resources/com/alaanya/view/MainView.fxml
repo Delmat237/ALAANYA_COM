@@ -53,7 +53,7 @@
                         <TextField fx:id="searchTextField" GridPane.columnIndex="1" GridPane.rowIndex="0" onKeyPressed="#handleSearchKeyPressed"/>
                         <Button onAction="#searchContacts" GridPane.columnIndex="2" GridPane.rowIndex="0">
                             <graphic>
-                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
+                                <ImageView styleClass="icon"  fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/glass.png"/>
                                 </ImageView>
                             </graphic>
@@ -74,10 +74,19 @@
             <!-- Message par défaut -->
             <VBox fx:id="defaultCenterVBox" alignment="CENTER">
                 <Label text="Sélectionnez un contact pour démarrer la conversation."/>
+
+                <!-- test -->
                 <Button onAction="#callUser">
                     <graphic>
                         <ImageView styleClass="icon">
                             <Image url="@images/call.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button onAction="#startVideoCall">
+                    <graphic>
+                        <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
+                            <Image url="@images/video.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -89,7 +98,7 @@
                     <!-- Profil -->
                     <Button onAction="#openProfile">
                         <graphic>
-                            <ImageView styleClass="icon" fitWidth="24" fitHeight="24" preserveRatio="true">
+                            <ImageView styleClass="icon"  fitWidth="16" fitHeight="16" preserveRatio="true">
                                 <Image url="@images/profile.png"/>
                             </ImageView>
                         </graphic>
@@ -101,21 +110,21 @@
                     <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
                         <Button onAction="#callUser">
                             <graphic>
-                                <ImageView styleClass="icon">
+                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/call.png"/>
                                 </ImageView>
                             </graphic>
                         </Button>
                         <Button onAction="#startVideoCall">
                             <graphic>
-                                <ImageView styleClass="icon">
+                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/video.png"/>
                                 </ImageView>
                             </graphic>
                         </Button>
                         <Button onAction="#showOptions">
                             <graphic>
-                                <ImageView styleClass="icon">
+                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/dot.png"/>
                                 </ImageView>
                             </graphic>
