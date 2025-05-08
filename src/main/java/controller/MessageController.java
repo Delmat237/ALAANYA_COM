@@ -1,4 +1,4 @@
-package com.alaanya.controller;
+package controller;
 
 
 import java.time.LocalTime;

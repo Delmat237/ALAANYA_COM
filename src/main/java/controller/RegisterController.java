@@ -1,11 +1,11 @@
-package com.alaanya.controller;
+package controller;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import com.alaanya.model.User;
-import com.alaanya.socket.Client;
+import model.User;
+import socket.Client;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -50,9 +50,10 @@ public class RegisterController {
 
             Client.userId = militaryId;
             // 1. Validation du format + 2376********
-            // if (!militaryId.matches("s{1}\\d{12}")) {
-            //     throw new IllegalArgumentException("Numéro telephone invalide");
-            // }
+            if (!militaryId.matches("^[+]237[2-9][0-9]{7,8}$")) { //Numero camerounais pour le moment
+                throw new IllegalArgumentException("Format du numéro invalide. Exemple : +2376XXXXXXXX");
+
+            }
 
             // 2. Vérification existence utilisateur (section 7 - Sécurité)
             if(User.exists(militaryId)) {
@@ -82,7 +83,7 @@ public class RegisterController {
             if (Client.connectToServer()){
                
                 //l'enregistrement se fait dans la bd du serveur distants et en local  si tous se passe bien du coté serveur centrale
-                Client.addUserRequest(user.getMilitaryId(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getUsername());
+                Client.addUserRequest(user.getPhone_Number(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getUsername());
 
             }
 
@@ -91,7 +92,7 @@ public class RegisterController {
 
             //Renvoyer sur la page de Login
             loadLoginView();
-            // ViewUtils.loadMainView(user.getMilitaryId(), errorLabel,1);
+            // ViewUtils.loadMainView(user.getPhone_Number(), errorLabel,1);
 
         } catch (SQLException | NoSuchAlgorithmException e) {
             errorLabel.setText("Erreur : " + e.getMessage());
@@ -109,5 +110,13 @@ public class RegisterController {
             e.printStackTrace();
         }
     }
+
+    public void postInit() {
+        Scene scene = militaryIdField.getScene();
+        if (scene != null) {
+            scene.getStylesheets().add(getClass().getResource("/com/alaanya/view/css/style.css").toExternalForm());
+        }
+    }
+
 
 }

@@ -229,14 +229,13 @@
 }
 
 .image-button .image-view {
-    -fx-image: url("images/dot.png"); /* Set a default image */
+    -fx-image: url("com/alaanya/view/images/dot.png"); /* Set a default image */
     -fx-fit-width: 24px; /* Adjust as needed */
     -fx-fit-height: 24px; /* Adjust as needed */
     -fx-preserve-ratio: true;
 }
 .icon {
-    -fx-fit-width: 24px;
-    -fx-fit-height: 24px;
+
     -fx-preserve-ratio: true;
     -fx-background-color: transparent;
 }

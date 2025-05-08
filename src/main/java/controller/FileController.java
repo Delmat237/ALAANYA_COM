@@ -1,4 +1,4 @@
-package com.alaanya.controller;
+package controller;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;

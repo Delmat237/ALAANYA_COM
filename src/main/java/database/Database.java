@@ -1,4 +1,4 @@
-package com.alaanya.database;
+package database;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 
-import com.alaanya.model.User;
+import model.User;
 
 public class Database {
     private static final String DB_PROPERTIES_FILE = "dbSqlite.properties";
@@ -64,21 +64,23 @@ public class Database {
     
             // Création table users
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    phone_Number TEXT NOT NULL UNIQUE,
-                    password_hash TEXT NOT NULL,
-                    grade TEXT NOT NULL,
-                    division TEXT NOT NULL,
-                    profilePicture TEXT,
-                    username TEXT NOT NULL
-                )""");
+                 CREATE TABLE IF NOT EXISTS users (
+                         id INT AUTO_INCREMENT PRIMARY KEY,
+                         user_id VARCHAR(15) NOT NULL UNIQUE,
+                         phone_Number VARCHAR(10) NOT NULL,
+                         password_hash VARCHAR(64) NOT NULL,
+                         grade VARCHAR(50) NOT NULL,
+                         division VARCHAR(50) NOT NULL,
+                         profilePicture TEXT,
+                         username VARCHAR(255) NOT NULL
+                     );""");
     
             // Création table contacts
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS contacts (
-                    contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER NOT NULL,
+                    id  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    contact_id VARCHAR(15) NOT NULL,
+                    user_id VARCHAR(15) NOT NULL,
                     contact_user_id INTEGER NOT NULL,
                     nick_name TEXT NOT NULL,
                     statut INTEGER CHECK(statut IN (0, 1)) DEFAULT 0,
@@ -91,8 +93,8 @@ public class Database {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    sender_id INTEGER NOT NULL,
-                    receiver_id INTEGER NOT NULL,
+                    sender_id VARCHAR(15) NOT NULL,
+                    receiver_id VARCHAR(15) NOT NULL,
                     content TEXT NOT NULL,
                     timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                     statut TEXT CHECK(statut IN ('sent', 'delivered', 'read')) DEFAULT 'sent',
@@ -155,12 +157,12 @@ public class Database {
             
         }
 
-        public static String getContacts(String militaryId, List<String> contactsList) throws SQLException {
-        System.out.println("recherche des contacts");
+    public static String getContacts(String militaryId, List<String> contactsList) throws SQLException {
+        System.out.println("Recherche des contacts");
 
-        String sql = "SELECT u.username, u.division, u.phone_number" + // Ajouter u.phone_number
+        String sql = "SELECT u.username, u.division, u.phone_number " +
                 "FROM users u " +
-                "INNER JOIN contacts c ON u.phone_number= c.contact_id " +
+                "INNER JOIN contacts c ON u.phone_number = c.contact_id " +
                 "WHERE c.user_id = ?";
 
         try (Connection conn = Database.getConnection();
@@ -171,15 +173,18 @@ public class Database {
             while (rs.next()) {
                 String username = rs.getString("username");
                 String division = rs.getString("division");
-                String contactId = rs.getString("phone_number"); // Récupérer l'ID militaire
-               
-                return (username + " (" + division + " - " + contactId + ")"); // Ajouter l'ID militaire à la chaîne
+                String contactId = rs.getString("phone_number");
+
+                String contact = username + " (" + division + " - " + contactId + ")";
+                contactsList.add(contact); // ajout à la liste
+                return contact;
             }
         }
-                return null;
+        return "";
     }
 
-        public static User getUser(String militaryId) throws SQLException{
+
+    public static User getUser(String militaryId) throws SQLException{
             String sql = "SELECT phone_number, grade, division, clearance_level, username FROM users WHERE phone_number= ?";
             Connection conn = Database.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -209,7 +214,7 @@ public class Database {
 
             try(Connection conn = Database.getConnection()){
                 PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, user.getMilitaryId());
+                stmt.setString(1, user.getPhone_Number());
                 stmt.setString(2, user.getPasswordHash());
                 stmt.setString(3, user.getGrade());
                 stmt.setString(4, user.getDivision());
@@ -217,7 +222,7 @@ public class Database {
                 stmt.setString(6, user.getUsername());
 
                 stmt.executeUpdate();
-                System.out.println("[SERVER] User added: " + user.getMilitaryId());
+                System.out.println("[SERVER] User added: " + user.getPhone_Number());
 
             } catch (SQLException e) {
                 System.err.println("[SERVER] Error adding user: " + e.getMessage());

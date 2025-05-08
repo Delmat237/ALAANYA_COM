@@ -1,4 +1,4 @@
-package com.alaanya.model;
+package model;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -8,10 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
 
-import com.alaanya.database.Database;
+import database.Database;
 public class User {
 
-    private String militaryId; //numero telephone
+    private String phone_Number; //numero telephone
     private String passwordHash;
     private String grade;
     private String division;
@@ -21,20 +21,20 @@ public class User {
     private String username;
 
 
-    public User(String militaryId, String grade, String division,String username) {
-        this.militaryId = militaryId;
+    public User(String phone_Number, String grade, String division,String username) {
+        this.phone_Number = phone_Number;
         this.grade = grade;
         this.division = division;
         this.username = username;
     }
 
-    public static boolean exists(String militaryId) throws SQLException {
+    public static boolean exists(String phone_Number) throws SQLException {
         String sql = "SELECT COUNT(*) FROM users WHERE phone_number = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, militaryId);
+            stmt.setString(1, phone_Number);
             ResultSet rs = stmt.executeQuery();
 
             if(rs.next()) {
@@ -51,15 +51,15 @@ public class User {
     }
 
     // Getters et Setters
-    public String getMilitaryId() {
-        return militaryId;
+    public String getPhone_Number() {
+        return phone_Number;
     }
 
-    public void setMilitaryId(String militaryId) {
-        // if (!militaryId.matches("[A-Z]{2}-\\d{5}")) {
+    public void setphone_Number(String phone_Number) {
+        // if (!phone_Number.matches("[A-Z]{2}-\\d{5}")) {
         //     throw new IllegalArgumentException("Format d'ID militaire invalide (AA-12345)");
         // }
-        this.militaryId = militaryId;
+        this.phone_Number = phone_Number;
     }
 
     public String getPasswordHash() {

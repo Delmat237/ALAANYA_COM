@@ -2,16 +2,16 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
-
-<?import java.net.URL?>
-<?import java.lang.String?>
+<?import javafx.scene.layout.*?>
 
 <BorderPane prefHeight="600.0" prefWidth="900.0"
-            xmlns="http://javafx.com/javafx/23.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.alaanya.controller.MainController" stylesheets="@css/style.css">
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.MainController"
+            stylesheets="@css/style.css">
+
+    <!-- Barre de titre -->
     <top>
         <ToolBar BorderPane.alignment="CENTER">
             <items>
@@ -28,40 +28,38 @@
                 <Label fx:id="idLabel" text="idLabel"/>
                 <Label fx:id="statut" text="STATE" styleClass="state"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button mnemonicParsing="false" focusTraversable="false" onAction="#logout" text="Déconnexion"/>
+
+                <!-- Bouton pour accéder aux paramètres -->
+                <Button text="Paramètres" onAction="#showSettings" />
+                <Button text="Déconnexion" onAction="#logout"/>
             </items>
         </ToolBar>
     </top>
 
-    <!-- Left Zone (Contact List + Add Contacts) -->
+    <!-- Menu latéral -->
     <left>
-        <VBox prefWidth="280.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
-            </padding>
+        <VBox prefWidth="280.0" BorderPane.alignment="CENTER" spacing="10">
+            <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
             <Label text="Contacts">
-                <VBox.margin>
-                    <Insets bottom="5.0"/>
-                </VBox.margin>
+                <VBox.margin><Insets bottom="5.0"/></VBox.margin>
             </Label>
-            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
+            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS" style="-fx-background-color: #ecf0f1;"/>
 
             <TitledPane text="Ajouter un contact" collapsible="false" VBox.vgrow="NEVER">
                 <content>
                     <GridPane hgap="5.0" vgap="5.0">
-                        <padding><Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/></padding>
+                        <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         <Label text="Rechercher:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                         <TextField fx:id="searchTextField" GridPane.columnIndex="1" GridPane.rowIndex="0" onKeyPressed="#handleSearchKeyPressed"/>
-                        <Button mnemonicParsing="false" onAction="#searchContacts"  GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Button onAction="#searchContacts" GridPane.columnIndex="2" GridPane.rowIndex="0">
                             <graphic>
-                                <ImageView styleClass="icon">
+                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/glass.png"/>
                                 </ImageView>
                             </graphic>
                         </Button>
                         <Label text="Résultats:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                         <ListView fx:id="searchResultsListView" prefHeight="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
-
                         <Button text="Ajouter contact" onAction="#addContact" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2" alignment="CENTER"/>
                     </GridPane>
                 </content>
@@ -70,92 +68,101 @@
         </VBox>
     </left>
 
-<!-- Center Zone: Contains either the default message or the chat area -->
-<center>
-    <StackPane> <!-- Use StackPane to overlay the default and chat content -->
-        <!-- Default Center (when no contact is selected) -->
-        <VBox fx:id="defaultCenterVBox" alignment="CENTER">
-            <Label text="Sélectionnez un contact pour démarrer la conversation."/>
-        </VBox>
-
-        <!-- Chat Area (initially hidden) -->
-        <VBox fx:id="chatAreaVBox" BorderPane.alignment="CENTER" visible="false">
-            <HBox alignment="CENTER_LEFT" spacing="5.0">
-                <!-- Profile Button -->
-                <Button mnemonicParsing="false" onAction="#sendMessage" >
+    <!-- Zone de contenu central -->
+    <center>
+        <StackPane>
+            <!-- Message par défaut -->
+            <VBox fx:id="defaultCenterVBox" alignment="CENTER">
+                <Label text="Sélectionnez un contact pour démarrer la conversation."/>
+                <Button onAction="#callUser">
                     <graphic>
                         <ImageView styleClass="icon">
-                            <Image url="@images/profile.png"/>
+                            <Image url="@images/call.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
+            </VBox>
 
-                <!-- Username Label -->
-                <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
-
-                <!-- Right-aligned Buttons -->
-                <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
-                    <!-- Call Button -->
-                    <Button mnemonicParsing="false" onAction="#sendMessage" >
+            <!-- Zone de chat -->
+            <VBox fx:id="chatAreaVBox" BorderPane.alignment="CENTER" visible="false" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+                    <!-- Profil -->
+                    <Button onAction="#openProfile">
                         <graphic>
-                            <ImageView styleClass="icon">
-                                <Image url="@images/call.png"/>
+                            <ImageView styleClass="icon" fitWidth="24" fitHeight="24" preserveRatio="true">
+                                <Image url="@images/profile.png"/>
                             </ImageView>
                         </graphic>
                     </Button>
-                    <!-- Video Button -->
-                    <Button mnemonicParsing="false" onAction="#sendMessage">
+
+                    <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
+
+                    <!-- Actions -->
+                    <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
+                        <Button onAction="#callUser">
+                            <graphic>
+                                <ImageView styleClass="icon">
+                                    <Image url="@images/call.png"/>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button onAction="#startVideoCall">
+                            <graphic>
+                                <ImageView styleClass="icon">
+                                    <Image url="@images/video.png"/>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button onAction="#showOptions">
+                            <graphic>
+                                <ImageView styleClass="icon">
+                                    <Image url="@images/dot.png"/>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </HBox>
+
+                <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+                <Label text="Chat"/>
+
+                <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: transparent;">
+                    <content>
+                        <VBox fx:id="chatVBox" VBox.vgrow="ALWAYS"
+                              style="-fx-background-color: #2C3E50; -fx-padding: 5px; -fx-border-color: gray;">
+                        </VBox>
+                    </content>
+                </ScrollPane>
+
+                <!-- Entrée du message -->
+                <HBox spacing="5.0">
+                    <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
+                    <Button onAction="#sendMessage">
                         <graphic>
                             <ImageView styleClass="icon">
-                                <Image url="@images/video.png"/>
+                                <Image url="@images/send.png"/>
                             </ImageView>
                         </graphic>
                     </Button>
-                    <!-- Dot Button -->
-                    <Button mnemonicParsing="false" onAction="#sendMessage" >
+                    <Button onAction="#sendFile">
                         <graphic>
                             <ImageView styleClass="icon">
-                                <Image url="@images/dot.png"/>
+                                <Image url="@images/file.png"/>
                             </ImageView>
                         </graphic>
                     </Button>
                 </HBox>
-            </HBox>
+            </VBox>
 
-            <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/></padding>
-            <Label text="Chat"/>
-
-            <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: transparent;">
-                <content>
-                    <VBox fx:id="chatVBox" VBox.vgrow="ALWAYS"
-                          style="-fx-background-color: #2C3E50; -fx-padding: 5px; -fx-border-color: gray;">
-                    </VBox>
-                </content>
-            </ScrollPane>
-
-
-            <!-- Message Input and Send Controls -->
-            <HBox spacing="5.0">
-                <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
-                <!-- Send Button (with Image) -->
-                <Button mnemonicParsing="false" onAction="#sendMessage" >
-                    <graphic>
-                        <ImageView styleClass="icon">
-                            <Image url="@images/send.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-
-                <!-- Send File Button (with Image) -->
-                <Button  onAction="#sendFile">
-                    <graphic>
-                        <ImageView styleClass="icon">
-                            <Image url="@images/file.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-            </HBox>
-        </VBox>
-    </StackPane>
-</center>
+            <!-- Zone de Paramètres (Settings) -->
+            <VBox fx:id="settingsVBox" alignment="CENTER" visible="false" spacing="15.0">
+                <Label text="Paramètres Utilisateur" styleClass="title" />
+                <Label text="Utilisateur: " fx:id="settingsUserLabel" />
+                <Label text="Grade: " fx:id="settingsGradeLabel" />
+                <Label text="Division: " fx:id="settingsDivisionLabel" />
+                <Label text="ID: " fx:id="settingsIdLabel" />
+                <Button text="Fermer" onAction="#closeSettings"/>
+            </VBox>
+        </StackPane>
+    </center>
 </BorderPane>

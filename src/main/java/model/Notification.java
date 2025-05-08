@@ -1,4 +1,4 @@
-package com.alaanya.socket;
+package model;
 
 import java.io.Serializable;
 

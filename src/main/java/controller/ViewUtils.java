@@ -1,10 +1,10 @@
-package com.alaanya.controller;
+package controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-import com.alaanya.model.User;
-import com.alaanya.socket.Client;
+import model.User;
+import socket.Client;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

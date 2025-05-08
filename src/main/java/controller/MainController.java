@@ -1,4 +1,4 @@
-package com.alaanya.controller;
+package controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alaanya.MainApp;
-import com.alaanya.database.Database;
-import com.alaanya.model.Contact;
-import com.alaanya.model.User;
-import com.alaanya.socket.Client;
-import com.alaanya.socket.FileMessage;
-import com.alaanya.socket.Message;
+import database.Database;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import model.User;
+import socket.Client;
+import model.Message;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -35,7 +36,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class MainController {
@@ -54,12 +63,26 @@ public class MainController {
     @FXML private ListView<String> searchResultsListView;
     @FXML private VBox defaultCenterVBox;
     @FXML private VBox chatAreaVBox;
+    @FXML
+    private VBox settingsVBox;
+
+    @FXML
+    private Label settingsUserLabel;
+    @FXML
+    private Label settingsGradeLabel;
+    @FXML
+    private Label settingsDivisionLabel;
+    @FXML
+    private Label settingsIdLabel;
    
 
     private User user;
     private static String recipientAddress;
     private ObservableList<String> contacts = FXCollections.observableArrayList();
     private ObservableList<String> contactList = FXCollections.observableArrayList();
+
+    private int seconds = 0;
+    private Timeline callTimer;
 
     @FXML
     public void initialize() {
@@ -101,42 +124,8 @@ public class MainController {
         defaultCenterVBox.setVisible(!show);
     }
 
-    public void setUser(User user,int state) {
-        this.user = user;
-        Platform.runLater(() -> {
-            userLabel.setText(user.getUsername());
-            gradeLabel.setText("Grade: " + user.getGrade());
-            divisionLabel.setText("Division: " + user.getDivision());
-            idLabel.setText("Identifiant Militaire: " + user.getMilitaryId());
-           if (state == 1)
-            statut.setText("STATE :online");
-           else
-           statut.setText("STATE : disconnected");
+    public void setUser(User user, int state) {
 
-            try {
-                contacts.clear();
-            
-                //Recupération des contacts de l'utilisateur
-                contactList.add(Database.getContacts(user.getMilitaryId(), contacts));
-
-                contactListView.setItems(contactList);
-
-                contactListView.setOnMouseClicked(event -> {
-
-                    String selectedContact = contactListView.getSelectionModel().getSelectedItem(); //RECUPERATION DU CONTACT SELECTIONNÉ
-                    if (selectedContact != null) {
-                        String contactId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1)); // Utiliser la méthode extractContactIdFromContactList
-                        System.out.println("lE CONTACT SELECTIONNÉ EST " + contactId);
-                        //Envoie une requete au serveur pour recuperer l'adress IP du contact selectionné
-
-                        loadConversation(user.getMilitaryId(), contactId); //Recuperation des messages
-                    }
-                });
-            } catch (SQLException e) {
-                System.err.println("Erreur lors de la récupération des contacts : " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
     }
     public User getUser() {
         return user;
@@ -162,7 +151,7 @@ public class MainController {
                 contactListView.getItems().add(user.getUsername());
 
                 //Recupere l'id de l'utilisateur
-                String userId = user.getMilitaryId();
+                String userId = user.getPhone_Number();
                 System.out.println("Table de conatact "+ userId + ": "+ contactId);
                 try{
                     //Enregistre le contact dans la BD
@@ -196,7 +185,7 @@ public class MainController {
             String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
 
             if (recipientId != null) {
-                Message message = new Message(user.getMilitaryId(), "MESSAGE",messageText, recipientId);
+                Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
                 //Recupération de l'address IP actuell du destinataire
                 //LOGIQUE ICI
 
@@ -205,7 +194,7 @@ public class MainController {
                 Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
 
                 //Ajout du message dans la zone de chat
-                MessageController.addMessage(chatVBox,user.getMilitaryId(),message.getContent(),true);
+                MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
 
                 messageTextField.clear();
             } else {
@@ -221,7 +210,7 @@ public class MainController {
     @FXML
     private void sendFile() {
         if (user != null) {
-            String sender = user.getMilitaryId(); //recupere l'ID du user
+            String sender = user.getPhone_Number(); //recupere l'ID du user
             String selectedContact = contactListView.getSelectionModel().getSelectedItem();
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
             String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
@@ -240,10 +229,11 @@ public class MainController {
             try {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
+               /*
                 FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "file upload", fileName, fileData,recipientId);
 
                 Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
-
+*/
                 //Ajout du fichier dans la zone de chat
 
                 FileController.addFile(chatVBox,"com/alaanya/view/images/file.png",fileName,true);
@@ -358,7 +348,6 @@ public class MainController {
     }
 
 
-
     public void sendMessageKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER) {
             sendMessage();
@@ -427,5 +416,33 @@ public class MainController {
             }
         }
         return searchResultsList;
+    }
+
+    public void openProfile(ActionEvent actionEvent) {
+    }
+
+    public void callUser(ActionEvent actionEvent) {
+
+           new AudioChatController().initialize();
+
+    }
+
+    public void startVideoCall(ActionEvent actionEvent) {
+    }
+
+    public void showOptions(ActionEvent actionEvent) {
+    }
+    // Méthode pour afficher la zone des paramètres
+    public void showSettings() {
+        settingsVBox.setVisible(true); // Afficher les paramètres
+        settingsUserLabel.setText("Utilisateur: " + userLabel.getText());
+        settingsGradeLabel.setText("Grade: " + gradeLabel.getText());
+        settingsDivisionLabel.setText("Division: " + divisionLabel.getText());
+        settingsIdLabel.setText("ID: " + idLabel.getText());
+    }
+
+    // Méthode pour fermer la zone des paramètres
+    public void closeSettings() {
+        settingsVBox.setVisible(false); // Masquer les paramètres
     }
 }

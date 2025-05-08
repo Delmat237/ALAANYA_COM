@@ -1,37 +1,59 @@
 package audio;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.*;
 
 public class AudioSetup {
-
-    public static AudioFormat format;
-    public TargetDataLine microphone;
-    public SourceDataLine speakers;
+    private final AudioFormat format;
+    private TargetDataLine microphone;
+    private SourceDataLine speakers;
 
     public AudioSetup() {
-        try {
-            format = new AudioFormat(44100, 16, 1, true, false);
-            DataLine.Info microphoneInfo = new DataLine.Info(TargetDataLine.class, format);
-            DataLine.Info speakersInfo = new DataLine.Info(SourceDataLine.class, format);
+        // 44.1 kHz, 16 bits, mono, signed, little endian
+        this.format = new AudioFormat(44100.0f, 16, 1, true, false);
+    }
 
-            microphone = (TargetDataLine) AudioSystem.getLine(microphoneInfo);
-            speakers = (SourceDataLine) AudioSystem.getLine(speakersInfo);
+    // --- Microphone ---
 
-            microphone.open(format);
-            System.out.println("Microphone opened" );
-            speakers.open(format);
-            System.out.println("Speakers opened" );
+    public void openMicrophone() throws LineUnavailableException {
+        DataLine.Info micInfo = new DataLine.Info(TargetDataLine.class, format);
+        microphone = (TargetDataLine) AudioSystem.getLine(micInfo);
+        microphone.open(format);
+        microphone.start();
+    }
 
-            microphone.start(); // Démarrer le microphone
-            speakers.start();   // Démarrer les haut-parleurs
-        } catch (LineUnavailableException error) {
-            System.out.println("Erreur lors de l'initialisation des périphériques audio : " + error.getMessage());
+    public void closeMicrophone() {
+        if (microphone != null) {
+            microphone.stop();
+            microphone.close();
         }
     }
 
+    public TargetDataLine getMicrophone() {
+        return microphone;
+    }
+
+    // --- Speakers ---
+
+    public void openSpeakers() throws LineUnavailableException {
+        DataLine.Info speakerInfo = new DataLine.Info(SourceDataLine.class, format);
+        speakers = (SourceDataLine) AudioSystem.getLine(speakerInfo);
+        speakers.open(format);
+        speakers.start();
+    }
+
+    public void closeSpeakers() {
+        if (speakers != null) {
+            speakers.drain();
+            speakers.stop();
+            speakers.close();
+        }
+    }
+
+    public SourceDataLine getSpeakers() {
+        return speakers;
+    }
+
+    public AudioFormat getFormat() {
+        return format;
+    }
 }

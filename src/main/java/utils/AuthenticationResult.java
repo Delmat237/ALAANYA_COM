@@ -1,4 +1,4 @@
-package com.alaanya.utils;
+package utils;
 
 
 public class AuthenticationResult {

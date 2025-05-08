@@ -1,11 +1,12 @@
-package com.alaanya.controller;
+package controller;
 
 import java.io.IOException;
+import java.net.URL;
 
-import com.alaanya.socket.Client;
-import com.alaanya.socket.Notification;
-import com.alaanya.utils.AuthenticationResult;
-import com.alaanya.utils.AuthentificateUser;
+import socket.Client;
+import model.Notification;
+import utils.AuthenticationResult;
+import utils.AuthentificateUser;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -17,7 +18,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","unused","UseSpecificCatch","exports"})
+@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","UseSpecificCatch","exports"})
 
 public class LoginController {
 
@@ -80,6 +81,13 @@ public class LoginController {
     @FXML
     private void loadRegisterView() {
         try {
+            URL url = getClass().getResource("/com/alaanya/view/RegisterView.fxml");
+            if (url == null) {
+                System.out.println("Fichier RegisterView.fxml non trouvé !");
+            } else {
+                System.out.println("Fichier trouvé : " + url);
+            }
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/RegisterView.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) militaryIdField.getScene().getWindow();

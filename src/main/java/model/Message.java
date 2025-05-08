@@ -1,4 +1,4 @@
-package com.alaanya.socket;
+package model;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -11,6 +11,7 @@ public class Message implements Serializable {
     private String type;
     private String content;
     private String recipient;
+    private long filesize;
     private Date timestamp;  // Add the timestamp field
 
     public Message(String sender, String type, String content) {
@@ -25,11 +26,12 @@ public class Message implements Serializable {
         this.timestamp = new Date(); // Initialize the timestamp
     }
 
-    public Message(String sender, String type, String content, String recipient, Date timestamp) {
+    public Message(String sender, String type, String content, String recipient, long filesize ,Date timestamp) {
         this.sender = sender;
         this.type = type;
         this.content = content;
         this.recipient = recipient;
+        this.filesize = filesize;
         this.timestamp = timestamp; //  timestamp is passed in
     }
 
@@ -63,5 +65,15 @@ public class Message implements Serializable {
                 ", recipient='" + recipient + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
+    }
+
+
+
+    public void setFilesize(long filesize) {
+        this.filesize = filesize;
+    }
+
+    public long getFileSize() {
+        return this.filesize;
     }
 }

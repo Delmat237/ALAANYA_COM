@@ -1,12 +1,12 @@
-package com.alaanya.utils;
+package utils;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.alaanya.model.User;
-import com.alaanya.socket.Client;
+import model.User;
+import socket.Client;
 
 /*
  Class permettant d'authentifier un user
@@ -18,7 +18,8 @@ public class AuthentificateUser {
         //Hash le mot de passe
         String hashedPassword = User.hashPassword(password);
         System.out.println("auth : " + hashedPassword);
-    
+
+        //enregistre le user actuelle
         Client.userId = militaryId;
         AtomicReference<String> errorMessage = new AtomicReference<>("");
         CountDownLatch latch = new CountDownLatch(1); // Permet d'attendre la réponse

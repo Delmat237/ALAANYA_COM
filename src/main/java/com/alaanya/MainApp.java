@@ -42,7 +42,11 @@ public class MainApp extends Application {
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
-            
+            primaryStage.setResizable(true);
+            primaryStage.setMinHeight(800);
+            primaryStage.setMinWidth(800);
+
+
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Erreur de chargement FXML", e);
             System.exit(1);
