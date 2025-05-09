@@ -14,6 +14,7 @@ import com.alaanya.MainApp;
 import database.Database;
 
 import file.FileReceiver;
+import file.FileSender;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -83,15 +84,20 @@ public class MainController {
     private ObservableList<String> contacts = FXCollections.observableArrayList();
     private ObservableList<String> contactList = FXCollections.observableArrayList();
 
+    private int FILE_PORT = 5002;
+    private int MESSAGE_PORT = 5001;
+    private int AUDIO_PORT = 5003;
+    private int VIDEO_PORT = 5004;
+
     private int seconds = 0;
     private Timeline callTimer;
 
     @FXML
     public void initialize() throws SQLException {
         //lance les thread receiver
-        new MessageReceiver(5001).start();
+        new MessageReceiver(MESSAGE_PORT).start();
 
-        new FileReceiver(5002).start();
+        new FileReceiver(FILE_PORT).start();
 
 
 
@@ -223,8 +229,7 @@ public class MainController {
 
 
                 //RecipentAddress
-                Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
-                new MessageSender(recipientId, 5001, message).start();
+                new MessageSender(recipientId, MESSAGE_PORT, message).start();
 
                 //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
@@ -245,10 +250,12 @@ public class MainController {
         if (user != null) {
             String sender = user.getPhone_Number(); //recupere l'ID du user
             String selectedContact = contactListView.getSelectionModel().getSelectedItem();
+
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
-            String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
+            String recipientId = extractContactIdFromContactList(selectedContact);
             System.out.println(recipientId);
             sendFile(sender, recipientId); // Call the sendFile method
+
         } else {
             System.err.println("No user logged in");
         }
@@ -262,12 +269,9 @@ public class MainController {
             try {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
-               /*
-                FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "file upload", fileName, fileData,recipientId);
 
-                Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
-*/
                 //Ajout du fichier dans la zone de chat
+                new FileSender(recipientAddress,FILE_PORT,selectedFile,sender,recipientId);
 
                 FileController.addFile(chatVBox,"com/alaanya/view/images/file.png",fileName,true);
 
