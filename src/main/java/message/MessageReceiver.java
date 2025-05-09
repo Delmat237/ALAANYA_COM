@@ -20,21 +20,29 @@ public class MessageReceiver extends Thread {
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("En attente de messages sur le port " + port);
+            System.out.println("[Receiver] En attente de messages sur le port " + port);
             while (true) {
                 try (
                         Socket clientSocket = serverSocket.accept();
                         DataInputStream dis = new DataInputStream(clientSocket.getInputStream())
                 ) {
+                    System.out.println("[Receiver] Connexion reçue depuis " + clientSocket.getInetAddress());
+
                     String json = dis.readUTF();
+                    System.out.println("[Receiver] JSON reçu : " + json);
+
                     Message msg = gson.fromJson(json, Message.class);
                     System.out.println("[" + msg.getTimestamp() + "] " + msg.getSender() + " : " + msg.getContent());
+
                 } catch (IOException e) {
-                    System.err.println("Erreur réception message : " + e.getMessage());
+                    System.err.println("[Receiver] Erreur réception message : " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
+            System.err.println("[Receiver] Erreur serveur socket : " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 }
