@@ -15,8 +15,6 @@ import database.Database;
 
 import file.FileReceiver;
 import file.FileSender;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import message.MessageReceiver;
 import message.MessageSender;
@@ -41,15 +39,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.util.Duration;
+
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class MainController {
@@ -94,44 +87,40 @@ public class MainController {
 
     @FXML
     public void initialize() throws SQLException {
-        //lance les thread receiver
-        new MessageReceiver(MESSAGE_PORT).start();
+        MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
+        receiver.setMessageListener(message -> handleIncomingMessage(message));
+        receiver.start();
+
 
         new FileReceiver(FILE_PORT).start();
 
-
-
-
-        // observe contactListView
         contactListView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     if (newValue != null) {
-
-                        setSelectedUsername(newValue); // Set the username in the label
-                        showChatArea(true); // Show chat area when contact is selected
-                        String userId =  extractContactIdFromContactList(newValue);
-
-                        //envoie une requete de recupperation d'addresse IP
+                        setSelectedUsername(newValue);
+                        showChatArea(true);
+                        String userId = extractContactIdFromContactList(newValue);
                         Client.requestAddress(userId, notification -> {
                             Platform.runLater(() -> {
                                 if ("ADDRESS_RESPONSE".equals(notification.getType())) {
                                     recipientAddress = notification.getMessage();
-                                    System.out.println("[CLIENT] Address for " + newValue + ": " + recipientAddress);
-                                    // Use this address for further actions like starting an audio call
                                 } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
                                     System.err.println("[CLIENT] Address not found for user: " + newValue);
                                 }
                             });
                         });
                     } else {
-                        showChatArea(false); // Hide chat area when no contact is selected
+                        showChatArea(false);
                     }
-                }
-        );
-        // Initially hide the chat area
+                });
         showChatArea(false);
     }
 
+    private void handleIncomingMessage(Message message) {
+        Platform.runLater(() -> {
+            MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false);
+        });
+    }
     public void setSelectedUsername(String username) {
         selectedUserLabel.setText(username);
     }
@@ -231,7 +220,13 @@ public class MainController {
 
                 //RecipentAddress
                 System.out.println("Son addresse est "+recipientAddress);
-                new MessageSender(recipientAddress, MESSAGE_PORT, message).start();
+                // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
+                Client.requestAddress(recipientId, notification -> {
+                    if ("ADDRESS_RESPONSE".equals(notification.getType())) {
+                        String currentAddress = notification.getMessage();
+                        new MessageSender(currentAddress, MESSAGE_PORT, message).start();
+                    }
+                });
 
                 //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
@@ -258,6 +253,7 @@ public class MainController {
             System.out.println(recipientId);
             sendFile(sender, recipientId); // Call the sendFile method
 
+
         } else {
             System.err.println("No user logged in");
         }
@@ -273,7 +269,14 @@ public class MainController {
                 String fileName = selectedFile.getName();
 
                 //Ajout du fichier dans la zone de chat
-                new FileSender(recipientAddress,FILE_PORT,selectedFile,sender,recipientId);
+
+                // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
+                Client.requestAddress(recipientId, notification -> {
+                    if ("ADDRESS_RESPONSE".equals(notification.getType())) {
+                        String currentAddress = notification.getMessage();
+                        new FileSender(currentAddress, FILE_PORT, selectedFile,sender,recipientId).start();
+                    }
+                });
 
                 FileController.addFile(chatVBox,"com/alaanya/view/images/file.png",fileName,true);
 
@@ -442,26 +445,7 @@ public class MainController {
      * @throws SQLException Si une erreur de base de données se produit.
      */
     private List<String> searchUsersInDatabase(String searchTerm) throws SQLException {
-        List<String> searchResultsList = new ArrayList<>();
-        /*
-         * l'acces a la bd ne doit pas se faire ici*/
-        String sql = "SELECT phone_Number, username, division FROM users " +
-                "WHERE phone_Number LIKE ? OR username LIKE ?";
-
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, "%" + searchTerm + "%");
-            stmt.setString(2, "%" + searchTerm + "%");
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String phone_Number = rs.getString("phone_Number");
-                String username = rs.getString("username");
-                String division = rs.getString("division");
-                searchResultsList.add(username + " (" + division + " - " + phone_Number + ")");
-            }
-        }
-        return searchResultsList;
+        return Database.searchUsers(searchTerm);
     }
 
     public void openProfile(ActionEvent actionEvent) {

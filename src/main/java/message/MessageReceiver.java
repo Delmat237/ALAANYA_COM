@@ -12,9 +12,14 @@ import java.net.Socket;
 public class MessageReceiver extends Thread {
     private final int port;
     private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private MessageListener listener;
 
     public MessageReceiver(int port) {
         this.port = port;
+    }
+
+    public void setMessageListener(MessageListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -26,23 +31,26 @@ public class MessageReceiver extends Thread {
                         Socket clientSocket = serverSocket.accept();
                         DataInputStream dis = new DataInputStream(clientSocket.getInputStream())
                 ) {
-                    System.out.println("[Receiver] Connexion reçue depuis " + clientSocket.getInetAddress());
-
                     String json = dis.readUTF();
-                    System.out.println("[Receiver] JSON reçu : " + json);
-
                     Message msg = gson.fromJson(json, Message.class);
                     System.out.println("[" + msg.getTimestamp() + "] " + msg.getSender() + " : " + msg.getContent());
 
+                    if (listener != null) {
+                        listener.onMessageReceived(msg);
+                    }
                 } catch (IOException e) {
                     System.err.println("[Receiver] Erreur réception message : " + e.getMessage());
                     e.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            System.err.println("[Receiver] Erreur serveur socket : " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @FunctionalInterface
+    public interface MessageListener {
+        void onMessageReceived(Message message);
     }
 
 }

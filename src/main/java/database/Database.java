@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -155,6 +156,32 @@ public class Database {
             
         }
 
+    public static List<String> searchUsers(String searchTerm){
+        List<String> searchResultsList = new ArrayList<>();
+        /*
+         * l'acces a la bd ne doit pas se faire ici*/
+        String sql = "SELECT phone_Number, username, division FROM users " +
+                "WHERE phone_Number LIKE ? OR username LIKE ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String phone_Number = rs.getString("phone_Number");
+                String username = rs.getString("username");
+                String division = rs.getString("division");
+                searchResultsList.add(username + " (" + division + " - " + phone_Number + ")");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return searchResultsList;
+
+    }
+
     public static List<String> getContacts(String militaryId, List<String> contactsList) throws SQLException {
         System.out.println("Recherche des contacts");
 
@@ -179,6 +206,7 @@ public class Database {
             return contactsList;
 
         }
+
     }
 
 
