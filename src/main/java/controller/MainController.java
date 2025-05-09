@@ -218,18 +218,20 @@ public class MainController {
         String messageText = messageTextField.getText(); //recuperation du message saisir
         String selectedContact = contactListView.getSelectionModel().getSelectedItem(); //recuperation de l'ID du destinataire
 
+        System.out.println("Je m'apprete à envoyer le message "+messageText +"à "+selectedContact);
+
         if (!messageText.isEmpty() && selectedContact != null) {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
             String recipientId = extractContactIdFromContactList(selectedContact);
 
+
             if (recipientId != null) {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
                 //Recupération de l'address IP actuell du destinataire
-                //LOGIQUE ICI
-
 
                 //RecipentAddress
-                new MessageSender(recipientId, MESSAGE_PORT, message).start();
+                System.out.println("Son addresse est "+recipientAddress);
+                new MessageSender(recipientAddress, MESSAGE_PORT, message).start();
 
                 //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
