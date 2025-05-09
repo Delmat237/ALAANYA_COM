@@ -66,8 +66,7 @@ public class Database {
             stmt.executeUpdate("""
                  CREATE TABLE IF NOT EXISTS users (
                          id INT AUTO_INCREMENT PRIMARY KEY,
-                         user_id VARCHAR(15) NOT NULL UNIQUE,
-                         phone_Number VARCHAR(10) NOT NULL,
+                         phone_Number VARCHAR(15) NOT NULL,
                          password_hash VARCHAR(64) NOT NULL,
                          grade VARCHAR(50) NOT NULL,
                          division VARCHAR(50) NOT NULL,
@@ -79,13 +78,12 @@ public class Database {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS contacts (
                     id  INTEGER PRIMARY KEY AUTOINCREMENT,
-                    contact_id VARCHAR(15) NOT NULL,
                     user_id VARCHAR(15) NOT NULL,
-                    contact_user_id INTEGER NOT NULL,
+                    contact_user_id VARCHAR(15) NOT NULL,
                     nick_name TEXT NOT NULL,
                     statut INTEGER CHECK(statut IN (0, 1)) DEFAULT 0,
-                    FOREIGN KEY (user_id) REFERENCES users(user_id),
-                    FOREIGN KEY (contact_user_id) REFERENCES users(user_id),
+                    FOREIGN KEY (user_id) REFERENCES users(phone_Number),
+                 
                     UNIQUE(user_id, contact_user_id)
                 )""");
     
@@ -98,8 +96,8 @@ public class Database {
                     content TEXT NOT NULL,
                     timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                     statut TEXT CHECK(statut IN ('sent', 'delivered', 'read')) DEFAULT 'sent',
-                    FOREIGN KEY (sender_id) REFERENCES users(user_id),
-                    FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+                    FOREIGN KEY (sender_id) REFERENCES users(phone_Number)
+                   
                 )""");
         }
     }
@@ -132,7 +130,7 @@ public class Database {
  public static String authUser(String militaryId, String password) throws SQLException{
             Connection conn = Database.getConnection();
          
-            String sql = "SELECT * FROM users WHERE phone_number= ?";
+            String sql = "SELECT * FROM users WHERE phone_Number= ?";
              PreparedStatement stmt = conn.prepareStatement(sql);
              stmt.setString(1, militaryId);
 
@@ -157,13 +155,10 @@ public class Database {
             
         }
 
-    public static String getContacts(String militaryId, List<String> contactsList) throws SQLException {
+    public static List<String> getContacts(String militaryId, List<String> contactsList) throws SQLException {
         System.out.println("Recherche des contacts");
 
-        String sql = "SELECT u.username, u.division, u.phone_number " +
-                "FROM users u " +
-                "INNER JOIN contacts c ON u.phone_number = c.contact_id " +
-                "WHERE c.user_id = ?";
+        String sql = "SELECT contact_user_id, nick_name from contacts where user_id =?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -171,16 +166,19 @@ public class Database {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String username = rs.getString("username");
-                String division = rs.getString("division");
-                String contactId = rs.getString("phone_number");
+                String username = rs.getString("nick_name");
 
-                String contact = username + " (" + division + " - " + contactId + ")";
+                String contactId = rs.getString("contact_user_id");
+
+                String contact = username + " (" + contactId + ")";
                 contactsList.add(contact); // ajout à la liste
-                return contact;
+                System.out.println(contact);
+
+
             }
+            return contactsList;
+
         }
-        return "";
     }
 
 

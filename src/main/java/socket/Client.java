@@ -375,7 +375,7 @@ public class Client {
 
             // Read JSON response
             String jsonResponse = inCentral.readLine();
-            System.out.println("Requete d'authentification envoyé , reception de reponse");
+            System.out.println("Requete d'authentification envoyé , reception de reponse"+jsonResponse);
             // Parse JSON response into Notification
             Notification notification = gson.fromJson(jsonResponse, Notification.class);
 
@@ -384,10 +384,12 @@ public class Client {
                     System.out.println("Aucune notification reçu");
                     return null;
                 }else{
-                    return new User(notification.getMessage().split("&&")[0],
-                            notification.getMessage().split("&&")[1],
-                            notification.getMessage().split("&&")[2],
-                            notification.getMessage().split("&&")[3]);
+                      User user = new User(notification.getMessage().split("&&")[0],
+                                notification.getMessage().split("&&")[1],
+                                notification.getMessage().split("&&")[2],
+                                notification.getMessage().split("&&")[3]);
+                      user.setPasswordHash(notification.getMessage().split("&&")[4]);
+                    return user;
                 }
 
             } else {
@@ -395,6 +397,8 @@ public class Client {
             }
         } catch (IOException e) {
             System.err.println("[CLIENT] Error requesting GET: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
         return null;
     }

@@ -13,9 +13,12 @@ import java.util.List;
 import com.alaanya.MainApp;
 import database.Database;
 
+import file.FileReceiver;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import message.MessageReceiver;
+import message.MessageSender;
 import model.User;
 import socket.Client;
 import model.Message;
@@ -58,24 +61,22 @@ public class MainController {
     @FXML private Label selectedUserLabel;
     @FXML private ListView<String> contactListView;
     @FXML private TextArea chatTextArea;
-     @FXML private VBox chatVBox;
+    @FXML private VBox chatVBox;
     @FXML private TextField messageTextField;
     @FXML private TextField searchTextField;
     @FXML private ListView<String> searchResultsListView;
     @FXML private VBox defaultCenterVBox;
     @FXML private VBox chatAreaVBox;
-    @FXML
-    private VBox settingsVBox;
+    @FXML private VBox settingsVBox;
+    @FXML private Label settingsUserLabel;
+    @FXML private Label settingsGradeLabel;
+    @FXML private Label settingsDivisionLabel;
+    @FXML private Label settingsIdLabel;
+    @FXML private TitledPane addContactPane;
+    @FXML private TextField phoneNumberField;
+    @FXML private TextField nicknameField;
 
-    @FXML
-    private Label settingsUserLabel;
-    @FXML
-    private Label settingsGradeLabel;
-    @FXML
-    private Label settingsDivisionLabel;
-    @FXML
-    private Label settingsIdLabel;
-   
+
 
     private User user;
     private static String recipientAddress;
@@ -86,14 +87,23 @@ public class MainController {
     private Timeline callTimer;
 
     @FXML
-    public void initialize() {
+    public void initialize() throws SQLException {
+        //lance les thread receiver
+        new MessageReceiver(5001).start();
+
+        new FileReceiver(5002).start();
+
+
+
+
         // observe contactListView
         contactListView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     if (newValue != null) {
+
                         setSelectedUsername(newValue); // Set the username in the label
                         showChatArea(true); // Show chat area when contact is selected
-                        String userId =  extractContactIdFromContactList(newValue.substring(0, newValue.length() - 1));
+                        String userId =  extractContactIdFromContactList(newValue);
 
                         //envoie une requete de recupperation d'addresse IP
                         Client.requestAddress(userId, notification -> {
@@ -125,7 +135,13 @@ public class MainController {
         defaultCenterVBox.setVisible(!show);
     }
 
-    public void setUser(User user, int state) {
+    public void setUser(User user, int state) throws SQLException {
+        this.user = user;
+        this.statut = new Label((state == 1) ? "online" : "offline");
+        //recuperation des contacts
+        contactList = (ObservableList<String>) Database.getContacts(user.getPhone_Number(),contactList);
+        contactListView.setItems(contactList);
+
 
     }
     public User getUser() {
@@ -135,6 +151,21 @@ public class MainController {
     /**
      * Ajoute un contact à la liste de contacts de l'utilisateur.
      */
+    @FXML
+    private void addContactS() throws SQLException {
+        String phone = phoneNumberField.getText();
+        String nickname = nicknameField.getText();
+
+        if (phone == null || phone.isEmpty() || nickname == null || nickname.isEmpty()) {
+            System.out.println("Veuillez remplir tous les champs.");
+            return;
+        }
+
+        // Logique d'ajout du contact ici
+        Database.addContact(user.getPhone_Number(),phone,0,nickname);
+        System.out.println("Ajout du contact: " + nickname + " (" + phone + ")");
+    }
+
     @FXML
     private void addContact() {
         String selectedContact = searchResultsListView.getSelectionModel().getSelectedItem(); //RECUPERE LE CONTACT SELECTIONNÉ
@@ -153,7 +184,7 @@ public class MainController {
 
                 //Recupere l'id de l'utilisateur
                 String userId = user.getPhone_Number();
-                System.out.println("Table de conatact "+ userId + ": "+ contactId);
+                System.out.println("Table de contact "+ userId + ": "+ contactId);
                 try{
                     //Enregistre le contact dans la BD
                     Database.addContact(userId,contactId,0,"New Contact");
@@ -183,7 +214,7 @@ public class MainController {
 
         if (!messageText.isEmpty() && selectedContact != null) {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
-            String recipientId = extractContactIdFromContactList(selectedContact.substring(0, selectedContact.length() - 1));
+            String recipientId = extractContactIdFromContactList(selectedContact);
 
             if (recipientId != null) {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
@@ -193,6 +224,7 @@ public class MainController {
 
                 //RecipentAddress
                 Client.sendMessage(message,recipientAddress); // Envoi du message via la classe Client
+                new MessageSender(recipientId, 5001, message).start();
 
                 //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
@@ -330,11 +362,18 @@ public class MainController {
      * @return The contact ID, or null if it cannot be extracted.
      */
     private String extractContactIdFromContactList(String contactString) {
-        if (contactString != null && contactString.contains(" - ")) {
-            return contactString.substring(contactString.lastIndexOf(" - ") + 3).trim();
+        if (contactString != null) {
+            int start = contactString.indexOf("(");
+            int end = contactString.indexOf(")");
+            if (start != -1 && end != -1 && start < end) {
+                return contactString.substring(start + 1, end);
+            }
         }
-        return null;
+        return null; // ou tu peux lancer une exception ou logguer une erreur
     }
+
+
+
 
     /**
      * Extracts the contact ID from the search results list string format.
@@ -400,8 +439,8 @@ public class MainController {
         List<String> searchResultsList = new ArrayList<>();
         /*
          * l'acces a la bd ne doit pas se faire ici*/
-        String sql = "SELECT military_id, username, division FROM users " +
-                "WHERE military_id LIKE ? OR username LIKE ?";
+        String sql = "SELECT phone_Number, username, division FROM users " +
+                "WHERE phone_Number LIKE ? OR username LIKE ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -410,10 +449,10 @@ public class MainController {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String militaryId = rs.getString("military_id");
+                String phone_Number = rs.getString("phone_Number");
                 String username = rs.getString("username");
                 String division = rs.getString("division");
-                searchResultsList.add(username + " (" + division + " - " + militaryId + ")");
+                searchResultsList.add(username + " (" + division + " - " + phone_Number + ")");
             }
         }
         return searchResultsList;
@@ -425,7 +464,6 @@ public class MainController {
     public void callUser(ActionEvent actionEvent) {
 
            new AudioChatController().initialize();
-
     }
 
     public void startVideoCall(ActionEvent actionEvent) {
@@ -466,4 +504,14 @@ public class MainController {
     public void closeSettings() {
         settingsVBox.setVisible(false); // Masquer les paramètres
     }
+
+
+
+    @FXML
+    private void toggleAddContactPane(ActionEvent event) {
+        boolean isVisible = addContactPane.isVisible();
+        addContactPane.setVisible(!isVisible);
+        addContactPane.setManaged(!isVisible);
+    }
+
 }

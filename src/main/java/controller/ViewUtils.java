@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import database.Database;
 import model.User;
 import socket.Client;
 
@@ -29,9 +30,14 @@ public class ViewUtils {
             // Récupérer l'utilisateur depuis la base de données
           
             System.out.println("Recuperation des données depuis la bd centrale");
+
             User user = getUserByMilitaryId(militaryId);
             if (user != null) {
-                System.out.println("Données recu : acces à l'application");
+                System.out.println("Données recu : "+user.toString() +"acces à l'application");
+
+                //Enregistrer l'user en local
+                Database.addUser(user);
+
                 mainController.setUser(user,statut);
             } else {
                 errorLabel.setText("Utilisateur introuvable dans la base de données.");
@@ -44,7 +50,7 @@ public class ViewUtils {
             stage.show();
 
         } catch (IOException | SQLException e) {
-            errorLabel.setText("Erreur lors du chargement de la vue principale.");
+            errorLabel.setText("Erreur lors du chargement 6de la vue principale.");
             e.printStackTrace();
         }
     }

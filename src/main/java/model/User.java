@@ -115,5 +115,15 @@ public class User {
     public String getUsername() {
         return username;
     }
-    
+
+    @Override
+    public String toString(){
+        return "User{" +
+                "phone_NUmber='" + phone_Number + '\'' +
+                ", passwordHard='" + passwordHash + '\'' +
+                ", Username='" + username + '\'' +
+                ", Grade='" + grade + '\'' +
+                ", Division=" + division +
+                '}';
+    }
 }
