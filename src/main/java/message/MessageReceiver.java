@@ -2,6 +2,8 @@ package message;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import controller.MessageController;
+import controller.MainController;
 import model.Message;
 
 import java.io.DataInputStream;
@@ -34,6 +36,7 @@ public class MessageReceiver extends Thread {
                     String json = dis.readUTF();
                     Message msg = gson.fromJson(json, Message.class);
                     System.out.println("[" + msg.getTimestamp() + "] " + msg.getSender() + " : " + msg.getContent());
+
 
                     if (listener != null) {
                         listener.onMessageReceived(msg);

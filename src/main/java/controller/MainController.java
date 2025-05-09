@@ -55,7 +55,7 @@ public class MainController {
     @FXML private Label selectedUserLabel;
     @FXML private ListView<String> contactListView;
     @FXML private TextArea chatTextArea;
-    @FXML private VBox chatVBox;
+    @FXML public  VBox chatVBox;
     @FXML private TextField messageTextField;
     @FXML private TextField searchTextField;
     @FXML private ListView<String> searchResultsListView;
