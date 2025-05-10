@@ -2,6 +2,7 @@ package file;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import database.Database;
 import model.Message;
 
 import java.io.DataOutputStream;
@@ -36,8 +37,13 @@ public class FileSender extends Thread {
                 FileInputStream fis = new FileInputStream(file)
         ) {
             // Étape 1 : Envoyer un message JSON avec les métadonnées
-            Message msg = new Message(sender, "file", file.getName(), recipient, file.length(),new Date());
-            String json = gson.toJson(msg);
+            Message message = new Message(sender, "file", file.getName(), recipient, file.length(),new Date());
+            message.setAck("sent");
+            
+            //save in bd
+            Database.saveMessage(message);
+
+            String json = gson.toJson(message);
             dos.writeUTF(json); // envoie du JSON
 
             // Étape 2 : Envoyer le fichier binaire

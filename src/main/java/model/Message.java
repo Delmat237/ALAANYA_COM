@@ -13,10 +13,9 @@ public class Message implements Serializable {
     private String recipient;
     private long filesize;
     private Date timestamp;  // Add the timestamp field
+    private String ack; //sent;receive
+    private String statut;//read or notread
 
-    public Message(String sender, String type, String content) {
-        this(sender, type, content, null); // Call the all-args constructor
-    }
 
     public Message(String sender, String type, String content, String recipient) {
         this.sender = sender;
@@ -26,6 +25,7 @@ public class Message implements Serializable {
         this.timestamp = new Date(); // Initialize the timestamp
     }
 
+    //Format des fichiers attaché à un fichier
     public Message(String sender, String type, String content, String recipient, long filesize ,Date timestamp) {
         this.sender = sender;
         this.type = type;
@@ -36,25 +36,38 @@ public class Message implements Serializable {
     }
 
     public String getSender() {
-        return sender;
+        return this.sender;
     }
 
     public String getType() {
-        return type;
+        return this.type;
     }
-
+    public String getAck(){return this.ack;}
+    public void setAck(String ack){this.ack = ack;}
 
     public String getContent() {
-        return content;
+        return this.content;
     }
 
     public String getRecipient() {
-        return recipient;
+        return this.recipient;
     }
 
     public Date getTimestamp() {  // Add the getter for the timestamp
-        return timestamp;
+        return this.timestamp;
     }
+
+    public void setTimestamp(Date date) { this.timestamp = date;}
+    public void setFilesize(long filesize) {
+        this.filesize = filesize;
+    }
+
+    public long getFileSize() {
+        return this.filesize;
+    }
+    public String getStatut() {return this.statut;}
+
+    public void setStatut(String statut) {this.statut = statut;}
 
     @Override
     public String toString() {
@@ -69,11 +82,4 @@ public class Message implements Serializable {
 
 
 
-    public void setFilesize(long filesize) {
-        this.filesize = filesize;
-    }
-
-    public long getFileSize() {
-        return this.filesize;
-    }
 }

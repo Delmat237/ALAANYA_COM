@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import controller.MessageController;
 import controller.MainController;
+import database.Database;
 import model.Message;
 
 import java.io.DataInputStream;
@@ -34,12 +35,17 @@ public class MessageReceiver extends Thread {
                         DataInputStream dis = new DataInputStream(clientSocket.getInputStream())
                 ) {
                     String json = dis.readUTF();
-                    Message msg = gson.fromJson(json, Message.class);
-                    System.out.println("[" + msg.getTimestamp() + "] " + msg.getSender() + " : " + msg.getContent());
-
-
+                    Message message = gson.fromJson(json, Message.class);
+                    System.out.println("[" + message.getTimestamp() + "] " + message.getSender() + " : " + message.getContent());
+                    //change le statut du message en receive
+                    message.setAck("receive");
+                    //note comme non lu
+                    message.setStatut("notread");
+                    
+                    //Save in bd
+                    Database.saveMessage(message);
                     if (listener != null) {
-                        listener.onMessageReceived(msg);
+                        listener.onMessageReceived(message);
                     }
                 } catch (IOException e) {
                     System.err.println("[Receiver] Erreur réception message : " + e.getMessage());

@@ -11,37 +11,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alaanya.MainApp;
-import database.Database;
 
+import database.Database;
 import file.FileReceiver;
 import file.FileSender;
-import javafx.scene.Parent;
-import message.MessageReceiver;
-import message.MessageSender;
-import model.User;
-import socket.Client;
-import model.Message;
-
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.animation.Timeline;
-import javafx.scene.control.*;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
+import message.MessageReceiver;
+import message.MessageSender;
+import model.Message;
+import model.User;
+import socket.Client;
 
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
@@ -77,10 +76,10 @@ public class MainController {
     private ObservableList<String> contacts = FXCollections.observableArrayList();
     private ObservableList<String> contactList = FXCollections.observableArrayList();
 
-    private int FILE_PORT = 5002;
-    private int MESSAGE_PORT = 5001;
-    private int AUDIO_PORT = 5003;
-    private int VIDEO_PORT = 5004;
+    private int FILE_PORT = 5001;
+    private int MESSAGE_PORT = 5000;
+    private int AUDIO_PORT = 5002;
+    private int VIDEO_PORT = 5003;
 
     private int seconds = 0;
     private Timeline callTimer;
@@ -216,6 +215,7 @@ public class MainController {
 
             if (recipientId != null) {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
+                message.setAck("sent");
                 //Recupération de l'address IP actuell du destinataire
 
                 //RecipentAddress
@@ -231,6 +231,8 @@ public class MainController {
                 //Ajout du message dans la zone de chat
                 MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true);
 
+                //Ajout dans la BD
+                Database.saveMessage(message);
                 messageTextField.clear();
             } else {
                 System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
@@ -296,58 +298,19 @@ public class MainController {
      * @param contactId The military ID of the selected contact.
      */
     private void loadConversation(String currentUserId, String contactId) {
-        try {
 
-            List<Message> conversation = getConversationFromDatabase(currentUserId, contactId);
+        List<Message> conversation = Database.getChatDetails(currentUserId, contactId);
 
-            for (Message message : conversation) {
-                String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
-                System.out.println("msg lu :" +  message.getContent());
+        for (Message message : conversation) {
+            String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
+            System.out.println("msg lu :" +  message.getContent());
 
-                MessageController.addMessage(chatVBox,sender,message.getContent(),sender.equals("Vous")?true:false);
-              
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors du chargement de la conversation : " + e.getMessage());
-            e.printStackTrace();
-            // Afficher un message d'erreur à l'utilisateur
+            MessageController.addMessage(chatVBox,sender,message.getContent(), sender.equals("Vous"));
+
         }
     }
 
-    /**
-     * Retrieves the conversation between two users from the database.
-     * @param currentUserId The military ID of the current user.
-     * @param contactId The military ID of the selected contact.
-     * @return A list of Message objects representing the conversation.
-     * @throws SQLException If a database error occurs.
-     */
-    private List<Message> getConversationFromDatabase(String currentUserId, String contactId) throws SQLException {
-        List<Message> conversation = new ArrayList<>();
-        String sql = "SELECT sender, content FROM messages " +
-                "WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) " +
-                "ORDER BY timestamp";
 
-        try (Connection conn = Database.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, currentUserId);
-            stmt.setString(2, contactId);
-            stmt.setString(3, contactId);
-            stmt.setString(4, currentUserId);
-
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Message message = new Message(
-                        rs.getString("sender"),
-                        "MESSAGE",
-                        rs.getString("content")
-
-                );
-                conversation.add(message);
-            }
-        }
-        return conversation;
-    }
 
     @FXML
     private void logout() {

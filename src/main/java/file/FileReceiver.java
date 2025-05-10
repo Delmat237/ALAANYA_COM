@@ -2,6 +2,7 @@ package file;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import database.Database;
 import model.Message;
 
 import java.io.DataInputStream;
@@ -31,13 +32,20 @@ public class FileReceiver extends Thread {
                 ) {
                     // Étape 1 : Lire le JSON
                     String json = dis.readUTF();
-                    Message msg = gson.fromJson(json, Message.class);
+                    Message message = gson.fromJson(json, Message.class);
+                    //change le statut du message en receive
+                    message.setAck("receive");
+                    //note comme non lu
+                    message.setStatut("notread");
 
-                    if ("file".equals(msg.getType())) {
-                        File outFile = new File("received_" + msg.getContent());
+                    //Save in bd
+                    Database.saveMessage(message);
+
+                    if ("file".equals(message.getType())) {
+                        File outFile = new File("received_" + message.getContent());
                         try (FileOutputStream fos = new FileOutputStream(outFile)) {
                             byte[] buffer = new byte[4096];
-                            long remaining = msg.getFileSize();
+                            long remaining = message.getFileSize();
                             int bytesRead;
                             while (remaining > 0 &&
                                     (bytesRead = dis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) != -1) {

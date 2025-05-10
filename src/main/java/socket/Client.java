@@ -2,18 +2,12 @@ package socket;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-
 import database.Database;
 import model.Message;
 import model.Notification;
 import model.User;
-
-import javafx.application.Platform;
-import javafx.stage.FileChooser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -22,14 +16,10 @@ import com.google.gson.GsonBuilder;
 
 public class Client {
 
-    private static final int SERVER_PORT = 12345;
-    private static Socket socket;
-    private static DataOutputStream out;
     private static BufferedWriter outCentral;
-    private static DataInputStream in;
     private static BufferedReader inCentral;
     private static Socket socketCentral;
-    private static boolean isConnected = false;
+
     private static boolean isConnectedToServer = false;
     public static String userId;
 
@@ -46,22 +36,6 @@ public class Client {
 
     private static NotificationListener notificationListener;
 
-    public static boolean connect(String recipientAddress) {
-        //Connection au serveur d'un client pour echanger
-        try {
-            socket = new Socket(recipientAddress, SERVER_PORT);
-            out = new DataOutputStream(socket.getOutputStream());
-            in = new DataInputStream(socket.getInputStream());
-            isConnected = true;
-            System.out.println("[CLIENT] Connected to server");
-            //startReceiving(); // Start listening for messages immediately after connecting
-            return true;
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Error connecting to server: " + e.getMessage());
-            isConnected = false;
-            return false;
-        }
-    }
 
     //Connection au serveur centrale
     public static boolean connectToServer(){
@@ -80,142 +54,7 @@ public class Client {
             return false;
         }
     }
-
-
-
-    /*
-     * params 
-     * message : Message tha we want to send 
-     * recipientAddress : Current address of receiver
-     */
-    public static void sendMessage(Message message, String recipientAddress) {
-        if (!isConnected) {
-            System.err.println("[CLIENT] Not connected to server recipient.  Attempting to reconnect.");
-            if (!connect(recipientAddress)) {
-                System.err.println("[CLIENT] Reconnection failed. Message not sent.");
-                return;
-            }
-
-            //sI LE CLIENT N'EST PAS ONLINE LE MESSAGE N'EST PAS ENVOYÉ
-        }
-
-        try {
-            String json = gson.toJson(message);
-            out.writeUTF(json);
-
-            System.out.println("[CLIENT] Message sent: " + message.getContent());
-        } catch (SocketException se) {
-            System.err.println("[CLIENT] SocketException while sending. Reconnecting..." + se.getMessage());
-            isConnected = false;
-            if (!connect(recipientAddress)) {
-                System.err.println("[CLIENT] Reconnection failed. Message not sent.");
-            } else {
-                sendMessage(message,recipientAddress); // Try sending again after reconnecting
-            }
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Error sending message: " + e.getMessage());
-            isConnected = false;
-        }
-    }
-
-
-
-    // Method to select a file and send it
-    public void sendFile(String sender,String recipient, String recipientAddress) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select File to Send");
-        File selectedFile = fileChooser.showOpenDialog(null);
-
-        if (selectedFile != null) {
-            try {
-                byte[] fileData = Files.readAllBytes(selectedFile.toPath());
-                String fileName = selectedFile.getName();
-                /*FileMessage fileMessage = new FileMessage(sender, "FILE_UPLOAD", "File Upload", fileName, fileData,recipient);
-                Client.sendMessage(fileMessage,recipientAddress); // Use your sendMessage method to send the file
-                */
-                System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
-
-            } catch (IOException e) {
-                System.err.println("[CLIENT] Error reading file: " + e.getMessage());
-            }
-        } else {
-            System.out.println("[CLIENT] File selection cancelled.");
-        }
-    }
-
-    private static void startReceiving() {
-        Thread receiveThread = new Thread(() -> {
-            try {
-                while (isConnected) {
-                    try {
-                        String json = in.readLine();
-                        Object receivedObject = gson.fromJson(json, Message.class);
-
-                        if (receivedObject == null) {
-                            System.err.println("[CLIENT] Received null object.  Connection may be closed.");
-                            isConnected = false;
-                            break;
-                        }
-
-                        if (receivedObject instanceof Message receivedMessage) {
-                            System.out.println("[CLIENT] Received message: " + receivedMessage.getContent() + " from " + receivedMessage.getSender());
-
-                            Platform.runLater(() -> {
-                                // Code to access and update UI
-                                System.out.println("[CLIENT] Message Received");
-                            });
-                        } else if (receivedObject instanceof Notification notification) {
-                            System.out.println("[CLIENT] Received notification: " + notification.getMessage() + " type " + notification.getType());
-
-                            if (notificationListener != null) {
-                                notificationListener.onNotificationReceived(notification);
-                            }
-                        } else {
-                            System.err.println("[CLIENT] Received unknown object type: " + receivedObject.getClass().getName());
-                        }
-
-
-                    } catch (SocketException e) {
-                        System.err.println("[CLIENT] SocketException while receiving: " + e.getMessage());
-                        isConnected = false;
-                        break;
-                    } catch (IOException e) {
-                        System.err.println("[CLIENT] IOException while receiving: " + e.getMessage());
-                        isConnected = false;
-                        break;
-                    }
-                }
-            } finally {
-                closeConnection();
-            }
-        });
-        receiveThread.setDaemon(true);
-        receiveThread.start();
-    }
-
-    public static void closeConnection() {
-        isConnected = false;
-        try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null) socket.close();
-            System.out.println("[CLIENT] Connection closed");
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Error closing connection: " + e.getMessage());
-        }
-    }
-
-    public static boolean isConnected() {
-        return isConnected;
-    }
-    public static boolean isIsConnectedToServer() {
-        return isConnectedToServer;
-    }
-
-    public static void setNotificationListener(NotificationListener listener) {
-        notificationListener = listener;
-    }
-
+    
     /*
      * params
      * userId : id of the user
@@ -232,7 +71,7 @@ public class Client {
         try {
             // Send request for user's address
             System.out.println("j'envoie la requete");
-            Message requestMessage = new Message("SERVER", "REQUEST_ADDRESS", userId);
+            Message requestMessage = new Message("SERVER", "REQUEST_ADDRESS", userId,"CENTRAL_SERVER");
             System.out.println("le message est constitué");
 
             // Assure-toi que la connexion est établie et que outCentral/inCentral sont initialisés
@@ -277,7 +116,7 @@ public class Client {
 
         try {
             // Send request for user's address
-            Message requestMessage = new Message("SERVER", "AUTHENTICATE_USER", userId+"&&"+password);
+            Message requestMessage = new Message("SERVER", "AUTHENTICATE_USER", userId+"&&"+password,"CENTRAL_SERVER");
 
             // Sérialiser en JSON et envoyer
             String jsonRequest = gson.toJson(requestMessage);
@@ -315,7 +154,7 @@ public class Client {
         try {
             // Send request for user's address
             Message requestMessage = new Message("SERVER", "SAVE_USER", military_id+"&&"+
-                    password_hash+"&&"+grade+"&&"+division+"&&"+ "&&"+ username);
+                    password_hash+"&&"+grade+"&&"+division+"&&"+ "&&"+ username,"CENTRAL_SERVER");
             connectToServer();
             // Conversion en JSON
             String jsonRequest = gson.toJson(requestMessage);
@@ -361,7 +200,7 @@ public class Client {
         try {
             connectToServer();
             // Send request for user's address
-            Message requestMessage = new Message("SERVER", "GET_USER", military_id);
+            Message requestMessage = new Message("SERVER", "GET_USER", military_id,"CENTRAL_SERVER");
             //connectToServer();
             // Convert to JSON
             String jsonRequest = gson.toJson(requestMessage);
