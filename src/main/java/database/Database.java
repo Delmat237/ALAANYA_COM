@@ -96,7 +96,7 @@ public class Database {
                         content TEXT NOT NULL,
                         timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                         ack TEXT CHECK(ack IN ('sent', 'receive')) DEFAULT 'sent',
-                        statut TEXT CHECK (statut IN ('read','notread')) DEFAULT 'notread',
+                        statut TEXT CHECK (statut IN ('read','notread','delivered')) DEFAULT 'delivered',
                         FOREIGN KEY (sender_id) REFERENCES users(phone_Number)
                        
                     )""");
@@ -336,13 +336,13 @@ public class Database {
     }
 
     public static void updateMessageStatus(Message message, String read) throws SQLException {
-        String sql = "UPDATE messages SET status = ? WHERE sender_id = ? AND content = ?";
+        String sql = "UPDATE messages SET statut = ? WHERE sender_id = ? AND content = ?";
         Connection connection = Database.getConnection();
         PreparedStatement stmt = connection.prepareStatement(sql);
 
             stmt.setString(1, read);
             stmt.setString(2, message.getSender());
-            stmt.setString(2, message.getContent());
+            stmt.setString(3, message.getContent());
 
             stmt.executeUpdate();
 

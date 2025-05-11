@@ -55,6 +55,7 @@ public class MessageController {
                 timeBox.setAlignment(Pos.CENTER_RIGHT);
                 timeBox.getChildren().add(timeText);
 
+                if (status == null) status = "read";
                 if (isSentByUser) {
                         ImageView statusIcon = new ImageView(getStatusIcon(status));
                         statusIcon.setFitWidth(12);
@@ -79,7 +80,7 @@ public class MessageController {
                                 path = "/com/alaanya/view/images/delivered.png";
                                 break;
                         default:
-                                path = "/com/alaanya/view/images/sent.png";
+                                path = "/com/alaanya/view/images/send.png";
                                 break;
                 }
                 return new Image(Objects.requireNonNull(MessageController.class.getResourceAsStream(path)));

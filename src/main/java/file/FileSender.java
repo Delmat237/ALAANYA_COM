@@ -37,7 +37,7 @@ public class FileSender extends Thread {
                 FileInputStream fis = new FileInputStream(file)
         ) {
             // Étape 1 : Envoyer un message JSON avec les métadonnées
-            Message message = new Message(sender, "file", file.getName(), recipient, file.length(),new Date());
+            Message message = new Message(sender, "FILE", file.getName(), recipient, file.length(),new Date());
             message.setAck("sent");
             
             //save in bd

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import audio.AudioReceiver;
@@ -224,18 +225,23 @@ public class MainController {
     }
     private void handleIncomingMessage(Message message) {
         Platform.runLater(() -> {
-            MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false,"read");
+            // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
+            if (!Objects.equals(message.getType(), "ACK_READ")){
+                if (Objects.equals(message.getType(), "MESSAGE"))
+                     MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false,"read");
+                else
+                    FileController.addFile(chatVBox, message.getSender(), message.getContent(), false);
+                Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
+                new MessageSender(recipientAddress, MESSAGE_PORT, readAck).start();
 
-            // Envoyer une confirmation de lecture
-            Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
-            new MessageSender(recipientAddress, MESSAGE_PORT, readAck).start();
-
-            // Mettre à jour dans la base de données
-            try {
-                Database.updateMessageStatus(message, "read");
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+                // Mettre à jour dans la base de données
+                try {
+                    Database.updateMessageStatus(message, "read");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
         });
     }
 
@@ -311,6 +317,7 @@ public class MainController {
             if (recipientId != null) {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
                 message.setAck("sent");
+                message.setStatut("delivered");
                 //Recupération de l'address IP actuell du destinataire
 
                 //RecipentAddress
@@ -415,10 +422,11 @@ public class MainController {
 
         for (Message message : conversation) {
             String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
-            System.out.println("msg lu :" +  message.getContent());
 
-            MessageController.addMessage(chatVBox,sender,message.getContent(), sender.equals("Vous"),"read");
-
+            if (Objects.equals(message.getType(), "MESSAGE"))
+                     MessageController.addMessage(chatVBox,sender,message.getContent(), !Objects.equals(message.getAck(), "receive"),message.getStatut());
+            if (Objects.equals(message.getType(), "file"))
+                FileController.addFile(chatVBox,sender,message.getContent(), !Objects.equals(message.getAck(), "receive"));
         }
     }
 

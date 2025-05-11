@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Objects;
 
 public class MessageReceiver extends Thread {
     private final int port;
@@ -42,8 +43,9 @@ public class MessageReceiver extends Thread {
                     //note comme non lu
                     message.setStatut("notread");
                     
-                    //Save in bd
-                    Database.saveMessage(message);
+                    //Sauvegarde su ce n'est pas un accusé de reception
+                    if (!Objects.equals(message.getType(), "ACK_READ"))
+                        Database.saveMessage(message);
                     if (listener != null) {
                         listener.onMessageReceived(message);
                     }
