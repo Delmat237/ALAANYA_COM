@@ -71,7 +71,7 @@ public class LoginController {
             }
         } catch ( Exception e) {
             errorLabel.setText("Erreur de connexion à la base de données.");
-            e.printStackTrace();
+             System.err.println(e.getMessage() + " : " + e.getCause());
         }
     }
 
@@ -93,7 +93,7 @@ public class LoginController {
             Stage stage = (Stage) militaryIdField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage() + " : " + e.getCause());
         }
     }
 

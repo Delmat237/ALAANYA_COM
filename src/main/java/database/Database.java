@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import model.Contact;
 import model.Message;
 import model.User;
 
@@ -76,8 +77,9 @@ public class Database {
                     CREATE TABLE IF NOT EXISTS contacts (
                         id  INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_id VARCHAR(15) NOT NULL,
-                        contact_user_id VARCHAR(15) NOT NULL,
+                        contact_user_id VARCHAR(15) UNIQUE  NOT NULL,
                         nick_name TEXT NOT NULL,
+                        lastMessage TEXT ,
                         statut INTEGER CHECK(statut IN (0, 1)) DEFAULT 0,
                         FOREIGN KEY (user_id) REFERENCES users(phone_Number),
                      
@@ -154,77 +156,49 @@ public class Database {
 
             }
 
-     public static List<String> searchUsers(String searchTerm){
-            List<String> searchResultsList = new ArrayList<>();
-            /*
-             * l'acces a la bd ne doit pas se faire ici*/
-            String sql = "SELECT phone_Number, username, division FROM users " +
-                    "WHERE phone_Number LIKE ? OR username LIKE ?";
+    public static List<Contact> searchUsers(String query, String currentUserPhone) throws SQLException {
+        List<Contact> results = new ArrayList<>();
+        String sql = "SELECT * FROM contacts WHERE (nick_name LIKE ? OR contact_user_id LIKE ?) AND user_id = ?";
 
-            try (Connection conn = Database.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, "%" + searchTerm + "%");
-                stmt.setString(2, "%" + searchTerm + "%");
-                ResultSet rs = stmt.executeQuery();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String likeQuery = "%" + query + "%";
+            stmt.setString(1, likeQuery);
+            stmt.setString(2, likeQuery);
+            stmt.setString(3, currentUserPhone); // on exclut l'utilisateur courant
 
-                while (rs.next()) {
-                    String phone_Number = rs.getString("phone_Number");
-                    String username = rs.getString("username");
-                    String division = rs.getString("division");
-                    searchResultsList.add(username + " (" + division + " - " + phone_Number + ")");
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                results.add(new Contact(rs.getString("contact_user_id"),
+                        rs.getString("nick_name"),
+                        rs.getString("lastMessage"),
+                        null,
+                        0,
+                        null));
             }
-            return searchResultsList;
-
         }
 
-     public static List<String> getContacts(String militaryId, List<String> contactsList) throws SQLException {
-            System.out.println("Recherche des contacts");
-
-            String sql = "SELECT contact_user_id, nick_name from contacts where user_id =?";
-
-            try (Connection conn = Database.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, militaryId);
-                ResultSet rs = stmt.executeQuery();
-
-                while (rs.next()) {
-                    String username = rs.getString("nick_name");
-
-                    String contactId = rs.getString("contact_user_id");
-
-                    String contact = username + " (" + contactId + ")";
-                    contactsList.add(contact); // ajout à la liste
-                    System.out.println(contact);
+        return results;
+    }
 
 
-                }
-                return contactsList;
-
-            }
-
-        }
-
-
-     public static User getUser(String militaryId) throws SQLException{
+     public static User getUser(String userId) throws SQLException{
                 String sql = "SELECT phone_number, grade, division, clearance_level, username FROM users WHERE phone_number= ?";
                 Connection conn = Database.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
-                  stmt.setString(1, militaryId);
+                  stmt.setString(1, userId);
 
                   String msg = null;
                   ResultSet rs = stmt.executeQuery();
 
                  if (rs.next()) {
-                                    System.out.println("[LOCALHOST] getting success (user found) for: " + militaryId);
+                                    System.out.println("[LOCALHOST] getting success (user found) for: " + userId);
 
                                     return new User( rs.getString("phone_number"), rs.getString("grade"),
                                     rs.getString("division"),  rs.getString("username"));
 
                   } else {
-                                        System.out.println("[LOCALHOST] getting FAILED (user not found) for: " + militaryId);
+                                        System.out.println("[LOCALHOST] getting FAILED (user not found) for: " + userId);
                                         return null;
 
 
@@ -255,13 +229,15 @@ public class Database {
             }
 
      public static void saveMessage(Message message){
-        String sql = "INSERT INTO messages (sender_id, receiver_id,content,timestamp,ack,statut,type) VALUES = (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO messages (sender_id, receiver_id,content,timestamp,ack,statut,type) VALUES  (?,?,?,?,?,?,?)";
          try(Connection conn = Database.getConnection()){
              PreparedStatement stmt = conn.prepareStatement(sql);
              stmt.setString(1, message.getSender());
              stmt.setString(2, message.getRecipient());
              stmt.setString(3, message.getContent());
-             stmt.setDate(4, (Date) message.getTimestamp());
+             // Convertir le timestamp en chaîne de caractères
+             String timestampStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(message.getTimestamp());
+             stmt.setString(4, timestampStr);
              stmt.setString(5, message.getAck());
              stmt.setString(6, message.getStatut());
              stmt.setString(7, message.getType());
@@ -276,6 +252,46 @@ public class Database {
          }
      }
 
+     public static List<Contact> getContactsWithMessages(String userPhone) throws SQLException {
+            String sql = "SELECT DISTINCT c.* FROM contacts c " +
+                    "JOIN messages m ON (c.user_id = m.sender_id OR c.user_id = m.receiver_id) " +
+                    "WHERE m.sender_id = ? OR m.receiver_id = ?";
+            Connection connection = Database.getConnection();
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, userPhone);
+            stmt.setString(2, userPhone);
+                    ResultSet rs = stmt.executeQuery();
+
+            List<Contact> contacts = new ArrayList<>();
+            while (rs.next()) {
+                contacts.add(new Contact(
+                        rs.getString("contact_user_id"),
+                        rs.getString("nick_name"),
+                        "",
+                        "",
+                        0,
+                        null));
+            }
+            return contacts;
+        }
+
+        public static List<Contact> getAllContacts() throws SQLException {
+            Connection connection = Database.getConnection();
+            ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM contacts");
+            List<Contact> contacts = new ArrayList<>();
+            while (rs.next()) {
+                contacts.add(new Contact(
+                        rs.getString("contact_user_id"),
+                        rs.getString("nick_name"),
+                        "",
+                        "",
+                        0,
+                        null));
+            }
+            return contacts;
+        }
+
+
     /**
      * Retrieves the conversation between two users from the database.
      * @param currentUserId The military ID of the current user.
@@ -285,8 +301,8 @@ public class Database {
      */
     public static List<Message> getChatDetails(String currentUserId, String contactId) {
         List<Message> conversation = new ArrayList<>();
-        String sql = "SELECT sender, content FROM messages " +
-                "WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) " +
+        String sql = "SELECT * FROM messages " +
+                "WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) " +
                 "ORDER BY timestamp";
 
         try (Connection conn = Database.getConnection();
@@ -301,10 +317,10 @@ public class Database {
             while (rs.next()) {
                 //RECONSTTITU LES MESSAGES
                 Message message = new Message(
-                        rs.getString("sender"),
+                        rs.getString("sender_id"),
                         rs.getString("type"),
                         rs.getString("content"),
-                        rs.getString("recipient")
+                        rs.getString("receiver_id")
                 );
                 message.setTimestamp(rs.getDate("timestamp"));
                 message.setAck(rs.getString("ack"));
@@ -318,4 +334,19 @@ public class Database {
     }
         return conversation;
     }
+
+    public static void updateMessageStatus(Message message, String read) throws SQLException {
+        String sql = "UPDATE messages SET status = ? WHERE sender_id = ? AND content = ?";
+        Connection connection = Database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement(sql);
+
+            stmt.setString(1, read);
+            stmt.setString(2, message.getSender());
+            stmt.setString(2, message.getContent());
+
+            stmt.executeUpdate();
+
+
     }
+}
+

@@ -1,0 +1,79 @@
+/* dark-theme.css */
+
+/* Arrière-plan général */
+.root {
+    -fx-background-color: #2C3E50; /* Bleu foncé pour le fond général */
+}
+
+.top {
+    -fx-background-color: #34495E; /* Gris foncé pour la barre de titre */
+}
+
+.left {
+    -fx-background-color: #2C3E50; /* Bleu foncé, cohérence avec le fond général */
+}
+
+.center {
+    -fx-background-color: #34495E; /* Gris foncé pour la zone centrale */
+}
+
+/* Barres et boutons */
+.ToolBar {
+    -fx-background-color: #2C3E50; /* Bleu foncé pour la barre d'outils */
+}
+
+.ToolBar .label {
+    -fx-text-fill: #ECF0F1; /* Texte blanc cassé pour les labels */
+    -fx-font-size: 14px;
+}
+
+.ToolBar .button {
+    -fx-background-color: #27AE60; /* Vert armée pour les boutons */
+    -fx-text-fill: white;
+}
+
+.ToolBar .button:hover {
+    -fx-background-color: #2ECC71; /* Vert clair au survol */
+}
+
+/* Textes */
+.label, .state, .title {
+    -fx-text-fill: #ECF0F1; /* Texte en blanc cassé pour un bon contraste */
+}
+
+.text-field, .password-field, .combo-box {
+    -fx-background-color: #2C3E50; /* Bleu foncé pour les champs */
+    -fx-text-fill: #ECF0F1; /* Texte blanc cassé */
+    -fx-border-color: #27AE60; /* Bordure verte militaire */
+}
+
+.button {
+    -fx-background-color: #27AE60; /* Vert armée pour les boutons */
+    -fx-text-fill: white;
+}
+
+.button:hover {
+    -fx-background-color: #2ECC71; /* Vert plus clair au survol */
+}
+
+.scroll-pane {
+    -fx-background-color: #2C3E50; /* Bleu foncé pour le fond de la scroll pane */
+}
+
+/* Message du chat */
+.chat-message {
+    -fx-background-color: #16A085; /* Vert foncé pour les messages */
+    -fx-text-fill: #FFFFFF; /* Texte en blanc */
+    -fx-border-radius: 5px;
+}
+
+/* Panel d'ajout de contact */
+.add-contact-pane {
+    -fx-background-color: #34495E;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Séparateur */
+.separator {
+    -fx-background-color: #FFFFFF;
+}

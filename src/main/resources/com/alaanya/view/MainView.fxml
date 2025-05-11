@@ -9,7 +9,7 @@
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="controller.MainController"
-            stylesheets="@css/style.css">
+           >
 
     <!-- Barre de titre -->
     <top>
@@ -26,10 +26,11 @@
                 <Separator orientation="VERTICAL"/>
                 <Label text="ID: "/>
                 <Label fx:id="idLabel" text="idLabel"/>
-                <Label fx:id="statut" text="STATE" styleClass="state"/>
+                <Label fx:id="statutLabel" text="STATE" styleClass="state"/>
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- Bouton pour accéder aux paramètres -->
+                <Button text="Changer de Thème" onAction="#toggleThemeAction"/>
                 <Button text="Paramètres" onAction="#showSettings" />
                 <Button text="Déconnexion" onAction="#logout"/>
             </items>
@@ -43,22 +44,32 @@
 
             <Label text="Contacts"/>
 
-            <!-- Barre de recherche des contacts -->
-            <HBox spacing="5">
-                <TextField fx:id="contactSearchTextField" promptText="Rechercher un contact..." HBox.hgrow="ALWAYS" onKeyPressed="#handleSearchKeyPressed"/>
-                <Button onAction="#searchUsers">
-                    <graphic>
-                        <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                            <Image url="@images/glass.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-            </HBox>
+            <TabPane fx:id="contactsTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                <!-- Tab 1 : Contacts avec messages -->
+                <Tab text="Mes contacts">
+                    <VBox spacing="5">
+                        <padding>
+                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                        </padding>
+                        <TextField fx:id="searchTextField" promptText="Rechercher..." />
+                        <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                </Tab>
 
-            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS" style="-fx-background-color: #ecf0f1;"/>
+                <!-- Tab 2 : Tous les contacts -->
+                <Tab text="Tous les contacts">
+            <VBox spacing="5">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+
+
+            <ListView fx:id="allContactsListView" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                </Tab>
+            </TabPane>
 
             <Button text="Ajouter un contact" onAction="#toggleAddContactPane"/>
-
 
             <TitledPane fx:id="addContactPane" text="Ajouter un contact" visible="false" managed="false" collapsible="false" VBox.vgrow="NEVER">
                 <content>
@@ -71,7 +82,7 @@
                         <Label text="Pseudo (nickname):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                         <TextField fx:id="nicknameField" promptText="Ex: Capitaine X" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
 
-                        <Button text="Ajouter contact" onAction="#addContactS" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2" alignment="CENTER"/>
+                        <Button text="Ajouter contact" onAction="#addContact" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2" alignment="CENTER"/>
                     </GridPane>
                 </content>
 
@@ -101,6 +112,7 @@
                     </Button>
 
                     <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
+                    <Label fx:id="selectedUserStatut" styleClass="state"/>
 
                     <!-- Actions -->
                     <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">

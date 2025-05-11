@@ -34,6 +34,9 @@ public class AudioChatController {
     private Timeline callTimer;
     private int secondsElapsed = 0;
 
+    public void showCallWindow() {
+        initialize();
+    }
 
     public void initialize() {
         // Créer une nouvelle fenêtre (popup)
@@ -113,7 +116,7 @@ public class AudioChatController {
     }
 
 
-    @FXML
+
     public void startCall() {
         System.out.println("Je lance la requete");
         String remoteIP = "localhost";  // ou récupéré dynamiquement

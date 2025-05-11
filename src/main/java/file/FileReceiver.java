@@ -3,6 +3,7 @@ package file;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import database.Database;
+import message.MessageReceiver;
 import model.Message;
 
 import java.io.DataInputStream;
@@ -16,11 +17,15 @@ public class FileReceiver extends Thread {
 
     private final int port;
     private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-
+    private MessageReceiver.MessageListener listener;
+    
     public FileReceiver(int port) {
         this.port = port;
     }
 
+    public void setFileListener(MessageReceiver.MessageListener listener) {
+        this.listener = listener;
+    }
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -40,6 +45,10 @@ public class FileReceiver extends Thread {
 
                     //Save in bd
                     Database.saveMessage(message);
+
+                    if (listener != null) {
+                        listener.onMessageReceived(message);
+                    }
 
                     if ("file".equals(message.getType())) {
                         File outFile = new File("received_" + message.getContent());
@@ -65,4 +74,5 @@ public class FileReceiver extends Thread {
             e.printStackTrace();
         }
     }
+
 }

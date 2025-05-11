@@ -2,10 +2,14 @@ package controller;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -15,7 +19,7 @@ public class MessageController {
 
         private static final double MAX_WIDTH = 250;
 
-        public static void addMessage(VBox chatBox, String senderId, String message, boolean isSentByUser) {
+        public static void addMessage(VBox chatBox, String senderId, String message, boolean isSentByUser, String status) {
                 // Conteneur principal
                 VBox messageBox = new VBox(4);
                 messageBox.setAlignment(isSentByUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
@@ -46,11 +50,38 @@ public class MessageController {
                 Text timeText = new Text(timeStamp);
                 timeText.setStyle("-fx-fill: #666666; -fx-font-size: 10px;");
 
+                // Ligne contenant heure + icône (si message utilisateur)
+                HBox timeBox = new HBox(4);
+                timeBox.setAlignment(Pos.CENTER_RIGHT);
+                timeBox.getChildren().add(timeText);
+
+                if (isSentByUser) {
+                        ImageView statusIcon = new ImageView(getStatusIcon(status));
+                        statusIcon.setFitWidth(12);
+                        statusIcon.setFitHeight(12);
+                        timeBox.getChildren().add(statusIcon);
+                }
+
                 // Ajout des éléments
-                messageBubble.getChildren().addAll(messageText, timeText);
+                messageBubble.getChildren().addAll(messageText, timeBox);
                 messageBox.getChildren().addAll(userName, messageBubble);
 
-                // Affichage dans l'interface
                 Platform.runLater(() -> chatBox.getChildren().add(messageBox));
+        }
+
+        private static Image getStatusIcon(String status) {
+                String path;
+                switch (status) {
+                        case "read":
+                                path = "/com/alaanya/view/images/read.png";
+                                break;
+                        case "delivered":
+                                path = "/com/alaanya/view/images/delivered.png";
+                                break;
+                        default:
+                                path = "/com/alaanya/view/images/sent.png";
+                                break;
+                }
+                return new Image(Objects.requireNonNull(MessageController.class.getResourceAsStream(path)));
         }
 }
