@@ -9,7 +9,7 @@
 
 /* Label */
 .login-label {
-    -fx-text-fill: #FFC107; /* Jaune doré pour un contraste fort mais adapté */
+    -fx-text-fill: #25849c; /* Jaune doré pour un contraste fort mais adapté */
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
@@ -35,7 +35,7 @@
 
 /* Lien */
 .create-account-link {
-    -fx-text-fill: #FFC107; /* Jaune doré pour le lien */
+    -fx-text-fill: #9c07ff; /* Jaune doré pour le lien */
     -fx-font-size: 14px;
     -fx-underline: true;
 }

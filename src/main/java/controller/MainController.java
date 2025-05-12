@@ -48,6 +48,7 @@ import model.User;
 import signal.CallSignaler;
 import socket.Client;
 import utils.SoundPlayer;
+import video.VideoCallManager;
 
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
@@ -139,6 +140,7 @@ public class MainController {
         //Thread de reception des fichiers
         new FileReceiver(FILE_PORT).start();
 
+        //Initiialisation pour l'attente des appels audio
         CallSignaler signaler = new CallSignaler();
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
@@ -163,6 +165,21 @@ public class MainController {
             }
         });
 
+        //Initialisation pour l'attente des appels video
+        VideoCallManager videoCallManager = new VideoCallManager(
+                null,  // pas de localView ici
+                null,  // pas de remoteView ici
+                new Label(), // ou null si tu ne veux rien afficher
+                () -> {
+                    System.out.println("Appel accepté.");
+                    // tu peux ouvrir automatiquement VideoChat.fxml ici si tu veux
+                },
+                () -> {
+                    System.out.println("Appel terminé.");
+                }
+        );
+
+        videoCallManager.listenForCalls();
         // Filtrage en mémoire pour "Mes contacts"
         searchTextField.textProperty().addListener((obs, oldValue, newValue) -> {
             filterContacts(newValue);
@@ -188,7 +205,7 @@ public class MainController {
             private final Label unreadCount;
 
             {
-                Image image = new Image(getClass().getResource("/com/alaanya/view/images/profile.png").toExternalForm());
+                Image image = new Image(Objects.requireNonNull(getClass().getResource("/com/alaanya/view/images/profile.png")).toExternalForm());
                 imageView = new ImageView(image);
                 imageView.setFitWidth(40);
                 imageView.setFitHeight(40);
@@ -630,18 +647,19 @@ public class MainController {
             Parent root = loader.load();
 
             VideoChatController controller = loader.getController();
-            controller.initVideoCall(recipientAddress,user.getUsername() + " (" + user.getPhone_Number() + ")");
+            controller.setup(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
 
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");
             stage.setScene(new Scene(root));
-           // stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
         }
     }
+
 
 
     public void showOptions(ActionEvent actionEvent) {

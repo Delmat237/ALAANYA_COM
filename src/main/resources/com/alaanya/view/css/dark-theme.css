@@ -2,8 +2,12 @@
 
 /* Arrière-plan général */
 .root {
-    -fx-background-color: #2C3E50; /* Bleu foncé pour le fond général */
+    -fx-base: #34495E; /* Bleu marine sombre (couleur de base) */
+    -fx-background: #2C3E50; /* Fond plus foncé pour l'application */
+    -fx-control-inner-background: #34495E; /* Arrière-plan des zones de contrôle (champs, listes) */
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); /* Arrière-plan alternatif pour les zones de contrôle */
 }
+
 
 .top {
     -fx-background-color: #34495E; /* Gris foncé pour la barre de titre */
@@ -37,9 +41,19 @@
 }
 
 /* Textes */
-.label, .state, .title {
-    -fx-text-fill: #ECF0F1; /* Texte en blanc cassé pour un bon contraste */
+.label, .title {
+    -fx-text-fill: #092bac; /* Texte en blanc cassé pour un bon contraste */
+    -fx-font-size: 1em;
 }
+
+.state{
+    -fx-text-fill: #19b50d; /* Texte en blanc cassé pour un bon contraste */
+    -fx-font-size: 1em;
+}
+/* -------------------------------------------------------
+   Texte (lisibilité améliorée)
+   ------------------------------------------------------- */
+
 
 .text-field, .password-field, .combo-box {
     -fx-background-color: #2C3E50; /* Bleu foncé pour les champs */

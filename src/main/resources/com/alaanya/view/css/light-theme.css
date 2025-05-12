@@ -2,7 +2,7 @@
 
 /* Arrière-plan général */
 .root {
-    -fx-background-color: #2C3E50; /* Bleu marine foncé pour fond général */
+    -fx-background-color: #ffffff; /* Bleu marine foncé pour fond général */
 }
 
 .top {
@@ -33,10 +33,14 @@
 }
 
 /* Textes */
-.label, .state, .title {
-    -fx-text-fill: #ECF0F1; /* Blanc cassé */
+.label, .title {
+    -fx-text-fill: #222121; /* Blanc cassé */
 }
 
+.state{
+    -fx-text-fill: #19b50d; /* Texte en blanc cassé pour un bon contraste */
+    -fx-font-size: 1em;
+}
 .text-field, .password-field, .combo-box {
     -fx-background-color: #34495E; /* Gris foncé pour les champs */
     -fx-text-fill: #ECF0F1; /* Blanc cassé pour texte */
