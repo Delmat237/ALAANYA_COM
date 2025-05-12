@@ -1,8 +1,8 @@
 package audio;
 
 public class AudioCallManager {
-    private final AudioSetup setup = new AudioSetup();
-    private AudioSender sender;
+    private static final AudioSetup setup = new AudioSetup();
+    private static AudioSender sender;
     private AudioReceiver receiver;
 
     public static void startSending(String ip, int port) {
