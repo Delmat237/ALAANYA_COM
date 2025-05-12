@@ -1,7 +1,9 @@
 package video;
 
+import controller.MainController;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Alert;
@@ -14,20 +16,20 @@ import signal.CallSignaler;
 public class VideoCallManager {
 
     private final CallSignaler signaler = new CallSignaler();
-    private VideoSender sender;
+    private static VideoSender sender;
     private VideoReceiver receiver;
-    private CameraService camera;
+    private static CameraService camera;
     private Timeline callTimer;
     private int secondsElapsed = 0;
 
-    private final ImageView localView;
+    private static ImageView localView = null;
     private final ImageView remoteView;
     private final Runnable onHangUp;
     private final Runnable onCallAccepted;
-    private final javafx.scene.control.Label callDurationLabel;
+    private final Label callDurationLabel;
 
     public VideoCallManager(ImageView localView, ImageView remoteView,
-                            javafx.scene.control.Label callDurationLabel,
+                            Label callDurationLabel,
                             Runnable onCallAccepted, Runnable onHangUp) {
         this.localView = localView;
         this.remoteView = remoteView;
@@ -41,33 +43,33 @@ public class VideoCallManager {
     }
 
     public void startOutgoingCall(String ip, String username) {
-        signaler.sendCallRequest(ip, username);
+        signaler.sendCallRequest(ip, username,"VIDEO");
     }
 
     public void acceptCall(String ip) {
-        signaler.sendCallResponse(ip, true);
-        startReceiving();
-        startSending(ip);
+        signaler.sendCallResponse(ip, true,"VIDEO");
+        startReceiving(MainController.VIDEO_PORT);
+        startSending(ip,MainController.VIDEO_PORT);
         startCallTimer();
     }
 
     public void rejectCall(String ip) {
-        signaler.sendCallResponse(ip, false);
+        signaler.sendCallResponse(ip, false,"VIDEO");
     }
 
-    public void startSending(String ip) {
+    public static void startSending(String ip, int port) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> localView.setImage(fxImage));
         });
         camera.start();
 
-        sender = new VideoSender(ip, 6000, camera);
+        sender = new VideoSender(ip, port, camera);
         sender.start();
     }
 
-    public void startReceiving() {
-        receiver = new VideoReceiver(6001, frame -> {
+    public void startReceiving(int port) {
+        receiver = new VideoReceiver(port, frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> remoteView.setImage(fxImage));
         });
@@ -119,7 +121,7 @@ public class VideoCallManager {
     public void listenForCalls() {
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
-            public void onCallReceived(String fromUser, String ip) {
+            public void onCallReceived(String fromUser, String ip,String callType) {
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                     alert.setTitle("Appel Vidéo");
@@ -139,10 +141,10 @@ public class VideoCallManager {
             }
 
             @Override
-            public void onCallAccepted(String ip) {
+            public void onCallAccepted(String ip,String callType) {
                 Platform.runLater(() -> {
-                    startReceiving();
-                    startSending(ip);
+                    startReceiving(MainController.VIDEO_PORT);
+                    startSending(ip,MainController.VIDEO_PORT);
                     startCallTimer();
                 });
             }

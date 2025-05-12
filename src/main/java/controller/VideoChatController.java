@@ -38,7 +38,5 @@ public class VideoChatController {
         videoManager.startOutgoingCall(ip, username);
     }
 
-    public void hangUp(ActionEvent actionEvent) {
 
-    }
 }

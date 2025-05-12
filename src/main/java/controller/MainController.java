@@ -118,7 +118,7 @@ public class MainController {
     static int MESSAGE_PORT = 5000;
     public static final int AUDIO_PORT = 5002;
     public static final int SIGNAL_PORT = 5003;
-    static int VIDEO_PORT = 5004;
+    public static int VIDEO_PORT = 5004;
 
     private int seconds = 0;
     private Timeline callTimer;
@@ -145,22 +145,32 @@ public class MainController {
         CallSignaler signaler = new CallSignaler(); // ou singleton
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
-            public void onCallReceived(String fromUser, String ip) {
+            public void onCallReceived(String fromUser, String ip, String type) {
                 Platform.runLater(() -> {
-                    boolean accepted = showConfirmationDialog("Appel de " + fromUser);
-                    signaler.sendCallResponse(ip, accepted);
+                    boolean accepted = showConfirmationDialog("Appel " + type + " de " + fromUser);
+
+                    signaler.sendCallResponse(ip, accepted, type);
                     if (accepted) {
-                        openAudioChat(ip, fromUser);
-                        AudioCallManager.startSending(ip,AUDIO_PORT);
+                        if ("AUDIO".equals(type)) {
+                            openAudioChat(ip, fromUser);
+                            AudioCallManager.startSending(ip, AUDIO_PORT);
+                        } else if ("VIDEO".equals(type)) {
+                            startVideoCallManually(ip, fromUser);
+                            VideoCallManager.startSending(ip,VIDEO_PORT);
+                        }
                     }
                 });
             }
 
             @Override
-            public void onCallAccepted(String ip) {
+            public void onCallAccepted(String ip, String type) {
                 Platform.runLater(() -> {
-                    // L’autre utilisateur a accepté -> on lance la fenêtre d’appel
-                    openAudioChat(ip, "Appel accepté !");
+                    if ("AUDIO".equals(type)) {
+                        System.out.println("actt");
+                        openAudioChat(ip, "Appel accepté !");
+                    } else if ("VIDEO".equals(type)) {
+                        startVideoCallManually(ip, "Appel accepté !");
+                    }
                 });
             }
 
@@ -172,21 +182,7 @@ public class MainController {
             }
         });
 
-        //Initialisation pour l'attente des appels video
-        VideoCallManager videoCallManager = new VideoCallManager(
-                null,  // pas de localView ici
-                null,  // pas de remoteView ici
-                new Label(), // ou null si tu ne veux rien afficher
-                () -> {
-                    System.out.println("Appel accepté.");
-                    // tu peux ouvrir automatiquement VideoChat.fxml ici si tu veux
-                },
-                () -> {
-                    System.out.println("Appel terminé.");
-                }
-        );
 
-        videoCallManager.listenForCalls();
         // Filtrage en mémoire pour "Mes contacts"
         searchTextField.textProperty().addListener((obs, oldValue, newValue) -> {
             filterContacts(newValue);
@@ -316,6 +312,7 @@ public class MainController {
                     MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read");
                 else
                     FileController.addFile(chatVBox, message.getSender(), message.getContent(), false);
+
                 Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
                 new MessageSender(recipientAddress, MESSAGE_PORT, readAck).start();
 
@@ -515,7 +512,7 @@ public class MainController {
 
             if (Objects.equals(message.getType(), "MESSAGE"))
                 MessageController.addMessage(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"), message.getStatut());
-            if (Objects.equals(message.getType(), "file"))
+            if (Objects.equals(message.getType(), "FILE"))
                 FileController.addFile(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"));
         }
     }
@@ -631,27 +628,23 @@ public class MainController {
         }
 
         CallSignaler signaler = new CallSignaler();
-        signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
+        signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")","AUDIO");
     }
 
 
     public void startVideoCall(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
-            Parent root = loader.load();
-
-            VideoChatController controller = loader.getController();
-            controller.setup(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
-
-            Stage stage = new Stage();
-            stage.setTitle("Appel Vidéo");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
+        if (recipientAddress == null || recipientAddress.isEmpty()) {
+            showError("Aucun contact sélectionné", "Veuillez sélectionner un contact avant d'appeler.");
+            return;
         }
+
+        if (user == null) {
+            showError("Utilisateur inconnu", "Vos informations d'utilisateur sont manquantes.");
+            return;
+        }
+
+        CallSignaler signaler = new CallSignaler();
+        signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")","VIDEO");
     }
 
 
@@ -718,6 +711,7 @@ public class MainController {
     }
 
     private void openAudioChat(String ip, String username) {
+        System.out.println("Appele accepté");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
@@ -731,6 +725,25 @@ public class MainController {
             e.printStackTrace();
         }
     }
+    public void startVideoCallManually(String ip, String username) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
+            Parent root = loader.load();
+
+            VideoChatController controller = loader.getController();
+            controller.setup(ip, username);
+
+            Stage stage = new Stage();
+            stage.setTitle("Appel Vidéo");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
+        }
+    }
+
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

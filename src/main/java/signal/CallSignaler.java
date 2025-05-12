@@ -16,28 +16,33 @@ public class CallSignaler {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public interface CallListener {
-        void onCallReceived(String fromUser, String ip);
-        void onCallAccepted(String ip);
+        void onCallReceived(String fromUser, String ip, String type);
+        void onCallAccepted(String ip, String type);
         void onCallDeclined(String ip);
     }
 
-    public void sendCallRequest(String remoteIP, String username) {
+
+    public void sendCallRequest(String remoteIP, String username, String type) {
         try (Socket socket = new Socket(remoteIP, MainController.SIGNAL_PORT);
              PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
-            writer.println("CALL_REQUEST:" + username);
+            writer.println("CALL_REQUEST:" + username + ":" + type);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void sendCallResponse(String remoteIP, boolean accepted) {
+
+    public void sendCallResponse(String remoteIP, boolean accepted, String callType) {
         try (Socket socket = new Socket(remoteIP, MainController.SIGNAL_PORT);
              PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
-            writer.println(accepted ? "CALL_ACCEPTED" : "CALL_DECLINED");
+            writer.println(accepted
+                    ? "CALL_ACCEPTED:" + callType
+                    : "CALL_DECLINED:" + callType);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 
     public void listenForCallRequests(CallListener listener) {
@@ -57,21 +62,28 @@ public class CallSignaler {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
             String line = reader.readLine();
             if (line != null) {
-                switch (line) {
-                    case "CALL_ACCEPTED" -> listener.onCallAccepted(clientSocket.getInetAddress().getHostAddress());
-                    case "CALL_DECLINED" -> listener.onCallDeclined(clientSocket.getInetAddress().getHostAddress());
-                    default -> {
-                        if (line.startsWith("CALL_REQUEST:")) {
-                            String fromUser = line.substring("CALL_REQUEST:".length());
-                            listener.onCallReceived(fromUser, clientSocket.getInetAddress().getHostAddress());
-                        }
+                String ip = clientSocket.getInetAddress().getHostAddress();
+
+                if (line.startsWith("CALL_REQUEST:")) {
+                    // Format : CALL_REQUEST:username:type
+                    String[] parts = line.split(":", 3);
+                    if (parts.length == 3) {
+                        String fromUser = parts[1];
+                        String callType = parts[2];
+                        listener.onCallReceived(fromUser, ip, callType);
                     }
+                } else if (line.startsWith("CALL_ACCEPTED:")) {
+                    String callType = line.substring("CALL_ACCEPTED:".length());
+                    listener.onCallAccepted(ip, callType);
+                } else if (line.startsWith("CALL_DECLINED:")) {
+                    listener.onCallDeclined(ip);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 
 }
