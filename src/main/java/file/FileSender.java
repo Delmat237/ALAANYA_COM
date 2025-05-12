@@ -39,7 +39,10 @@ public class FileSender extends Thread {
             // Étape 1 : Envoyer un message JSON avec les métadonnées
             Message message = new Message(sender, "FILE", file.getName(), recipient, file.length(),new Date());
             message.setAck("sent");
-            
+
+            //Affiche
+
+
             //save in bd
             Database.saveMessage(message);
 

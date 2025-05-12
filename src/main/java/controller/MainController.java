@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import audio.AudioReceiver;
 import audio.AudioSetup;
 import com.alaanya.MainApp;
 
@@ -30,6 +29,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -39,13 +39,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import message.MessageReceiver;
 import message.MessageSender;
 import model.Contact;
 import model.Message;
 import model.User;
+import signal.CallSignaler;
 import socket.Client;
 import utils.SoundPlayer;
 
@@ -54,31 +54,54 @@ import utils.SoundPlayer;
 public class MainController {
 
 
-    @FXML private TabPane contactsTabPane;
-    @FXML private Label userLabel;
-    @FXML private Label gradeLabel;
-    @FXML private Label divisionLabel;
-    @FXML private Label idLabel;
-    @FXML private Label statutLabel;
-    @FXML private Label selectedUserLabel;
-    @FXML private Label selectedUserStatut;
-     @FXML private TextArea chatTextArea;
-    @FXML public  VBox chatVBox;
-    @FXML private TextField messageTextField;
-    @FXML private TextField searchTextField;
-    @FXML private VBox defaultCenterVBox;
-    @FXML private VBox chatAreaVBox;
-    @FXML private VBox settingsVBox;
-    @FXML private Label settingsUserLabel;
-    @FXML private Label settingsGradeLabel;
-    @FXML private Label settingsDivisionLabel;
-    @FXML private Label settingsIdLabel;
-    @FXML private TitledPane addContactPane;
-    @FXML private TextField phoneNumberField;
-    @FXML private TextField nicknameField;
-    @FXML private ListView<Contact> contactListView; //LISTE DE CONTACT QUI SERA AFFICHÉ
-    @FXML private ListView<Contact> allContactsListView;
-
+    @FXML
+    private TabPane contactsTabPane;
+    @FXML
+    private Label userLabel;
+    @FXML
+    private Label gradeLabel;
+    @FXML
+    private Label divisionLabel;
+    @FXML
+    private Label idLabel;
+    @FXML
+    private Label statutLabel;
+    @FXML
+    private Label selectedUserLabel;
+    @FXML
+    private Label selectedUserStatut;
+    @FXML
+    private TextArea chatTextArea;
+    @FXML
+    public VBox chatVBox;
+    @FXML
+    private TextField messageTextField;
+    @FXML
+    private TextField searchTextField;
+    @FXML
+    private VBox defaultCenterVBox;
+    @FXML
+    private VBox chatAreaVBox;
+    @FXML
+    private VBox settingsVBox;
+    @FXML
+    private Label settingsUserLabel;
+    @FXML
+    private Label settingsGradeLabel;
+    @FXML
+    private Label settingsDivisionLabel;
+    @FXML
+    private Label settingsIdLabel;
+    @FXML
+    private TitledPane addContactPane;
+    @FXML
+    private TextField phoneNumberField;
+    @FXML
+    private TextField nicknameField;
+    @FXML
+    private ListView<Contact> contactListView; //LISTE DE CONTACT QUI SERA AFFICHÉ
+    @FXML
+    private ListView<Contact> allContactsListView;
 
 
     private User user;
@@ -89,10 +112,11 @@ public class MainController {
     private Contact selectedContact;
     private final AudioSetup audioSetup = new AudioSetup();
 
-    private int FILE_PORT = 5001;
-    private int MESSAGE_PORT = 5000;
-    private int AUDIO_PORT = 5002;
-    private int VIDEO_PORT = 5003;
+    static int FILE_PORT = 5001;
+    static int MESSAGE_PORT = 5000;
+    public static final int AUDIO_PORT = 5002;
+    public static final int SIGNAL_PORT = 5003;
+    static int VIDEO_PORT = 5004;
 
     private int seconds = 0;
     private Timeline callTimer;
@@ -102,33 +126,57 @@ public class MainController {
 
         SoundPlayer.playSound("/sounds/start.wav");
 
-           MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
-         receiver.setMessageListener(message -> {
+        //THread de reception des messages texte
+        MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
+        receiver.setMessageListener(message -> {
             handleIncomingMessage(message);
-             SoundPlayer.playSound("/sounds/not.wav");
-         });
-        
+            SoundPlayer.playSound("/sounds/not.wav");
+        });
+
         receiver.start();
 
 
+        //Thread de reception des fichiers
         new FileReceiver(FILE_PORT).start();
-        new AudioReceiver(AUDIO_PORT, audioSetup).start();
 
-            // Filtrage en mémoire pour "Mes contacts"
-            searchTextField.textProperty().addListener((obs, oldValue, newValue) -> {
-                filterContacts(newValue);
-            });
+        CallSignaler signaler = new CallSignaler();
+        signaler.listenForCallRequests(new CallSignaler.CallListener() {
+            @Override
+            public void onCallReceived(String fromUser, String ip) {
+                Platform.runLater(() -> {
+                    boolean accepted = showConfirmationDialog("Appel de " + fromUser);
+                    signaler.sendCallResponse(ip, accepted);
+                    if (accepted) {
+                        openAudioChat(ip, fromUser);
+                    }
+                });
+            }
 
-            //Personnalisation des liste des contacts
-            ContactListView(contactListView);
-            ContactListView(allContactsListView);
+            @Override
+            public void onCallAccepted(String ip) {
+                System.out.println("Appel accepté !");
+            }
 
+            @Override
+            public void onCallDeclined(String ip) {
+                System.out.println("Appel refusé.");
+            }
+        });
+
+        // Filtrage en mémoire pour "Mes contacts"
+        searchTextField.textProperty().addListener((obs, oldValue, newValue) -> {
+            filterContacts(newValue);
+        });
+
+        //Personnalisation des liste des contacts
+        ContactListView(contactListView);
+        ContactListView(allContactsListView);
 
 
         showChatArea(false);
     }
 
-    public void ContactListView(ListView<Contact> listView){
+    public void ContactListView(ListView<Contact> listView) {
         //Personnalisation de l'affichage des contacts
         listView.setCellFactory(list -> new ListCell<Contact>() {
             private final HBox content;
@@ -140,7 +188,8 @@ public class MainController {
             private final Label unreadCount;
 
             {
-                imageView = new ImageView();
+                Image image = new Image(getClass().getResource("/com/alaanya/view/images/profile.png").toExternalForm());
+                imageView = new ImageView(image);
                 imageView.setFitWidth(40);
                 imageView.setFitHeight(40);
                 imageView.setClip(new Circle(20, 20, 20)); // rond
@@ -201,7 +250,7 @@ public class MainController {
 
                         String userId = newValue.getPhone_number();
                         //charge les conversation
-                        loadConversation(user.getPhone_Number(),userId);
+                        loadConversation(user.getPhone_Number(), userId);
 
                         Client.requestAddress(userId, notification -> {
                             Platform.runLater(() -> {
@@ -210,7 +259,7 @@ public class MainController {
                                     selectedUserStatut.setText("online");
                                 } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
 
-                                    Alert alert = new Alert(Alert.AlertType.ERROR," Address not found for user: " + newValue, ButtonType.OK);
+                                    Alert alert = new Alert(Alert.AlertType.ERROR, " Address not found for user: " + newValue, ButtonType.OK);
                                     alert.showAndWait();
 
                                     selectedUserStatut.setText("offline");
@@ -223,12 +272,24 @@ public class MainController {
                 });
 
     }
+
     private void handleIncomingMessage(Message message) {
         Platform.runLater(() -> {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
-            if (!Objects.equals(message.getType(), "ACK_READ")){
+            if (!Objects.equals(message.getType(), "ACK_READ")) {
+                //affiche une notification
+                if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
+                    showInfo("Nouveau message de "+message.getSender(),message.getContent());
+
+                //Mise à jour du dernier message
+                try {
+                    Database.updateContact(message);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
                 if (Objects.equals(message.getType(), "MESSAGE"))
-                     MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false,"read");
+                    MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read");
                 else
                     FileController.addFile(chatVBox, message.getSender(), message.getContent(), false);
                 Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
@@ -271,6 +332,7 @@ public class MainController {
 
 
     }
+
     public User getUser() {
         return user;
     }
@@ -289,9 +351,9 @@ public class MainController {
         }
 
         // Logique d'ajout du contact ici
-        Database.addContact(user.getPhone_Number(),phone,0,nickname);
+        Database.addContact(user.getPhone_Number(), phone, 0, nickname);
 
-      //Mise à jour
+        //Mise à jour
         allContacts.setAll(Database.getAllContacts());
 
         allContactsListView.setItems(allContacts);
@@ -303,11 +365,11 @@ public class MainController {
      * Sends a message to the selected contact.
      */
     @FXML
-    private void sendMessage() {
+    private void sendMessage() throws SQLException {
         String messageText = messageTextField.getText(); //recuperation du message saisir
 
 
-        System.out.println("Je m'apprete à envoyer le message "+messageText +"à "+selectedContact);
+        System.out.println("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
 
         if (!messageText.isEmpty() && selectedContact != null) {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
@@ -315,28 +377,30 @@ public class MainController {
 
 
             if (recipientId != null) {
-                Message message = new Message(user.getPhone_Number(), "MESSAGE",messageText, recipientId);
+                Message message = new Message(user.getPhone_Number(), "MESSAGE", messageText, recipientId);
                 message.setAck("sent");
                 message.setStatut("delivered");
                 //Recupération de l'address IP actuell du destinataire
 
                 //RecipentAddress
-                System.out.println("Son addresse est "+recipientAddress);
+                System.out.println("Son addresse est " + recipientAddress);
                 // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
                 Client.requestAddress(recipientId, notification -> {
                     if ("ADDRESS_RESPONSE".equals(notification.getType())) {
                         String currentAddress = notification.getMessage();
                         selectedUserStatut.setText("online");
                         new MessageSender(currentAddress, MESSAGE_PORT, message).start();
-                    }
-                    else    selectedUserStatut.setText("offline");
+                    } else selectedUserStatut.setText("offline");
                 });
 
                 //Ajout du message dans la zone de chat
-                MessageController.addMessage(chatVBox,user.getPhone_Number(),message.getContent(),true,"read");
+                MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "read");
 
                 //Ajout dans la BD
                 Database.saveMessage(message);
+
+                //Mise à jour du dernier message
+                Database.updateContact(message);
                 messageTextField.clear();
             } else {
                 System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
@@ -358,7 +422,7 @@ public class MainController {
                 return;
             }
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
-            String recipientId =selectedContact.getPhone_number();
+            String recipientId = selectedContact.getPhone_number();
             System.out.println(recipientId);
             sendFile(sender, recipientId); // Call the sendFile method
 
@@ -370,7 +434,8 @@ public class MainController {
 
         }
     }
-    private void sendFile(String sender,String recipientId) {
+
+    private void sendFile(String sender, String recipientId) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select File to Send");
         File selectedFile = fileChooser.showOpenDialog(null);
@@ -387,17 +452,16 @@ public class MainController {
                     if ("ADDRESS_RESPONSE".equals(notification.getType())) {
                         String currentAddress = notification.getMessage();
                         selectedUserStatut.setText("online");
-                        new FileSender(currentAddress, FILE_PORT, selectedFile,sender,recipientId).start();
-                    }
-                    else    selectedUserStatut.setText("offline");
+                        new FileSender(currentAddress, FILE_PORT, selectedFile, sender, recipientId).start();
+                    } else selectedUserStatut.setText("offline");
                 });
 
-                FileController.addFile(chatVBox,"com/alaanya/view/images/file.png",fileName,true);
+                FileController.addFile(chatVBox, "com/alaanya/view/images/file.png", fileName, true);
 
                 System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
 
-                Alert alert = new Alert(Alert.AlertType.ERROR,  "Error reading file: " + e.getMessage(), ButtonType.OK);
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error reading file: " + e.getMessage(), ButtonType.OK);
                 alert.showAndWait();
 
             }
@@ -407,10 +471,11 @@ public class MainController {
     }
 
 
-/**
+    /**
      * Loads the conversation between the current user and the selected contact.
+     *
      * @param currentUserId The military ID of the current user.
-     * @param contactId The military ID of the selected contact.
+     * @param contactId     The military ID of the selected contact.
      */
     private void loadConversation(String currentUserId, String contactId) {
 
@@ -424,12 +489,11 @@ public class MainController {
             String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
 
             if (Objects.equals(message.getType(), "MESSAGE"))
-                     MessageController.addMessage(chatVBox,sender,message.getContent(), !Objects.equals(message.getAck(), "receive"),message.getStatut());
+                MessageController.addMessage(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"), message.getStatut());
             if (Objects.equals(message.getType(), "file"))
-                FileController.addFile(chatVBox,sender,message.getContent(), !Objects.equals(message.getAck(), "receive"));
+                FileController.addFile(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"));
         }
     }
-
 
 
     @FXML
@@ -447,12 +511,12 @@ public class MainController {
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
-             System.err.println(e.getMessage() + " : " + e.getCause());
+            System.err.println(e.getMessage() + " : " + e.getCause());
         }
     }
 
 
-    public void sendMessageKeyPressed(KeyEvent event) {
+    public void sendMessageKeyPressed(KeyEvent event) throws SQLException {
         if (event.getCode() == KeyCode.ENTER) {
             sendMessage();
         }
@@ -531,35 +595,58 @@ public class MainController {
 
     @FXML
     private void callUser(ActionEvent event) {
-        AudioChatController controller = new AudioChatController();
-        controller.showCallWindow();
-    }
+        if (recipientAddress == null || recipientAddress.isEmpty()) {
+            showError("Aucun contact sélectionné", "Veuillez sélectionner un contact avant d'appeler.");
+            return;
+        }
 
+        if (user == null) {
+            showError("Utilisateur inconnu", "Vos informations d'utilisateur sont manquantes.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
+            Parent root = loader.load(); // Charge le fichier FXML
+
+            AudioChatController controller = loader.getController(); // Récupère le contrôleur initialisé
+            controller.initCall(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
+
+            Stage stage = new Stage();
+            stage.setTitle("Appel audio");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Erreur", "Impossible de lancer la fenêtre d'appel.");
+        }
+
+    }
 
     public void startVideoCall(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
+            Parent root = loader.load();
 
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
+            VideoChatController controller = loader.getController();
+            controller.initVideoCall(recipientAddress,user.getUsername() + " (" + user.getPhone_Number() + ")");
 
-                VideoChatController controller = loader.getController();
-                controller.initialize(); // Tu peux l'appeler si besoin, mais normalement il sera invoqué automatiquement si annoté @FXML
-
-                Stage stage = new Stage();
-                stage.setTitle("Appel Vidéo");
-                Parent root = loader.load();
-                stage.setScene(new Scene(root));
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.show();
-
-            } catch (IOException e) {
-                 System.err.println(e.getMessage() + " : " + e.getCause());
-            }
-
-
+            Stage stage = new Stage();
+            stage.setTitle("Appel Vidéo");
+            stage.setScene(new Scene(root));
+           // stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
+        }
     }
+
 
     public void showOptions(ActionEvent actionEvent) {
     }
+
     // Méthode pour afficher la zone des paramètres
     public void showSettings() {
         settingsVBox.setVisible(true); // Afficher les paramètres
@@ -573,7 +660,6 @@ public class MainController {
     public void closeSettings() {
         settingsVBox.setVisible(false); // Masquer les paramètres
     }
-
 
 
     @FXML
@@ -610,6 +696,42 @@ public class MainController {
             scene.getStylesheets().clear();
             scene.getStylesheets().add(darkThemeUrl.toExternalForm());
         }
+    }
+
+    private boolean showConfirmationDialog(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Nouvel appel");
+        alert.setHeaderText(null);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
+
+    private void openAudioChat(String ip, String username) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/audio_chat.fxml"));
+            Parent root = loader.load();
+            AudioChatController controller = loader.getController();
+            controller.initCall(ip, username);
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Appel avec " + username);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    // Méthode pour afficher une information sous forme d'alerte
+    private void showInfo(String title, String message) {
+        Alert info = new Alert(Alert.AlertType.INFORMATION);
+        info.setTitle(title);
+        info.setContentText(message);
+        info.show();
     }
 
 }

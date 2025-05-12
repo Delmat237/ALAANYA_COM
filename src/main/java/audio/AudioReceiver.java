@@ -23,7 +23,7 @@ public class AudioReceiver extends Thread {
                  Socket socket = server.accept();
                  InputStream in = socket.getInputStream()) {
 
-                System.out.println("Reception");
+                System.out.println("serveur des audio en attente de connexion");
                 // Ouvre les enceintes
                 audioSetup.openSpeakers();
                 SourceDataLine speakers = audioSetup.getSpeakers();

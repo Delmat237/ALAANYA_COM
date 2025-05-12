@@ -18,7 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import video.CallSignaler;
+import signal.CallSignaler;
 import video.CameraService;
 import video.VideoReceiver;
 import video.VideoSender;
@@ -28,6 +28,7 @@ public class VideoChatController {
     @FXML private ImageView localView;
     @FXML private ImageView remoteView;
     @FXML private Label callDurationLabel;
+    @FXML private Button endCallButton;
 
     private final CallSignaler signaler = new CallSignaler();
 
@@ -38,43 +39,25 @@ public class VideoChatController {
     private String lastCallerIp;
     private Timeline callTimer;
     private int secondsElapsed = 0;
+    private String remoteIP ;
+    private String username;
 
+    public void initVideoCall(String recipientAddress, String s) {
+        this.remoteIP = recipientAddress;
+        this.username = username;
+        initialize();
+    }
+    // Initialisation de la fenêtre d'appel
     public void initialize() {
-
-        // Créer une nouvelle fenêtre (popup)
-        Stage callWindow = new Stage();
-        callWindow.initModality(Modality.APPLICATION_MODAL);
-        callWindow.setTitle("Appel en cours");
-
-        // Initialiser le label de durée d'appel
-        callDurationLabel = new Label("Durée : 00:00");
-        callDurationLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        // Rendre le label de la durée d'appel visible dès le début
         callDurationLabel.setVisible(false);
 
-        // Bouton raccrocher
-        Button endCallButton = new Button("Raccrocher");
+        // Configuration du bouton de fin d'appel
         endCallButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
-        endCallButton.setOnAction(e -> {
-            if (callTimer != null) {
-                callTimer.stop();
-                hangUp();
-            }
-            callWindow.close();
-        });
-
-        // Layout
-        VBox layout = new VBox(15, callDurationLabel, endCallButton);
-        layout.setPadding(new Insets(20));
-        layout.setAlignment(Pos.CENTER);
-
-        // Affichage
-        Scene scene = new Scene(layout, 250, 150);
-        callWindow.setScene(scene);
-        callWindow.show();
+        endCallButton.setOnAction(e -> hangUp());
 
         // Envoie un signalement d'appel
         startCall();
-
 
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
@@ -117,18 +100,19 @@ public class VideoChatController {
         });
     }
 
+    // Méthode pour démarrer un appel vidéo
     @FXML
     public void startCall() {
-        String remoteIP = "localhost";  // à adapter dynamiquement si besoin
-        String username = "Moi";
+
         signaler.sendCallRequest(remoteIP, username);
         lastCallerIp = remoteIP;
     }
 
+    // Méthode pour démarrer un appel vidéo à une IP spécifique
     public void startCall(String ip) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
-            localView.setImage(fxImage);
+            localView.setImage(fxImage); // Afficher la vidéo locale
         });
         camera.start();
 
@@ -136,14 +120,16 @@ public class VideoChatController {
         sender.start();
     }
 
+    // Méthode pour démarrer la réception du flux vidéo
     public void startReceive() {
         receiver = new VideoReceiver(6001, frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
-            remoteView.setImage(fxImage);
+            remoteView.setImage(fxImage); // Afficher la vidéo distante
         });
         receiver.start();
     }
 
+    // Méthode pour démarrer le chronomètre de l'appel
     private void startCallTimer() {
         secondsElapsed = 0;
         callDurationLabel.setText("Durée : 00:00");
@@ -159,6 +145,7 @@ public class VideoChatController {
         callTimer.play();
     }
 
+    // Méthode pour arrêter le chronomètre
     private void stopCallTimer() {
         if (callTimer != null) {
             callTimer.stop();
@@ -167,9 +154,9 @@ public class VideoChatController {
         secondsElapsed = 0;
         callDurationLabel.setText("Durée : 00:00");
         callDurationLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
     }
 
+    // Méthode pour raccrocher l'appel
     @FXML
     public void hangUp() {
         if (sender != null) {
@@ -192,10 +179,13 @@ public class VideoChatController {
         showInfo("Appel terminé", "Vous avez raccroché.");
     }
 
+    // Méthode pour afficher une information sous forme d'alerte
     private void showInfo(String title, String message) {
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle(title);
         info.setContentText(message);
         info.show();
     }
+
+
 }

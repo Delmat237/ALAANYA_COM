@@ -68,7 +68,7 @@ public class Database {
                              password_hash VARCHAR(64) NOT NULL,
                              grade VARCHAR(50) NOT NULL,
                              division VARCHAR(50) NOT NULL,
-                             profilePicture TEXT,
+                             profilePicture TEXT DEFAULT "/com/alaanya/view/images/profile.png",
                              username VARCHAR(255) NOT NULL
                          );""");
 
@@ -81,10 +81,10 @@ public class Database {
                         nick_name TEXT NOT NULL,
                         lastMessage TEXT ,
                         statut INTEGER CHECK(statut IN (0, 1)) DEFAULT 0,
+                        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (user_id) REFERENCES users(phone_Number),
-                     
                         UNIQUE(user_id, contact_user_id)
-                    )""");
+                    );""");
 
                 // Création table messages
                 stmt.executeUpdate("""
@@ -98,8 +98,9 @@ public class Database {
                         ack TEXT CHECK(ack IN ('sent', 'receive')) DEFAULT 'sent',
                         statut TEXT CHECK (statut IN ('read','notread','delivered')) DEFAULT 'delivered',
                         FOREIGN KEY (sender_id) REFERENCES users(phone_Number)
-                       
-                    )""");
+                      \s
+                    );
+                   \s""");
             }
         }
 
@@ -345,8 +346,22 @@ public class Database {
             stmt.setString(3, message.getContent());
 
             stmt.executeUpdate();
+    }
 
+    public static void updateContact(Message message) throws SQLException {
+        String sql = """
+                UPDATE contacts
+                SET lastMessage = ?, created_at = CURRENT_TIMESTAMP
+                WHERE user_id = ? AND contact_user_id = ?;
+                """;
+        Connection connection = Database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement(sql);
 
+        stmt.setString(1, message.getContent());
+        stmt.setString(2, message.getSender());
+        stmt.setString(3, message.getRecipient());
+
+        stmt.executeUpdate();
     }
 }
 
