@@ -3,41 +3,43 @@ package controller;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 
-import java.io.File;
+import java.awt.Desktop;
+import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class FileController {
-    // Constants
     private static final double MAX_WIDTH = 250;
-    private static final String SENT_BG_COLOR = "#26631b";
+    private static final String SENT_BG_COLOR = "#0C5DAFFF";
     private static final String RECEIVED_BG_COLOR = "#FFFFFF";
     private static final String SENT_HOVER_COLOR = "#c5e1b0";
     private static final String RECEIVED_HOVER_COLOR = "#f5f5f5";
     private static final String SENT_EXIT_COLOR = "#DCF8C6";
 
-    public static void addFile(VBox chatBox, String iconPath, String fileName, boolean isSentByUser) {
+    public static void addFile(VBox chatBox, String iconPath, String filePathOrName, boolean isSentByUser) {
         VBox messageBox = new VBox(2);
 
-        // Message container
         VBox fileBubble = new VBox(5);
         fileBubble.setPadding(new Insets(8));
         fileBubble.setStyle("-fx-background-color: " + (isSentByUser ? SENT_BG_COLOR : RECEIVED_BG_COLOR) + ";" +
                 "-fx-background-radius: 15; -fx-border-radius: 15;");
         fileBubble.setMaxWidth(MAX_WIDTH);
 
-        // Top line with icon + filename
+
         HBox fileInfoLine = new HBox(10);
         ImageView fileIcon = new ImageView();
 
-        // Load image safely
         File iconFile = new File(iconPath);
         if (iconFile.exists()) {
             Image image = new Image(iconFile.toURI().toString());
@@ -45,22 +47,18 @@ public class FileController {
             fileIcon.setFitWidth(35);
             fileIcon.setFitHeight(35);
             fileIcon.setPreserveRatio(true);
-        } else {
-            System.out.println("Icon file not found: " + iconPath);
         }
 
         VBox fileDetails = new VBox(2);
-        Text fileNameText = new Text(truncateFileName(fileName, 30));
+        Text fileNameText = new Text(truncateFileName(filePathOrName, 30));
         fileNameText.setWrappingWidth(MAX_WIDTH);
         fileNameText.setStyle("-fx-font-size: 14px;");
 
-        Text fileType = new Text("Document");
+        Text fileType = new Text(getFileTypeDescription(filePathOrName));
         fileType.setStyle("-fx-fill: #667781; -fx-font-size: 12px;");
-
         fileDetails.getChildren().addAll(fileNameText, fileType);
         fileInfoLine.getChildren().addAll(fileIcon, fileDetails);
 
-        // Timestamp line
         HBox bottomLine = new HBox();
         bottomLine.setAlignment(Pos.CENTER_RIGHT);
         Text timeStamp = new Text(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -72,7 +70,6 @@ public class FileController {
 
         fileBubble.getChildren().addAll(fileInfoLine, spacer, bottomLine);
 
-        // Hover effect
         fileBubble.setOnMouseEntered(e -> fileBubble.setStyle(
                 "-fx-background-color: " + (isSentByUser ? SENT_HOVER_COLOR : RECEIVED_HOVER_COLOR) + ";" +
                         "-fx-background-radius: 15; -fx-border-radius: 15; -fx-cursor: hand;"
@@ -83,18 +80,95 @@ public class FileController {
                         "-fx-background-radius: 15; -fx-border-radius: 15; -fx-cursor: hand;"
         ));
 
-        // Optional click action
         fileBubble.setOnMouseClicked(e -> {
-            System.out.println("Clicked on file: " + fileName);
-            // TODO: ouvrir ou télécharger le fichier
+            try {
+                File fileToOpen = new File(filePathOrName); // assure-toi que fileName contient le chemin complet
+                if (fileToOpen.exists()) {
+                    Desktop.getDesktop().open(fileToOpen);
+                } else {
+                    System.out.println("Fichier introuvable : " + fileToOpen.getAbsolutePath());
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
+
 
         messageBox.getChildren().add(fileBubble);
         Platform.runLater(() -> chatBox.getChildren().add(messageBox));
     }
 
-    // Helper: truncate long filenames
     private static String truncateFileName(String name, int maxLength) {
         return name.length() > maxLength ? name.substring(0, maxLength - 3) + "..." : name;
     }
+
+    // Ouvrir un fichier local
+    private static void openLocalFile(String path) {
+        try {
+            File file = new File(path);
+            if (file.exists()) {
+                Desktop.getDesktop().open(file);
+            } else {
+                showAlert("Fichier introuvable", "Le fichier n'existe pas à l'emplacement spécifié.");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            showAlert("Erreur", "Impossible d'ouvrir le fichier.");
+        }
+    }
+
+    // Sauvegarder un fichier reçu puis l’ouvrir
+    private static void saveAndOpenReceivedFile(String fileName) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialFileName(fileName);
+        fileChooser.setTitle("Enregistrer le fichier");
+
+        File targetFile = fileChooser.showSaveDialog(null);
+        if (targetFile != null) {
+            try {
+                // Simule ici la récupération du fichier (dans un vrai cas, lire le fichier transmis)
+                // Pour la démo, on crée un fichier texte vide
+                Files.write(targetFile.toPath(), "Contenu du fichier reçu".getBytes());
+
+                Desktop.getDesktop().open(targetFile);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                showAlert("Erreur", "Impossible d'enregistrer ou ouvrir le fichier.");
+            }
+        }
+    }
+
+    private static void showAlert(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.showAndWait();
+        });
+    }
+
+    private static String getFileTypeDescription(String fileName) {
+        String ext = "";
+
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            ext = fileName.substring(i + 1).toLowerCase();
+        }
+
+        return switch (ext) {
+            case "jpg", "jpeg", "png", "gif", "bmp", "svg" -> "Image";
+            case "mp4", "avi", "mkv", "mov" -> "Vidéo";
+            case "mp3", "wav", "ogg", "flac" -> "Audio";
+            case "pdf" -> "PDF";
+            case "doc", "docx" -> "Word";
+            case "xls", "xlsx" -> "Excel";
+            case "ppt", "pptx" -> "PowerPoint";
+            case "txt", "md", "rtf" -> "Texte";
+            case "zip", "rar", "7z", "tar", "gz" -> "Archive";
+            case "apk" -> "Application Android";
+            case "exe" -> "Application Windows";
+            default -> "Document";
+        };
+    }
+
 }

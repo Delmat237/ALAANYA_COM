@@ -128,6 +128,13 @@
                     <mainClass>com.alaanya.MainApp</mainClass>
                     <addModules>javafx.controls,javafx.fxml,javafx.graphics,javafx.swing,java.desktop</addModules>
                     <version>${javafx.version}</version>
+
+                    //Gestion de lla memoire
+                    <jvmArgs>
+                        --add-opens=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED
+                        -Xms512m
+                        -Xmx1024m
+                    </jvmArgs>
                 </configuration>
             </plugin>
         </plugins>

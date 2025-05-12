@@ -166,7 +166,6 @@ public class MainController {
             public void onCallAccepted(String ip, String type) {
                 Platform.runLater(() -> {
                     if ("AUDIO".equals(type)) {
-                        System.out.println("actt");
                         openAudioChat(ip, "Appel accepté !");
                     } else if ("VIDEO".equals(type)) {
                         startVideoCallManually(ip, "Appel accepté !");
@@ -298,7 +297,7 @@ public class MainController {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
             if (!Objects.equals(message.getType(), "ACK_READ")) {
                 //affiche une notification
-                if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
+                if(Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
                     showInfo("Nouveau message de "+message.getSender(),message.getContent());
 
                 //Mise à jour du dernier message

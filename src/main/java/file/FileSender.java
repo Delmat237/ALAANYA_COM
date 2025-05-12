@@ -40,14 +40,13 @@ public class FileSender extends Thread {
             Message message = new Message(sender, "FILE", file.getName(), recipient, file.length(),new Date());
             message.setAck("sent");
 
-            //Affiche
-
-
             //save in bd
             Database.saveMessage(message);
 
             String json = gson.toJson(message);
+            System.out.println("JSON envoyé : " + json);
             dos.writeUTF(json); // envoie du JSON
+            dos.flush();
 
             // Étape 2 : Envoyer le fichier binaire
             byte[] buffer = new byte[4096];

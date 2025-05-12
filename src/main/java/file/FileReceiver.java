@@ -50,8 +50,14 @@ public class FileReceiver extends Thread {
                         listener.onMessageReceived(message);
                     }
 
-                    if ("file".equals(message.getType())) {
-                        File outFile = new File("received_" + message.getContent());
+                    if ("FILE".equals(message.getType())) {
+                        //CReation d'un dossier
+                        File dir = new File("Downloads");
+                        if (!dir.exists()) dir.mkdirs();
+                        String filename = System.currentTimeMillis() + "_received_" + message.getContent();
+                        File outFile = new File(dir, filename);
+
+
                         try (FileOutputStream fos = new FileOutputStream(outFile)) {
                             byte[] buffer = new byte[4096];
                             long remaining = message.getFileSize();
