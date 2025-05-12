@@ -5,7 +5,7 @@ public class AudioCallManager {
     private AudioSender sender;
     private AudioReceiver receiver;
 
-    public void startSending(String ip, int port) {
+    public static void startSending(String ip, int port) {
         sender = new AudioSender(ip, port, setup);
         sender.start();
     }

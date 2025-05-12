@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import audio.AudioCallManager;
 import audio.AudioSetup;
 import com.alaanya.MainApp;
 
@@ -150,6 +151,7 @@ public class MainController {
                     signaler.sendCallResponse(ip, accepted);
                     if (accepted) {
                         openAudioChat(ip, fromUser);
+                        AudioCallManager.startSending(ip,AUDIO_PORT);
                     }
                 });
             }
@@ -717,7 +719,7 @@ public class MainController {
 
     private void openAudioChat(String ip, String username) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/audio_chat.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
             AudioChatController controller = loader.getController();
             controller.initCall(ip, username);
