@@ -141,7 +141,7 @@ public class MainController {
         new FileReceiver(FILE_PORT).start();
 
         //Initiialisation pour l'attente des appels audio
-        CallSignaler signaler = new CallSignaler();
+        CallSignaler signaler = new CallSignaler(); // ou singleton
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
             public void onCallReceived(String fromUser, String ip) {
@@ -156,12 +156,17 @@ public class MainController {
 
             @Override
             public void onCallAccepted(String ip) {
-                System.out.println("Appel accepté !");
+                Platform.runLater(() -> {
+                    // L’autre utilisateur a accepté -> on lance la fenêtre d’appel
+                    openAudioChat(ip, "Appel accepté !");
+                });
             }
 
             @Override
             public void onCallDeclined(String ip) {
-                System.out.println("Appel refusé.");
+                Platform.runLater(() ->
+                        showInfo("Appel refusé", "L’utilisateur a refusé l’appel.")
+                );
             }
         });
 
@@ -464,6 +469,7 @@ public class MainController {
 
                 //Ajout du fichier dans la zone de chat
 
+                FileController.addFile(chatVBox,selectedFile.getPath(),selectedFile.getName(),true);
                 // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
                 Client.requestAddress(recipientId, notification -> {
                     if ("ADDRESS_RESPONSE".equals(notification.getType())) {
@@ -622,24 +628,10 @@ public class MainController {
             return;
         }
 
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
-            Parent root = loader.load(); // Charge le fichier FXML
-
-            AudioChatController controller = loader.getController(); // Récupère le contrôleur initialisé
-            controller.initCall(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
-
-            Stage stage = new Stage();
-            stage.setTitle("Appel audio");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Erreur", "Impossible de lancer la fenêtre d'appel.");
-        }
-
+        CallSignaler signaler = new CallSignaler();
+        signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")");
     }
+
 
     public void startVideoCall(ActionEvent actionEvent) {
         try {
