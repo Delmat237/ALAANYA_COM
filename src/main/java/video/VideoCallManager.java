@@ -1,5 +1,6 @@
 package video;
 
+import audio.AudioReceiver;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
@@ -12,24 +13,21 @@ public class VideoCallManager {
 
     private final CallSignaler signaler = new CallSignaler();
     private static VideoSender sender;
-    private VideoReceiver receiver;
+    private static VideoReceiver receiver;
     private static CameraService camera;
     private Timeline callTimer;
-    private int secondsElapsed = 0;
 
     private static ImageView localView = null;
-    private final ImageView remoteView;
+    private static ImageView remoteView = null;
     private final Runnable onHangUp;
-    private final Runnable onCallAccepted;
     private final Label callDurationLabel;
 
     public VideoCallManager(ImageView localView, ImageView remoteView,
                             Label callDurationLabel,
                             Runnable onCallAccepted, Runnable onHangUp) {
         VideoCallManager.localView = localView;
-        this.remoteView = remoteView;
+        VideoCallManager.remoteView = remoteView;
         this.callDurationLabel = callDurationLabel;
-        this.onCallAccepted = onCallAccepted;
         this.onHangUp = onHangUp;
     }
 
@@ -37,6 +35,13 @@ public class VideoCallManager {
         signaler.sendCallRequest(ip, username,"VIDEO");
     }
 
+    public static void startReceiving(int port){
+        receiver = new VideoReceiver(port, frame -> {
+            Image fxImage = SwingFXUtils.toFXImage(frame, null);
+            remoteView.setImage(fxImage);
+        });
+        receiver.start();
+    }
     public static void startSending(String ip, int port) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
@@ -53,7 +58,7 @@ public class VideoCallManager {
             callTimer.stop();
             callTimer = null;
         }
-        secondsElapsed = 0;
+        int secondsElapsed = 0;
         callDurationLabel.setText("Durée : 00:00");
     }
 

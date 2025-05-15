@@ -122,10 +122,15 @@ public class MainController {
     private int seconds = 0;
     private Timeline callTimer;
 
+    private String SoundStart = "/sounds/start.wav";
+    private String SoundCallRinging = "/sounds/urgent.wav";
+    private String SoundNotification = "/sounds/not.wav";
+    private String SoundError = "/sounds/tone.wav";
+
     @FXML
     public void initialize() throws SQLException {
 
-        SoundPlayer.playSound("/sounds/start.wav");
+        SoundPlayer.playSound(SoundStart);
 
         //THread de reception des messages texte
         MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
@@ -151,6 +156,7 @@ public class MainController {
                         } else if ("VIDEO".equals(type)) {
                             startVideoCallManually(ip, fromUser);
                             VideoCallManager.startSending(ip,VIDEO_PORT);
+                            VideoCallManager.startReceiving(VIDEO_PORT);
                         }
                     }
                 });
@@ -290,11 +296,9 @@ public class MainController {
         Platform.runLater(() -> {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
             if (!Objects.equals(message.getType(), "ACK_READ")) {
-                SoundPlayer.playSound("/sounds/not.wav");
                 //affiche une notification
                 if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
                     showInfo("Nouveau message de "+message.getSender(),message.getContent());
-
                 //Mise à jour du dernier message
                 try {
                     Database.updateContact(message);
@@ -345,7 +349,6 @@ public class MainController {
         idLabel.setText(user.getPhone_Number());
         statutLabel.setText((state == 1) ? "online" : "offline");
 
-
     }
 
     public User getUser() {
@@ -381,14 +384,13 @@ public class MainController {
      */
     @FXML
     private void sendMessage() throws SQLException {
+        SoundPlayer.playSound("sounds/pop.wav");
         String messageText = messageTextField.getText(); //recuperation du message saisir
         System.out.println("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
 
         if (!messageText.isEmpty() && selectedContact != null) {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
             String recipientId = selectedContact.getPhone_number();
-
-
             if (recipientId != null) {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE", messageText, recipientId);
                 message.setAck("sent");
@@ -566,10 +568,7 @@ public class MainController {
         contactListView.setItems(FXCollections.observableArrayList(filtered));
     }
 
-    private void showAlert(String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
-        alert.showAndWait();
-    }
+
 
 
     /**
@@ -693,12 +692,6 @@ public class MainController {
         }
     }
 
-    private boolean showConfirmationDialog(String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
-        alert.setTitle("Nouvel appel");
-        alert.setHeaderText(null);
-        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
-    }
 
     private void openAudioChat(String ip, String username) {
         System.out.println("Appele accepté");
@@ -734,7 +727,17 @@ public class MainController {
         }
     }
 
+    private boolean showConfirmationDialog(String message) {
+        //SONNERIE
+        SoundPlayer.playSound(SoundCallRinging);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Nouvel appel");
+        alert.setHeaderText(null);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
+
     private void showError(String title, String message) {
+        SoundPlayer.playSound(SoundError);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -743,10 +746,16 @@ public class MainController {
     }
     // Méthode pour afficher une information sous forme d'alerte
     private void showInfo(String title, String message) {
+        SoundPlayer.playSound(SoundNotification);
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle(title);
         info.setContentText(message);
         info.show();
+    }
+
+    private void showAlert(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
+        alert.showAndWait();
     }
 
 }

@@ -29,9 +29,9 @@ public class VideoChatController {
                 localView,
                 remoteView,
                 callDurationLabel,
-                () -> System.out.println("Appel accepté."),
+                () -> System.out.println("Appel video  accepté."),
                 () -> {
-                    System.out.println("Appel terminé.");
+                    System.out.println("Appel video terminé.");
                     endCallButton.setDisable(true);
                 }
         );

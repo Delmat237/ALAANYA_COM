@@ -36,7 +36,6 @@ public class FileController {
                 "-fx-background-radius: 15; -fx-border-radius: 15;");
         fileBubble.setMaxWidth(MAX_WIDTH);
 
-
         HBox fileInfoLine = new HBox(10);
         ImageView fileIcon = new ImageView();
 
@@ -62,7 +61,7 @@ public class FileController {
         }
 
         VBox fileDetails = new VBox(2);
-        Text fileNameText = new Text(truncateFileName(filePathOrName, 30));
+        Text fileNameText = new Text(truncateFileName(filePathOrName));
         fileNameText.setWrappingWidth(MAX_WIDTH);
         fileNameText.setStyle("-fx-font-size: 14px;");
 
@@ -93,28 +92,16 @@ public class FileController {
         );
 
         fileBubble.setOnMouseClicked(e -> {
-            try {
-                String downloadPath =  "Downloads" + File.separator + filePathOrName;
-                File fileToOpen = new File(downloadPath);
-
-                if (fileToOpen.exists()) {
-                    Desktop.getDesktop().open(fileToOpen);
-                } else {
-                    System.out.println("Fichier introuvable : " + fileToOpen.getAbsolutePath());
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            String downloadPath =  "Downloads" + File.separator + filePathOrName;
+            openLocalFile(downloadPath);
         });
-
-
-
+        
         messageBox.getChildren().add(fileBubble);
         Platform.runLater(() -> chatBox.getChildren().add(messageBox));
     }
 
-    private static String truncateFileName(String name, int maxLength) {
-        return name.length() > maxLength ? name.substring(0, maxLength - 3) + "..." : name;
+    private static String truncateFileName(String name) {
+        return name.length() > 30 ? name.substring(0, 30 - 3) + "..." : name;
     }
 
     // Ouvrir un fichier local
