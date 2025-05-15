@@ -43,7 +43,7 @@ public class MessageReceiver extends Thread {
                     //note comme non lu
                     message.setStatut("notread");
                     
-                    //Sauvegarde su ce n'est pas un accusé de reception
+                    //Sauvegarde si ce n'est pas un accusé de reception
                     if (!Objects.equals(message.getType(), "ACK_READ"))
                         Database.saveMessage(message);
                     if (listener != null) {

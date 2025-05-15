@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class FileSender extends Thread {
@@ -43,6 +44,9 @@ public class FileSender extends Thread {
             //save in bd
             Database.saveMessage(message);
 
+            //Mise à jour du dernier message
+            Database.updateContact(message);
+
             String json = gson.toJson(message);
             System.out.println("JSON envoyé : " + json);
             dos.writeUTF(json); // envoie du JSON
@@ -59,6 +63,8 @@ public class FileSender extends Thread {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

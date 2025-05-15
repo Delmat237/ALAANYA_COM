@@ -26,7 +26,7 @@ public class VideoCallManager {
     public VideoCallManager(ImageView localView, ImageView remoteView,
                             Label callDurationLabel,
                             Runnable onCallAccepted, Runnable onHangUp) {
-        this.localView = localView;
+        VideoCallManager.localView = localView;
         this.remoteView = remoteView;
         this.callDurationLabel = callDurationLabel;
         this.onCallAccepted = onCallAccepted;

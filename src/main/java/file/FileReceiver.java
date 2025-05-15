@@ -45,7 +45,6 @@ public class FileReceiver extends Thread {
 
                     //Save in bd
                     Database.saveMessage(message);
-
                     if (listener != null) {
                         listener.onMessageReceived(message);
                     }
@@ -54,7 +53,7 @@ public class FileReceiver extends Thread {
                         //CReation d'un dossier
                         File dir = new File("Downloads");
                         if (!dir.exists()) dir.mkdirs();
-                        String filename = System.currentTimeMillis() + "_received_" + message.getContent();
+                        String filename = message.getContent();
                         File outFile = new File(dir, filename);
 
 

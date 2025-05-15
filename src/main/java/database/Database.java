@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import javafx.scene.image.Image;
 import model.Contact;
 import model.Message;
 import model.User;
@@ -268,10 +270,10 @@ public class Database {
                 contacts.add(new Contact(
                         rs.getString("contact_user_id"),
                         rs.getString("nick_name"),
-                        "",
-                        "",
+                        rs.getString("lastMessage"),
+                        rs.getString("created_at"),
                         0,
-                        null));
+                        new Image(Objects.requireNonNull(Database.class.getResource("/com/alaanya/view/images/profile.png")).toExternalForm())));
             }
             return contacts;
         }
@@ -287,7 +289,7 @@ public class Database {
                         "",
                         "",
                         0,
-                        null));
+                        new Image(Objects.requireNonNull(Database.class.getResource("/com/alaanya/view/images/profile.png")).toExternalForm())));
             }
             return contacts;
         }

@@ -40,9 +40,21 @@ public class FileController {
         HBox fileInfoLine = new HBox(10);
         ImageView fileIcon = new ImageView();
 
-        File iconFile = new File(iconPath);
-        if (iconFile.exists()) {
-            Image image = new Image(iconFile.toURI().toString());
+        String iconFileName = switch (getFileExtension(filePathOrName)) {
+            case "jpg", "jpeg", "png", "gif", "bmp" -> "image.png";
+            case "mp4", "avi", "mkv" -> "video.png";
+            case "mp3", "wav", "ogg" -> "audio.png";
+            case "pdf" -> "pdf.png";
+            case "doc", "docx" -> "word.png";
+            case "xls", "xlsx" -> "excel.png";
+            case "ppt", "pptx" -> "ppt.png";
+            case "txt", "md" -> "text.png";
+            case "zip", "rar", "7z" -> "archive.png";
+            default -> "file.png";
+        };
+        InputStream iconStream = FileController.class.getResourceAsStream("/com/alaanya/view/images/" + iconFileName);
+        if (iconStream != null) {
+            Image image = new Image(iconStream);
             fileIcon.setImage(image);
             fileIcon.setFitWidth(35);
             fileIcon.setFitHeight(35);
@@ -70,19 +82,21 @@ public class FileController {
 
         fileBubble.getChildren().addAll(fileInfoLine, spacer, bottomLine);
 
-        fileBubble.setOnMouseEntered(e -> fileBubble.setStyle(
-                "-fx-background-color: " + (isSentByUser ? SENT_HOVER_COLOR : RECEIVED_HOVER_COLOR) + ";" +
-                        "-fx-background-radius: 15; -fx-border-radius: 15; -fx-cursor: hand;"
-        ));
+        final String baseStyle = "-fx-background-radius: 15; -fx-border-radius: 15;";
+        fileBubble.setStyle("-fx-background-color: " + (isSentByUser ? SENT_BG_COLOR : RECEIVED_BG_COLOR) + ";" + baseStyle);
 
+        fileBubble.setOnMouseEntered(e -> fileBubble.setStyle(
+                "-fx-background-color: " + (isSentByUser ? SENT_HOVER_COLOR : RECEIVED_HOVER_COLOR) + ";" + baseStyle)
+        );
         fileBubble.setOnMouseExited(e -> fileBubble.setStyle(
-                "-fx-background-color: " + (isSentByUser ? SENT_EXIT_COLOR : RECEIVED_BG_COLOR) + ";" +
-                        "-fx-background-radius: 15; -fx-border-radius: 15; -fx-cursor: hand;"
-        ));
+                "-fx-background-color: " + (isSentByUser ? SENT_EXIT_COLOR : RECEIVED_BG_COLOR) + ";" + baseStyle)
+        );
 
         fileBubble.setOnMouseClicked(e -> {
             try {
-                File fileToOpen = new File(filePathOrName); // assure-toi que fileName contient le chemin complet
+                String downloadPath =  "Downloads" + File.separator + filePathOrName;
+                File fileToOpen = new File(downloadPath);
+
                 if (fileToOpen.exists()) {
                     Desktop.getDesktop().open(fileToOpen);
                 } else {
@@ -92,6 +106,7 @@ public class FileController {
                 ex.printStackTrace();
             }
         });
+
 
 
         messageBox.getChildren().add(fileBubble);
@@ -146,6 +161,14 @@ public class FileController {
             alert.showAndWait();
         });
     }
+    private static String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex + 1).toLowerCase();
+        }
+        return "";
+    }
+
 
     private static String getFileTypeDescription(String fileName) {
         String ext = "";

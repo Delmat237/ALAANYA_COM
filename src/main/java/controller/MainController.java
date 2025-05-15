@@ -30,7 +30,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -130,18 +129,13 @@ public class MainController {
 
         //THread de reception des messages texte
         MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
-        receiver.setMessageListener(message -> {
-            handleIncomingMessage(message);
-            SoundPlayer.playSound("/sounds/not.wav");
-        });
-
+        receiver.setMessageListener(this::handleIncomingMessage);
         receiver.start();
-
 
         //Thread de reception des fichiers
         new FileReceiver(FILE_PORT).start();
 
-        //Initiialisation pour l'attente des appels audio
+        //Initiialisation pour l'attente des appels
         CallSignaler signaler = new CallSignaler(); // ou singleton
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
@@ -207,8 +201,7 @@ public class MainController {
             private final Label unreadCount;
 
             {
-                Image image = new Image(Objects.requireNonNull(getClass().getResource("/com/alaanya/view/images/profile.png")).toExternalForm());
-                imageView = new ImageView(image);
+                imageView = new ImageView();
                 imageView.setFitWidth(40);
                 imageView.setFitHeight(40);
                 imageView.setClip(new Circle(20, 20, 20)); // rond
@@ -239,6 +232,7 @@ public class MainController {
 
             //Methode de mise à jour
             protected void updateItem(Contact item, boolean empty) {
+
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setGraphic(null);
@@ -296,8 +290,9 @@ public class MainController {
         Platform.runLater(() -> {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
             if (!Objects.equals(message.getType(), "ACK_READ")) {
+                SoundPlayer.playSound("/sounds/not.wav");
                 //affiche une notification
-                if(Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
+                if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
                     showInfo("Nouveau message de "+message.getSender(),message.getContent());
 
                 //Mise à jour du dernier message
@@ -308,7 +303,7 @@ public class MainController {
                 }
 
                 if (Objects.equals(message.getType(), "MESSAGE"))
-                    MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read");
+                    MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read",message.getTimestamp());
                 else
                     FileController.addFile(chatVBox, message.getSender(), message.getContent(), false);
 
@@ -387,8 +382,6 @@ public class MainController {
     @FXML
     private void sendMessage() throws SQLException {
         String messageText = messageTextField.getText(); //recuperation du message saisir
-
-
         System.out.println("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
 
         if (!messageText.isEmpty() && selectedContact != null) {
@@ -414,7 +407,7 @@ public class MainController {
                 });
 
                 //Ajout du message dans la zone de chat
-                MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "read");
+                MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "read",message.getTimestamp());
 
                 //Ajout dans la BD
                 Database.saveMessage(message);
@@ -443,7 +436,6 @@ public class MainController {
             }
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
             String recipientId = selectedContact.getPhone_number();
-            System.out.println(recipientId);
             sendFile(sender, recipientId); // Call the sendFile method
 
 
@@ -465,9 +457,7 @@ public class MainController {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
 
-                //Ajout du fichier dans la zone de chat
 
-                FileController.addFile(chatVBox,selectedFile.getPath(),selectedFile.getName(),true);
                 // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
                 Client.requestAddress(recipientId, notification -> {
                     if ("ADDRESS_RESPONSE".equals(notification.getType())) {
@@ -477,7 +467,8 @@ public class MainController {
                     } else selectedUserStatut.setText("offline");
                 });
 
-                FileController.addFile(chatVBox, "com/alaanya/view/images/file.png", fileName, true);
+                //Ajout du fichier dans la zone de chat
+                FileController.addFile(chatVBox, selectedFile.getPath(), fileName, true);
 
                 System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
@@ -510,7 +501,7 @@ public class MainController {
             String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
 
             if (Objects.equals(message.getType(), "MESSAGE"))
-                MessageController.addMessage(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"), message.getStatut());
+                MessageController.addMessage(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"), message.getStatut(), message.getTimestamp());
             if (Objects.equals(message.getType(), "FILE"))
                 FileController.addFile(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"));
         }
@@ -527,7 +518,7 @@ public class MainController {
             GridPane loginView = (GridPane) loader.load();
 
             Scene scene = new Scene(loginView);
-            Stage stage = MainApp.getPrimaryStage();
+            Stage stage;
             stage = (Stage) userLabel.getScene().getWindow();
             stage.setScene(scene);
             stage.show();
