@@ -1,6 +1,5 @@
 package video;
 
-import audio.AudioReceiver;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
@@ -11,7 +10,7 @@ import signal.CallSignaler;
 
 public class VideoCallManager {
 
-    private final CallSignaler signaler = new CallSignaler();
+    private final CallSignaler signaler = CallSignaler.getInstance();
     private static VideoSender sender;
     private static VideoReceiver receiver;
     private static CameraService camera;

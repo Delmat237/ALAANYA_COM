@@ -13,12 +13,24 @@ import java.util.concurrent.Executors;
 
 public class CallSignaler {
 
+    private static CallSignaler instance;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ServerSocket serverSocket;
+    private volatile boolean listening = false;
+
+    private CallSignaler() {}
 
     public interface CallListener {
         void onCallReceived(String fromUser, String ip, String type);
         void onCallAccepted(String ip, String type);
         void onCallDeclined(String ip);
+    }
+
+    public static synchronized CallSignaler getInstance() {
+        if (instance == null) {
+            instance = new CallSignaler();
+        }
+        return instance;
     }
 
 
@@ -45,17 +57,40 @@ public class CallSignaler {
 
 
 
-    public void listenForCallRequests(CallListener listener) {
+    public synchronized void listenForCallRequests(CallListener listener) {
+        if (listening) return; // déjà en écoute
+
+        listening = true;
         executor.submit(() -> {
-            try (ServerSocket serverSocket = new ServerSocket(MainController.SIGNAL_PORT)) {
-                while (true) {
+            try {
+                serverSocket = new ServerSocket(MainController.SIGNAL_PORT);
+                while (listening) {
                     Socket clientSocket = serverSocket.accept();
                     handleClient(clientSocket, listener);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                if (listening) {
+                    e.printStackTrace();
+                }
+            } finally {
+                closeServerSocket();
             }
         });
+    }
+    public synchronized void stopListening() {
+        listening = false;
+        closeServerSocket();
+        executor.shutdownNow();
+    }
+
+    private void closeServerSocket() {
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void handleClient(Socket clientSocket, CallListener listener) {

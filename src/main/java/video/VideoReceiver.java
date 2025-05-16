@@ -17,6 +17,7 @@ public class VideoReceiver extends Thread {
         this.consumer = consumer;
     }
 
+
     @Override
     public void run() {
         try (ServerSocket server = new ServerSocket(port)) {
@@ -37,9 +38,12 @@ public class VideoReceiver extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
     }
 
     public void stopReceiving() {
         running = false;
     }
 }
+
+

@@ -45,7 +45,7 @@ import message.MessageSender;
 import model.Contact;
 import model.Message;
 import model.User;
-import signal.CallSignaler;
+import signal.CallSignaler; // Ensure this import is correct and the class exists in the specified package
 import socket.Client;
 import utils.SoundPlayer;
 import video.VideoCallManager;
@@ -119,6 +119,8 @@ public class MainController {
     public static final int SIGNAL_PORT = 5003;
     public static int VIDEO_PORT = 5004;
 
+    private boolean isCallDialogOpen = false;
+
     private int seconds = 0;
     private Timeline callTimer;
 
@@ -141,13 +143,15 @@ public class MainController {
         new FileReceiver(FILE_PORT).start();
 
         //Initiialisation pour l'attente des appels
-        CallSignaler signaler = new CallSignaler(); // ou singleton
+        CallSignaler signaler = CallSignaler.getInstance(); // Singleton instance
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
             public void onCallReceived(String fromUser, String ip, String type) {
+                if (isCallDialogOpen) return;
+                isCallDialogOpen = true;
                 Platform.runLater(() -> {
                     boolean accepted = showConfirmationDialog("Appel " + type + " de " + fromUser);
-
+                    SoundPlayer.stopSound();
                     signaler.sendCallResponse(ip, accepted, type);
                     if (accepted) {
                         if ("AUDIO".equals(type)) {
@@ -155,8 +159,9 @@ public class MainController {
                             AudioCallManager.startSending(ip, AUDIO_PORT);
                         } else if ("VIDEO".equals(type)) {
                             startVideoCallManually(ip, fromUser);
-                            VideoCallManager.startSending(ip,VIDEO_PORT);
                             VideoCallManager.startReceiving(VIDEO_PORT);
+                            VideoCallManager.startSending(ip,VIDEO_PORT);
+                           
                         }
                     }
                 });
@@ -384,7 +389,7 @@ public class MainController {
      */
     @FXML
     private void sendMessage() throws SQLException {
-        SoundPlayer.playSound("sounds/pop.wav");
+        SoundPlayer.playSound("sounds/pop.mp3");
         String messageText = messageTextField.getText(); //recuperation du message saisir
         System.out.println("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
 
@@ -616,7 +621,7 @@ public class MainController {
             return;
         }
 
-        CallSignaler signaler = new CallSignaler();
+        CallSignaler signaler = CallSignaler.getInstance();
         signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")","AUDIO");
     }
 
@@ -632,8 +637,8 @@ public class MainController {
             return;
         }
 
-        CallSignaler signaler = new CallSignaler();
-        signaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")","VIDEO");
+        CallSignaler videoCallSignaler = CallSignaler.getInstance();
+        videoCallSignaler.sendCallRequest(recipientAddress, user.getUsername() + " (" + user.getPhone_Number() + ")","VIDEO");
     }
 
 
@@ -714,7 +719,10 @@ public class MainController {
             Parent root = loader.load();
 
             VideoChatController controller = loader.getController();
-            controller.setup(ip, username);
+            if (username.equals("Appel accepté !"))
+                VideoCallManager.startReceiving(VIDEO_PORT);
+            else
+                controller.setup(ip, username);
 
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");

@@ -3,6 +3,7 @@ package controller;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
@@ -39,18 +40,20 @@ public class FileController {
         HBox fileInfoLine = new HBox(10);
         ImageView fileIcon = new ImageView();
 
-        String iconFileName = switch (getFileExtension(filePathOrName)) {
-            case "jpg", "jpeg", "png", "gif", "bmp" -> "image.png";
-            case "mp4", "avi", "mkv" -> "video.png";
-            case "mp3", "wav", "ogg" -> "audio.png";
-            case "pdf" -> "pdf.png";
-            case "doc", "docx" -> "word.png";
-            case "xls", "xlsx" -> "excel.png";
-            case "ppt", "pptx" -> "ppt.png";
-            case "txt", "md" -> "text.png";
-            case "zip", "rar", "7z" -> "archive.png";
-            default -> "file.png";
-        };
+        String extension = getFileExtension(filePathOrName);
+
+        String iconFileName = switch (extension) {
+        case "jpg", "jpeg", "png", "gif", "bmp" -> "image.png";
+                case "mp4", "avi", "mkv" -> "video.png";
+                case "mp3", "wav", "ogg" -> "audio.png";
+                case "pdf" -> "pdf.png";
+                case "doc", "docx" -> "word.png";
+                case "xls", "xlsx" -> "excel.png";
+                case "ppt", "pptx" -> "ppt.png";
+                case "txt", "md" -> "text.png";
+                case "zip", "rar", "7z" -> "archive.png";
+                default -> "file.png";
+            };
         InputStream iconStream = FileController.class.getResourceAsStream("/com/alaanya/view/images/" + iconFileName);
         if (iconStream != null) {
             Image image = new Image(iconStream);
@@ -70,6 +73,9 @@ public class FileController {
         fileDetails.getChildren().addAll(fileNameText, fileType);
         fileInfoLine.getChildren().addAll(fileIcon, fileDetails);
 
+        // Création de l'aperçu du contenu
+        Node previewNode = createFilePreview(filePathOrName, extension);
+
         HBox bottomLine = new HBox();
         bottomLine.setAlignment(Pos.CENTER_RIGHT);
         Text timeStamp = new Text(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -79,7 +85,11 @@ public class FileController {
         Region spacer = new Region();
         spacer.setMinHeight(5);
 
-        fileBubble.getChildren().addAll(fileInfoLine, spacer, bottomLine);
+        fileBubble.getChildren().addAll(fileInfoLine);
+        if (previewNode != null) {
+            fileBubble.getChildren().add(previewNode);
+        }
+        fileBubble.getChildren().addAll(spacer, bottomLine);
 
         final String baseStyle = "-fx-background-radius: 15; -fx-border-radius: 15;";
         fileBubble.setStyle("-fx-background-color: " + (isSentByUser ? SENT_BG_COLOR : RECEIVED_BG_COLOR) + ";" + baseStyle);
@@ -92,10 +102,11 @@ public class FileController {
         );
 
         fileBubble.setOnMouseClicked(e -> {
-            String downloadPath =  "Downloads" + File.separator + filePathOrName;
+            String downloadPath = "Downloads" + File.separator + filePathOrName;
             openLocalFile(downloadPath);
         });
         
+
         messageBox.getChildren().add(fileBubble);
         Platform.runLater(() -> chatBox.getChildren().add(messageBox));
     }
@@ -104,8 +115,59 @@ public class FileController {
         return name.length() > 30 ? name.substring(0, 30 - 3) + "..." : name;
     }
 
+    private static Node createFilePreview(String filePathOrName, String extension) {
+        try {
+            File file = new File( filePathOrName); // adapter selon ton chemin réel
+    
+            if (!file.exists()) {
+                return null; // pas d'aperçu si fichier absent
+            }
+
+            switch (extension) {
+                case "jpg":
+                case "jpeg":
+                case "png":
+                case "gif":
+                case "bmp": {
+                    Image img = new Image(file.toURI().toString(), 200, 200, true, true);
+                    ImageView imageView = new ImageView(img);
+                    imageView.setPreserveRatio(true);
+                    imageView.setSmooth(true);
+                    imageView.setCache(true);
+                    return imageView;
+                }
+                case "txt":
+                case "md":
+                case "rtf": {
+                    // Lire les premières lignes du fichier texte
+                    StringBuilder previewText = new StringBuilder();
+                    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                        String line;
+                        int lines = 0;
+                        while ((line = br.readLine()) != null && lines < 5) {
+                            previewText.append(line).append("\n");
+                            lines++;
+                        }
+                    }
+                    Text preview = new Text(previewText.toString());
+                    preview.setWrappingWidth(MAX_WIDTH);
+                    preview.setStyle("-fx-font-size: 12px; -fx-fill: #444;");
+                    return preview;
+                }
+                // Pour PDF, vidéo, audio, tu peux ajouter des aperçus spécifiques si tu veux (plus complexe)
+                default: {
+                    return null; // pas d'aperçu
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }    
     // Ouvrir un fichier local
     private static void openLocalFile(String path) {
+        System.out.println("Tentative d'ouverture du fichier : " + path);
+
         try {
             File file = new File(path);
             if (file.exists()) {

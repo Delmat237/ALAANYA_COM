@@ -10,6 +10,7 @@ public class CameraService extends Thread {
     private final Consumer<BufferedImage> frameConsumer;
     private final Java2DFrameConverter converter;
     private volatile boolean running = true;
+    private volatile boolean started = false;
 
     public CameraService(Consumer<BufferedImage> frameConsumer) {
         this.frameConsumer = frameConsumer;
@@ -20,7 +21,11 @@ public class CameraService extends Thread {
     @Override
     public void run() {
         try {
+            grabber.setImageWidth(1920);
+            grabber.setImageHeight(1080);
             grabber.start();
+            
+            started = true;
             while (running) {
                 Frame frame = grabber.grab();
                 if (frame != null) {
@@ -40,14 +45,30 @@ public class CameraService extends Thread {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            started = false;
         }
+    }
+    public boolean isStarted() {
+        return started;
     }
 
     public void stopCapture() {
         running = false;
+        try {
+            this.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public BufferedImage grabCurrentFrame() throws Exception {
-        return converter.convert(grabber.grab());
+        if (!started) {
+            throw new IllegalStateException("Grabber not started yet");
+        }
+        Frame frame = grabber.grab();
+        if (frame == null) {
+            return null;
+        }
+        return converter.convert(frame);
     }
 }
