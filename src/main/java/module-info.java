@@ -2,11 +2,17 @@ module com.alaanya.alaanya {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
+    requires javafx.media;
     requires javafx.swing;
     requires java.sql;
     requires java.desktop;
     requires com.google.gson;
     requires org.bytedeco.javacv;
+    requires org.kordamp.ikonli.core;
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.fontawesome5;
+    requires org.apache.poi.ooxml;
+    requires org.apache.pdfbox;
 
     // Application
     opens com.alaanya to javafx.fxml;

@@ -1,48 +1,55 @@
-/* login.css */
-
-/* Arrière-plan général */
+/* Style général du conteneur */
 .login-grid {
-    -fx-background-color: #1E3A24; /* Vert foncé, couleur proche de l'armée camerounaise */
-    -fx-padding: 20px;
+    -fx-background-color: #1E3A24; /* Vert militaire foncé */
+    -fx-padding: 30px;
     -fx-alignment: center;
+    -fx-spacing: 15px;
 }
 
-/* Label */
+/* Labels */
 .login-label {
-    -fx-text-fill: #25849c; /* Jaune doré pour un contraste fort mais adapté */
+    -fx-text-fill: rgba(17, 77, 168, 0.64); /* Doré pour contraste militaire */
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 
-/* Champ de texte */
-.login-text-field {
-    -fx-background-color: #FFFFFF; /* Blanc pour les champs */
-    -fx-text-fill: #333333; /* Texte noir */
-    -fx-border-color: #4CAF50; /* Vert pour les bordures */
-    -fx-border-radius: 5px;
+/* Champ texte (téléphone, etc.) */
+.login-text-field,
+.password-field {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #1E1E1E;
+    -fx-border-color: #4CAF50;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
     -fx-font-size: 14px;
-    -fx-padding: 8px;
+    -fx-padding: 6px 8px;
 }
 
-/* Bouton */
+/* Bouton de connexion */
 .login-button {
     -fx-background-color: #4CAF50; /* Vert armée */
     -fx-text-fill: white;
-    -fx-font-size: 16px;
+    -fx-font-size: 15px;
     -fx-padding: 10px 20px;
-    -fx-border-radius: 5px;
+    -fx-background-radius: 6px;
+    -fx-border: none;
 }
 
-/* Lien */
+/* Bouton de connexion - effet hover */
+.login-button:hover {
+    -fx-background-color: #81c885;
+}
+
+/* Lien "Créer un compte" */
 .create-account-link {
-    -fx-text-fill: #9c07ff; /* Jaune doré pour le lien */
-    -fx-font-size: 14px;
+    -fx-text-fill: #9c07ff; /* Doré */
+    -fx-font-size: 13px;
     -fx-underline: true;
 }
 
 /* Message d'erreur */
 .login-error-message {
-    -fx-text-fill: #FF5722; /* Rouge pour les erreurs */
-    -fx-font-size: 14px;
+    -fx-text-fill: #FF3D00; /* Rouge militaire fort */
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
 }

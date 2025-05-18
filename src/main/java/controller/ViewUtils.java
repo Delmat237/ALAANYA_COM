@@ -50,8 +50,9 @@ public class ViewUtils {
             stage.show();
 
         } catch (IOException | SQLException e) {
-            errorLabel.setText("Erreur lors du chargement 6de la vue principale.");
+            errorLabel.setText("Erreur lors du chargement de la vue principale.");
              System.err.println(e.getMessage() + " : " + e.getCause());
+             e.printStackTrace();
         }
     }
     // Méthode à sortir du LoginController et à mettre ici

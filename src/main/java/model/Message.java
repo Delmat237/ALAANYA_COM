@@ -12,27 +12,31 @@ public class Message implements Serializable {
     private String content;
     private String recipient;
     private long filesize;
+    private String fileName;
+    private String filePath;
     private Date timestamp;  // Add the timestamp field
     private String ack; //sent;receive
     private String statut;//read or notread
 
+    public Message(){}
 
     public Message(String sender, String type, String content, String recipient) {
         this.sender = sender;
         this.type = type;
         this.content = content;
         this.recipient = recipient;
-        this.timestamp = new Date(); // Initialize the timestamp
+        this.timestamp = new Date();
     }
 
     //Format des fichiers attaché à un fichier
-    public Message(String sender, String type, String content, String recipient, long filesize ,Date timestamp) {
+    public Message(String sender,String filePath, String fileName, String recipient, long filesize ) {
         this.sender = sender;
-        this.type = type;
-        this.content = content;
+        this.type = "FILE";
+        this.filePath = filePath;
+        this.fileName = fileName;
         this.recipient = recipient;
         this.filesize = filesize;
-        this.timestamp = timestamp; //  timestamp is passed in
+        this.timestamp = new Date();
     }
 
     public String getSender() {
@@ -68,6 +72,11 @@ public class Message implements Serializable {
     public String getStatut() {return this.statut;}
 
     public void setStatut(String statut) {this.statut = statut;}
+    public void setSender(String sender) {this.sender = sender;}
+    public void setRecipient(String recipient) {this.recipient = recipient;}
+    public void setContent(String content) {this.content = content;}
+    public void setType(String type) {this.type = type;}
+
 
     @Override
     public String toString() {
@@ -77,9 +86,25 @@ public class Message implements Serializable {
                 ", content='" + content + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", timestamp=" + timestamp +
+                ",fileName = "+fileName +
+
                 '}';
     }
 
 
+    public String getFilePath() {
+        return filePath;
+    }
 
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 }

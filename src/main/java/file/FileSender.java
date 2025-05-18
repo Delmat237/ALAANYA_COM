@@ -38,11 +38,11 @@ public class FileSender extends Thread {
                 FileInputStream fis = new FileInputStream(file)
         ) {
             // Étape 1 : Envoyer un message JSON avec les métadonnées
-            Message message = new Message(sender, "FILE", file.getPath(), recipient, file.length(),new Date());
+            Message message = new Message(sender, file.getPath(), file.getName(), recipient, file.length());
             message.setAck("sent");
 
             //save in bd
-            Database.saveMessage(message);
+            Database.saveFile(message);
 
             //Mise à jour du dernier message
             Database.updateContact(message);

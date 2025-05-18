@@ -3,27 +3,32 @@ package file;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import database.Database;
+import javafx.stage.FileChooser;
 import message.MessageReceiver;
 import model.Message;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+
+import static controller.FileController.showAlert;
 
 public class FileReceiver extends Thread {
 
     private final int port;
     private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private MessageReceiver.MessageListener listener;
+    private FileListener listener;
     
     public FileReceiver(int port) {
         this.port = port;
     }
 
-    public void setFileListener(MessageReceiver.MessageListener listener) {
+    public void setFileListener(FileListener listener) {
         this.listener = listener;
     }
     @Override
@@ -37,29 +42,33 @@ public class FileReceiver extends Thread {
                 ) {
                     // Étape 1 : Lire le JSON
                     String json = dis.readUTF();
-                    Message message = gson.fromJson(json, Message.class);
-                    //change le statut du message en receive
-                    message.setAck("receive");
+                    Message file = gson.fromJson(json, Message.class);
+                    //change le statut du file en receive
+                    file.setAck("receive");
                     //note comme non lu
-                    message.setStatut("notread");
+                    file.setStatut("notread");
 
-                    //Save in bd
-                    Database.saveMessage(message);
+
                     if (listener != null) {
-                        listener.onMessageReceived(message);
+                        listener.onFileReceived(file);
                     }
 
-                    if ("FILE".equals(message.getType())) {
+
                         //CReation d'un dossier
-                        File dir = new File("Downloads");
-                        if (!dir.exists()) dir.mkdirs();
-                        String filename = message.getContent();
-                        File outFile = new File(dir, filename);
+                    File dir = new File("Downloads");
+                    if (!dir.exists()) dir.mkdirs();
+                    String filename = file.getFileName();
+                    File outFile = new File(dir, filename);
 
+                    //mise à jour du chemin d'acces
+                    file.setFilePath(outFile.getPath());
 
-                        try (FileOutputStream fos = new FileOutputStream(outFile)) {
+                    //Save in bd
+                    Database.saveFile(file);
+
+                    try (FileOutputStream fos = new FileOutputStream(outFile)) {
                             byte[] buffer = new byte[4096];
-                            long remaining = message.getFileSize();
+                            long remaining = file.getFileSize();
                             int bytesRead;
                             while (remaining > 0 &&
                                     (bytesRead = dis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) != -1) {
@@ -68,8 +77,8 @@ public class FileReceiver extends Thread {
                             }
                         }
 
-                        System.out.println("Fichier reçu : " + outFile.getName());
-                    }
+                    System.out.println("Fichier reçu : " + outFile.getName());
+
 
                 } catch (IOException e) {
                     System.err.println("Erreur réception : " + e.getMessage());
@@ -80,4 +89,9 @@ public class FileReceiver extends Thread {
         }
     }
 
+    @FunctionalInterface
+    public interface FileListener {
+        void onFileReceived(Message file);
+    }
+    
 }

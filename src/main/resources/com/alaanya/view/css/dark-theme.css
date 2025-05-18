@@ -91,3 +91,10 @@
 .separator {
     -fx-background-color: #FFFFFF;
 }
+.hidden-tab-header .tab-header-area {
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+    visibility: hidden;
+}

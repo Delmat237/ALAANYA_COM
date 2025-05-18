@@ -2,33 +2,58 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<?import java.lang.String?>
-<?import java.net.URL?>
 <GridPane alignment="CENTER" hgap="10" vgap="10"
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="controller.RegisterController"
-         stylesheets="@css/register-style.css">
- 
+          stylesheets="@css/register-style.css">
 
-    <Label text="Enregistrement Militaire" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+    <!-- Titre -->
+    <Label text="Enregistrement Militaire" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
+    <!-- Téléphone -->
+    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <FontIcon iconLiteral="fas-phone" iconSize="14"/>
+        <TextField fx:id="militaryIdField" text="+2376"/>
+    </HBox>
     <Label text="TELEPHONE (+2376********):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="militaryIdField" GridPane.columnIndex="1" GridPane.rowIndex="1" 
-    text="+2376"/>
 
+    <!-- Nom d'utilisateur -->
+    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <FontIcon iconLiteral="fas-user" iconSize="14"/>
+        <TextField fx:id="usernameIdField"/>
+    </HBox>
     <Label text="USERNAME :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <TextField fx:id="usernameIdField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
+    <!-- Mot de passe -->
+    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+        <FontIcon iconLiteral="fas-lock" iconSize="14"/>
+        <PasswordField fx:id="passwordField"/>
+    </HBox>
     <Label text="Mot de passe:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-    <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 
+    <!-- Grade -->
+    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
+        <FontIcon iconLiteral="fas-medal" iconSize="14"/>
+        <ComboBox fx:id="gradeCombo"/>
+    </HBox>
     <Label text="Grade:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-    <ComboBox fx:id="gradeCombo" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
+    <!-- Division -->
+    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
+        <FontIcon iconLiteral="fas-shield-alt" iconSize="14"/>
+        <TextField fx:id="divisionField"/>
+    </HBox>
     <Label text="Division:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-    <TextField fx:id="divisionField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-    <Button text="Créer le compte" onAction="#handleRegistration" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+    <!-- Bouton -->
+    <Button text="Créer le compte" onAction="#handleRegistration" GridPane.columnIndex="1" GridPane.rowIndex="6">
+        <graphic>
+            <FontIcon iconLiteral="fas-user-plus" iconSize="14"/>
+        </graphic>
+    </Button>
+
+    <!-- Message d'erreur -->
     <Label fx:id="errorLabel" style="-fx-text-fill: RED;" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
 </GridPane>

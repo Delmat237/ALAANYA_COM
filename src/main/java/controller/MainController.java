@@ -55,6 +55,9 @@ import video.VideoCallManager;
 public class MainController {
 
 
+    @FXML public VBox downloadsVBox;
+    @FXML private ScrollPane scrollPane;
+    @FXML private TabPane mainTabPane;
     @FXML
     private TabPane contactsTabPane;
     @FXML
@@ -105,6 +108,8 @@ public class MainController {
     private ListView<Contact> allContactsListView;
 
 
+    private URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
+    private URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
     private User user;
     private static String recipientAddress;
 
@@ -118,6 +123,9 @@ public class MainController {
     public static final int AUDIO_PORT = 5002;
     public static final int SIGNAL_PORT = 5003;
     public static int VIDEO_PORT = 5004;
+
+    private  MessageReceiver receiver;
+    private FileReceiver fileReceiver;
 
     private boolean isCallDialogOpen = false;
 
@@ -134,15 +142,17 @@ public class MainController {
 
         SoundPlayer.playSound(SoundStart);
 
-        //THread de reception des messages texte
-        MessageReceiver receiver = new MessageReceiver(MESSAGE_PORT);
+        //Thread de reception des messages texte
+        receiver = new MessageReceiver(MESSAGE_PORT);
         receiver.setMessageListener(this::handleIncomingMessage);
         receiver.start();
 
         //Thread de reception des fichiers
-        new FileReceiver(FILE_PORT).start();
+        fileReceiver = new FileReceiver(FILE_PORT);
+        fileReceiver.setFileListener(this::handleIncomingMessage);
+        fileReceiver.start();
 
-        //Initiialisation pour l'attente des appels
+        //Initialization pour l'attente des appels
         CallSignaler signaler = CallSignaler.getInstance(); // Singleton instance
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
@@ -158,10 +168,8 @@ public class MainController {
                             openAudioChat(ip, fromUser);
                             AudioCallManager.startSending(ip, AUDIO_PORT);
                         } else if ("VIDEO".equals(type)) {
-                            startVideoCallManually(ip, fromUser);
-                            VideoCallManager.startReceiving(VIDEO_PORT);
+                            openVideoChat(ip, fromUser);
                             VideoCallManager.startSending(ip,VIDEO_PORT);
-                           
                         }
                     }
                 });
@@ -172,8 +180,10 @@ public class MainController {
                 Platform.runLater(() -> {
                     if ("AUDIO".equals(type)) {
                         openAudioChat(ip, "Appel accepté !");
+
                     } else if ("VIDEO".equals(type)) {
-                        startVideoCallManually(ip, "Appel accepté !");
+                        openVideoChat(ip, "Appel accepté !");
+
                     }
                 });
             }
@@ -186,26 +196,25 @@ public class MainController {
             }
         });
 
-
         // Filtrage en mémoire pour "Mes contacts"
-        searchTextField.textProperty().addListener((obs, oldValue, newValue) -> {
-            filterContacts(newValue);
-        });
+        searchTextField.textProperty().addListener((obs, oldValue, newValue) -> filterContacts(newValue));
 
-        //Personnalisation des liste des contacts
+        //Personnalisation de la liste des contacts
         ContactListView(contactListView);
         ContactListView(allContactsListView);
 
+        scrollPane.setVvalue(1.0);
+
+        //initialisation du style
 
         showChatArea(false);
     }
 
     public void ContactListView(ListView<Contact> listView) {
         //Personnalisation de l'affichage des contacts
-        listView.setCellFactory(list -> new ListCell<Contact>() {
+        listView.setCellFactory(list -> new ListCell<>() {
             private final HBox content;
             private final ImageView imageView;
-            private final VBox texts;
             private final Label name;
             private final Label lastMessage;
             private final Label date;
@@ -229,7 +238,7 @@ public class MainController {
                 unreadCount.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-padding: 2 5 2 5; -fx-background-radius: 10;");
                 unreadCount.setVisible(false);
 
-                texts = new VBox(name, lastMessage);
+                VBox texts = new VBox(name, lastMessage);
                 HBox rightBox = new HBox(date, unreadCount);
                 rightBox.setSpacing(10);
                 rightBox.setAlignment(Pos.TOP_RIGHT);
@@ -263,7 +272,7 @@ public class MainController {
             }
         });
 
-        //Action que s'execute lorsqu'on clique sur un contact
+        //Action qui s'execute lorsqu'on clique sur un contact
         listView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
 
@@ -273,23 +282,21 @@ public class MainController {
                         showChatArea(true);
 
                         String userId = newValue.getPhone_number();
-                        //charge les conversation
+                        //charge les conversations
                         loadConversation(user.getPhone_Number(), userId);
 
-                        Client.requestAddress(userId, notification -> {
-                            Platform.runLater(() -> {
-                                if ("ADDRESS_RESPONSE".equals(notification.getType())) {
-                                    recipientAddress = notification.getMessage();
-                                    selectedUserStatut.setText("online");
-                                } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
+                        Client.requestAddress(userId, notification -> Platform.runLater(() -> {
+                            if ("ADDRESS_RESPONSE".equals(notification.getType())) {
+                                recipientAddress = notification.getMessage();
+                                selectedUserStatut.setText("online");
+                            } else if ("ADDRESS_NOT_FOUND".equals(notification.getType())) {
 
-                                    Alert alert = new Alert(Alert.AlertType.ERROR, " Address not found for user: " + newValue, ButtonType.OK);
-                                    alert.showAndWait();
+                                Alert alert = new Alert(Alert.AlertType.ERROR, " Address not found for user: " + newValue, ButtonType.OK);
+                                alert.showAndWait();
 
-                                    selectedUserStatut.setText("offline");
-                                }
-                            });
-                        });
+                                selectedUserStatut.setText("offline");
+                            }
+                        }));
                     } else {
                         showChatArea(false);
                     }
@@ -314,7 +321,7 @@ public class MainController {
                 if (Objects.equals(message.getType(), "MESSAGE"))
                     MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read",message.getTimestamp());
                 else
-                    FileController.addFile(chatVBox, message.getSender(), message.getContent(), false);
+                    FileController.addFile(chatVBox, message.getSender(), message.getFileName(), false);
 
                 Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
                 new MessageSender(recipientAddress, MESSAGE_PORT, readAck).start();
@@ -438,7 +445,7 @@ public class MainController {
             String sender = user.getPhone_Number(); //recupere l'ID du user
 
             if (selectedContact == null) {
-                showAlert("Veuillez sélectionner un contact.");
+                showAlert();
                 return;
             }
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
@@ -463,7 +470,6 @@ public class MainController {
             try {
                 byte[] fileData = Files.readAllBytes(selectedFile.toPath());
                 String fileName = selectedFile.getName();
-
 
                 // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
                 Client.requestAddress(recipientId, notification -> {
@@ -500,17 +506,18 @@ public class MainController {
 
         //VIDE LA ZONED DE CHAT
         chatVBox.getChildren().clear();
-
         //recuperation des conversations
         List<Message> conversation = Database.getChatDetails(currentUserId, contactId);
 
         for (Message message : conversation) {
+
             String sender = message.getSender().equals(currentUserId) ? "Vous" : message.getSender();
 
             if (Objects.equals(message.getType(), "MESSAGE"))
                 MessageController.addMessage(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"), message.getStatut(), message.getTimestamp());
+
             if (Objects.equals(message.getType(), "FILE"))
-                FileController.addFile(chatVBox, sender, message.getContent(), !Objects.equals(message.getAck(), "receive"));
+                FileController.addFile(chatVBox, message.getFilePath(), message.getFileName(), !Objects.equals(message.getAck(), "receive"));
         }
     }
 
@@ -518,11 +525,12 @@ public class MainController {
     @FXML
     private void logout() {
         try {
-            //fermer le port
+            //fermer les ports
 
-
+            receiver.interrupt();
+            fileReceiver.interrupt();
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/alaanya/view/LoginView.fxml"));
-            GridPane loginView = (GridPane) loader.load();
+            GridPane loginView = loader.load();
 
             Scene scene = new Scene(loginView);
             Stage stage;
@@ -647,19 +655,28 @@ public class MainController {
     }
 
     // Méthode pour afficher la zone des paramètres
+    @FXML
     public void showSettings() {
-        settingsVBox.setVisible(true); // Afficher les paramètres
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().select(1); // Onglet "Paramètres"
+        }
+
+        if (settingsVBox != null) {
+            settingsVBox.setVisible(true); // Affiche le VBox (juste au cas où)
+        }
+
         settingsUserLabel.setText("Utilisateur: " + userLabel.getText());
         settingsGradeLabel.setText("Grade: " + gradeLabel.getText());
         settingsDivisionLabel.setText("Division: " + divisionLabel.getText());
         settingsIdLabel.setText("ID: " + idLabel.getText());
     }
 
-    // Méthode pour fermer la zone des paramètres
+    @FXML
     public void closeSettings() {
-        settingsVBox.setVisible(false); // Masquer les paramètres
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().select(0); // Retour à l'onglet "Chat"
+        }
     }
-
 
     @FXML
     private void toggleAddContactPane(ActionEvent event) {
@@ -672,8 +689,6 @@ public class MainController {
     @FXML
     private void toggleThemeAction() {
         // Vérifiez si les ressources CSS existent dans le chemin spécifié
-        URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
-        URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
 
         // Si les fichiers CSS ne sont pas trouvés, afficher une erreur dans la console
         if (darkThemeUrl == null || lightThemeUrl == null) {
@@ -698,6 +713,7 @@ public class MainController {
     }
 
 
+
     private void openAudioChat(String ip, String username) {
         System.out.println("Appele accepté");
         try {
@@ -713,16 +729,14 @@ public class MainController {
             e.printStackTrace();
         }
     }
-    public void startVideoCallManually(String ip, String username) {
+    public void openVideoChat(String ip, String username) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
             Parent root = loader.load();
 
             VideoChatController controller = loader.getController();
-            if (username.equals("Appel accepté !"))
-                VideoCallManager.startReceiving(VIDEO_PORT);
-            else
-                controller.setup(ip, username);
+
+            controller.setup(ip, username);
 
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");
@@ -761,8 +775,8 @@ public class MainController {
         info.show();
     }
 
-    private void showAlert(String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
+    private void showAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner un contact.", ButtonType.OK);
         alert.showAndWait();
     }
 

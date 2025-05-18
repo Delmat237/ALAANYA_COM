@@ -26,17 +26,11 @@ public class MessageController {
     public static void addMessage(VBox chatBox, String senderId, String message, boolean isSentByUser, String status, Date timestamp) {
         LocalDate messageDate;
         LocalDateTime dateTime;
-        System.out.println("timstamp  type ; "+timestamp.getClass());
+
         if (timestamp instanceof java.sql.Timestamp) {
-            
             // Cas idéal : date + heure présentes
             dateTime = ((java.sql.Timestamp) timestamp).toLocalDateTime();
             messageDate = dateTime.toLocalDate();
-        } else if (timestamp instanceof java.sql.Date) {
-            // java.sql.Date ne contient que la date, pas l'heure
-            messageDate = ((java.sql.Date) timestamp).toLocalDate();
-            // Heure par défaut à minuit (00:00)
-            dateTime = messageDate.atStartOfDay();
         } else if (timestamp != null) {
             // Cas général : java.util.Date
             dateTime = timestamp.toInstant()

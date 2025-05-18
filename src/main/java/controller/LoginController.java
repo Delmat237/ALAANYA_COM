@@ -94,6 +94,7 @@ public class LoginController {
             stage.setScene(new Scene(root));
         } catch (IOException e) {
             System.err.println(e.getMessage() + " : " + e.getCause());
+            e.printStackTrace();
         }
     }
 

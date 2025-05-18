@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controller.MainController"
-           >
+            fx:controller="controller.MainController">
 
     <!-- Barre de titre -->
     <top>
         <ToolBar BorderPane.alignment="CENTER">
-            <items>
-                <Label text="Utilisateur: "/>
-                <Label fx:id="userLabel" text="userLabel"/>
-                <Separator orientation="VERTICAL"/>
-                <Label text="Grade: "/>
-                <Label fx:id="gradeLabel" text="gradeLabel"/>
-                <Separator orientation="VERTICAL"/>
-                <Label text="Division: "/>
-                <Label fx:id="divisionLabel" text="divisionLabel"/>
-                <Separator orientation="VERTICAL"/>
-                <Label text="ID: "/>
-                <Label fx:id="idLabel" text="idLabel"/>
-                <Label fx:id="statutLabel" text="STATE" styleClass="state"/>
-                <Region HBox.hgrow="ALWAYS"/>
-
-                <!-- Bouton pour accéder aux paramètres -->
-                <Button text="Changer de Thème" onAction="#toggleThemeAction"/>
-                <Button text="Paramètres" onAction="#showSettings" />
-                <Button text="Déconnexion" onAction="#logout"/>
-            </items>
+            <Label text="Utilisateur: "/>
+            <Label fx:id="userLabel" text="userLabel"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="Grade: "/>
+            <Label fx:id="gradeLabel" text="gradeLabel"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="Division: "/>
+            <Label fx:id="divisionLabel" text="divisionLabel"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="ID: "/>
+            <Label fx:id="idLabel" text="idLabel"/>
+            <Label fx:id="statutLabel" text="STATE" styleClass="state"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Changer de Thème" onAction="#toggleThemeAction"/>
+            <Button text="Paramètres" onAction="#showSettings"/>
+            <Button text="Déconnexion" onAction="#logout"/>
         </ToolBar>
     </top>
 
@@ -41,148 +35,133 @@
     <left>
         <VBox prefWidth="280.0" BorderPane.alignment="CENTER" spacing="10">
             <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
-
             <Label text="Contacts"/>
-
             <TabPane fx:id="contactsTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-                <!-- Tab 1 : Contacts avec messages -->
                 <Tab text="Mes contacts">
                     <VBox spacing="5">
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                        </padding>
+                        <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
                         <TextField fx:id="searchTextField" promptText="Rechercher..." />
                         <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
                     </VBox>
                 </Tab>
-
-                <!-- Tab 2 : Tous les contacts -->
                 <Tab text="Tous les contacts">
-            <VBox spacing="5">
-                <padding>
-                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                </padding>
-
-
-            <ListView fx:id="allContactsListView" VBox.vgrow="ALWAYS"/>
+                    <VBox spacing="5">
+                        <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+                        <ListView fx:id="allContactsListView" VBox.vgrow="ALWAYS"/>
                     </VBox>
                 </Tab>
             </TabPane>
 
             <Button text="Ajouter un contact" onAction="#toggleAddContactPane"/>
-
-            <TitledPane fx:id="addContactPane" text="Ajouter un contact" visible="false" managed="false" collapsible="false" VBox.vgrow="NEVER">
-                <content>
-                    <GridPane hgap="5.0" vgap="5.0">
-                        <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-
-                        <Label text="Numéro de téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <TextField fx:id="phoneNumberField" promptText="Ex: 690123456" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
-
-                        <Label text="Pseudo (nickname):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <TextField fx:id="nicknameField" promptText="Ex: Capitaine X" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
-
-                        <Button text="Ajouter contact" onAction="#addContact" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2" alignment="CENTER"/>
-                    </GridPane>
-                </content>
-
-                <VBox.margin><Insets top="10.0"/></VBox.margin>
+            <TitledPane fx:id="addContactPane" text="Ajouter un contact" visible="false" managed="false"
+                        collapsible="false" VBox.vgrow="NEVER">
+                <VBox.margin>
+                    <Insets top="10.0"/>
+                </VBox.margin>
+                <GridPane hgap="5.0" vgap="5.0">
+                    <padding>
+                        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+                    </padding>
+                    <Label text="Numéro de téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="phoneNumberField" promptText="Ex: 690123456" GridPane.columnIndex="1"
+                               GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+                    <Label text="Pseudo (nickname):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="nicknameField" promptText="Ex: Capitaine X" GridPane.columnIndex="1"
+                               GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                    <Button text="Ajouter contact" onAction="#addContact" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                            GridPane.columnSpan="2" alignment="CENTER"/>
+                </GridPane>
             </TitledPane>
         </VBox>
     </left>
 
     <!-- Zone de contenu central -->
     <center>
-        <StackPane>
-            <!-- Message par défaut -->
-            <VBox fx:id="defaultCenterVBox" alignment="CENTER">
-                <Label text="Sélectionnez un contact pour démarrer la conversation."/>
-            </VBox>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="hidden-tab-header">
 
-            <!-- Zone de chat -->
-            <VBox fx:id="chatAreaVBox" BorderPane.alignment="CENTER" visible="false" spacing="10">
-                <HBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-                    <!-- Profil -->
-                    <Button onAction="#openProfile">
-                        <graphic>
-                            <ImageView styleClass="icon"  fitWidth="16" fitHeight="16" preserveRatio="true">
-                                <Image url="@images/profile.png"/>
-                            </ImageView>
-                        </graphic>
-                    </Button>
+        <!-- Onglet Chat -->
+            <Tab text="Chat">
+                <VBox fx:id="chatAreaVBox" spacing="10">
+                    <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+                    <!-- Message par défaut -->
+                    <VBox fx:id="defaultCenterVBox" alignment="CENTER">
+                        <Label text="Sélectionnez un contact pour démarrer la conversation."/>
+                    </VBox>
 
-                    <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
-                    <Label fx:id="selectedUserStatut" styleClass="state"/>
-
-                    <!-- Actions -->
-                    <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Button onAction="#callUser">
+                    <!-- Zone de chat -->
+                    <!-- En-tête du chat -->
+                    <HBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+                        <Button onAction="#openProfile">
                             <graphic>
-                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                                    <Image url="@images/call.png"/>
-                                </ImageView>
+                                <FontIcon iconLiteral="fas-user-circle" iconSize="16"/>
                             </graphic>
                         </Button>
-                        <Button onAction="#startVideoCall">
+                        <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
+                        <Label fx:id="selectedUserStatut" styleClass="state"/>
+                        <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
+                            <Button onAction="#callUser">
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-phone" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                            <Button onAction="#startVideoCall">
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-video" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                            <Button onAction="#showOptions">
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-ellipsis-v" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Zone des messages -->
+                    <Label text="Chat"/>
+                    <ScrollPane fx:id="scrollPane" fitToWidth="true" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color: transparent;">
+                        <content>
+                            <VBox fx:id="chatVBox" VBox.vgrow="ALWAYS"
+                                  style="-fx-background-color: #2C3E50; -fx-padding: 5px; -fx-border-color: gray;"/>
+                        </content>
+                    </ScrollPane>
+
+                    <!-- Zone de téléchargements (ajoutée) -->
+                    <VBox fx:id="downloadsVBox" spacing="10" visible="false" managed="false">
+                        <padding><Insets top="5.0"/></padding>
+                    </VBox>
+
+                    <!-- Zone de saisie -->
+                    <HBox spacing="5.0">
+                        <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
+                        <Button onAction="#sendMessage">
                             <graphic>
-                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                                    <Image url="@images/video.png"/>
-                                </ImageView>
+                                <FontIcon iconLiteral="fas-paper-plane" iconSize="16"/>
                             </graphic>
                         </Button>
-                        <Button onAction="#showOptions">
+                        <Button onAction="#sendFile">
                             <graphic>
-                                <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                                    <Image url="@images/dot.png"/>
-                                </ImageView>
+                                <FontIcon iconLiteral="fas-file" iconSize="16"/>
                             </graphic>
                         </Button>
                     </HBox>
-                </HBox>
+                </VBox>
+            </Tab>
 
-                <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
-                <Label text="Chat"/>
-
-                <ScrollPane fx:id="scrollPane" fitToWidth="true"
-                            VBox.vgrow="ALWAYS"
-                            style="-fx-background-color: transparent;">
-                    <content>
-                        <VBox fx:id="chatVBox" VBox.vgrow="ALWAYS"
-                              style="-fx-background-color: #2C3E50; -fx-padding: 5px; -fx-border-color: gray;">
-                        </VBox>
-                    </content>
-                </ScrollPane>
-
-                <!-- Entrée du message (RESTE EN BAS) -->
-                <HBox spacing="5.0">
-                    <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
-                    <Button onAction="#sendMessage">
-                        <graphic>
-                            <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                                <Image url="@images/send.png"/>
-                            </ImageView>
-                        </graphic>
-                    </Button>
-                    <Button onAction="#sendFile">
-                        <graphic>
-                            <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
-                                <Image url="@images/file.png"/>
-                            </ImageView>
-                        </graphic>
-                    </Button>
-                </HBox>
-
-            </VBox>
-
-            <!-- Zone de Paramètres (Settings) -->
-            <VBox fx:id="settingsVBox" alignment="CENTER" visible="false" spacing="15.0">
-                <Label text="Paramètres Utilisateur" styleClass="title" />
-                <Label text="Utilisateur: " fx:id="settingsUserLabel" />
-                <Label text="Grade: " fx:id="settingsGradeLabel" />
-                <Label text="Division: " fx:id="settingsDivisionLabel" />
-                <Label text="ID: " fx:id="settingsIdLabel" />
-                <Button text="Fermer" onAction="#closeSettings"/>
-            </VBox>
-        </StackPane>
+            <!-- Onglet Paramètres -->
+            <Tab text="Paramètres">
+                <VBox fx:id="settingsVBox" alignment="CENTER" spacing="15.0">
+                    <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
+                    <Label text="Paramètres Utilisateur" styleClass="title" />
+                    <Label fx:id="settingsUserLabel" />
+                    <Label fx:id="settingsGradeLabel" />
+                    <Label fx:id="settingsDivisionLabel" />
+                    <Label fx:id="settingsIdLabel" />
+                    <Button text="Fermer" onAction="#closeSettings"/>
+                </VBox>
+            </Tab>
+        </TabPane>
     </center>
+
 </BorderPane>

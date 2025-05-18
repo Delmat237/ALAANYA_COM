@@ -97,6 +97,47 @@
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+            <!-- Ikonli Core -->
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-core</artifactId>
+                <version>12.3.1</version>
+            </dependency>
+        <!-- Apache PDFBox -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.30</version>
+        </dependency>
+
+        <!-- Apache POI pour DOCX -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+
+        <!-- Ikonli JavaFX Support -->
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-javafx</artifactId>
+                <version>12.3.1</version>
+            </dependency>
+
+            <!-- Ikonli FontAwesome Pack -->
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-fontawesome5-pack</artifactId>
+                <version>12.3.1</version>
+            </dependency>
+
+
 
         <!-- JUnit -->
         <dependency>

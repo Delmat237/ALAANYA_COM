@@ -1,6 +1,5 @@
 package controller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -9,9 +8,12 @@ import video.VideoCallManager;
 
 public class VideoChatController {
 
-    @FXML private ImageView localView;
-    @FXML private ImageView remoteView;
-    @FXML private Label callDurationLabel;
+    @FXML
+    public static ImageView localView;
+    @FXML
+    public static ImageView remoteView;
+    @FXML
+    public static Label callDurationLabel;
     @FXML private Button endCallButton;
 
     private VideoCallManager videoManager;
@@ -20,6 +22,7 @@ public class VideoChatController {
         endCallButton.setOnAction(e -> {
             if (videoManager != null) {
                 videoManager.hangUp();
+                endCallButton.setDisable(true); // désactive après raccrochage
             }
         });
     }
@@ -29,14 +32,14 @@ public class VideoChatController {
                 localView,
                 remoteView,
                 callDurationLabel,
-                () -> System.out.println("Appel video  accepté."),
+                () -> System.out.println("📞 Appel vidéo accepté."),
                 () -> {
-                    System.out.println("Appel video terminé.");
+                    System.out.println("❌ Appel vidéo terminé.");
                     endCallButton.setDisable(true);
                 }
         );
-        videoManager.startOutgoingCall(ip, username);
+
+        videoManager.startReceiving(MainController.VIDEO_PORT);
+        videoManager.startSending(ip, MainController.VIDEO_PORT);
     }
-
-
 }

@@ -13,15 +13,15 @@ import javafx.util.Duration;
 public class AudioChatController {
     private final AudioCallManager callManager = new AudioCallManager();
 
-    @FXML private Label callDurationLabel;
+    @FXML private static Label callDurationLabel;
     @FXML private Button endCallButton;
 
-    private Timeline callTimer;
-    private int secondsElapsed = 0;
+    private static Timeline callTimer;
+    private static int secondsElapsed = 0;
 
     public void initCall(String ip, String username) {
         callManager.startReceiving(MainController.AUDIO_PORT);
-        callManager.startSending(ip, MainController.AUDIO_PORT);
+        AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
         startCallTimer();
     }
 
@@ -35,7 +35,7 @@ public class AudioChatController {
         });
     }
 
-    private void startCallTimer() {
+    public static void startCallTimer() {
         secondsElapsed = 0;
         callDurationLabel.setText("Durée : 00:00");
         callTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {

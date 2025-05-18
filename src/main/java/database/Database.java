@@ -95,7 +95,9 @@ public class Database {
                         sender_id VARCHAR(15) NOT NULL,
                         receiver_id VARCHAR(15) NOT NULL,
                         type VARCHAR(10) NOT NULL DEFAULT "MESSAGE",
-                        content TEXT NOT NULL,
+                        content TEXT ,
+                        fileName TEXT,
+                        filePath TEXT,
                         timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                         ack TEXT CHECK(ack IN ('sent', 'receive')) DEFAULT 'sent',
                         statut TEXT CHECK (statut IN ('read','notread','delivered')) DEFAULT 'delivered',
@@ -247,13 +249,37 @@ public class Database {
             
 
              stmt.executeUpdate();
-             System.out.println("[SERVER] SAVE SUCCCES MESSAGE: " + message.getContent() +" FROM "+message.getSender()+ "TO "+message.getRecipient());
+             System.out.println("[SERVER] SAVE SUCCCES MESSAGE: " + message.toString() +" FROM "+message.getSender()+ "TO "+message.getRecipient());
 
          } catch (SQLException e) {
-             System.err.println("[SERVER] SAVE ERROR MESSAGE: " + message.getContent() +" FROM "+message.getSender()+ "TO "+message.getRecipient());
+             System.err.println("[SERVER] SAVE ERROR MESSAGE: " + message.toString() +" FROM "+message.getSender()+ "TO "+message.getRecipient());
              System.out.println(e.getMessage() +" : " +e.getCause());
          }
      }
+    public static void saveFile(Message message){
+        String sql = "INSERT INTO messages (sender_id, receiver_id,fileName,filePath,timestamp,ack,statut,type) VALUES  (?,?,?,?,?,?,?,?)";
+        try(Connection conn = Database.getConnection()){
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, message.getSender());
+            stmt.setString(2, message.getRecipient());
+            stmt.setString(3, message.getFileName());
+            stmt.setString(4, message.getFilePath());
+            // Convertir le timestamp en chaîne de caractères
+            String timestampStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(message.getTimestamp());
+            stmt.setString(5, timestampStr);
+            stmt.setString(6, message.getAck());
+            stmt.setString(7, message.getStatut());
+            stmt.setString(8, message.getType());
+
+
+            stmt.executeUpdate();
+            System.out.println("[SERVER] SAVE SUCCCES FILE: " + message.toString() +" FROM "+message.getSender()+ " TO "+message.getRecipient());
+
+        } catch (SQLException e) {
+            System.err.println("[SERVER] SAVE ERROR FILE: " + message.toString() +" FROM "+message.getSender()+ "TO "+message.getRecipient());
+            System.out.println(e.getMessage() +" : " +e.getCause());
+        }
+    }
 
      public static List<Contact> getContactsWithMessages(String userPhone) throws SQLException {
             String sql = "SELECT DISTINCT c.* FROM contacts c " +
@@ -318,18 +344,39 @@ public class Database {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                //RECONSTTITU LES MESSAGES
-                Message message = new Message(
-                        rs.getString("sender_id"),
-                        rs.getString("type"),
-                        rs.getString("content"),
-                        rs.getString("receiver_id")
-                );
-                message.setTimestamp(rs.getDate("timestamp"));
-                message.setAck(rs.getString("ack"));
-                message.setStatut(rs.getString("statut"));
 
-                conversation.add(message);
+                System.out.println(rs);
+                //RECONSTTITU LES MESSAGES
+                if (rs.getString("type").equals("FILE")) {
+                    Message file = new Message(
+                            rs.getString("sender_id"),
+                            rs.getString("filePath"),
+                            rs.getString("fileName"),
+                            rs.getString("receiver_id"),
+                            0
+                    );
+                    file.setAck(rs.getString("ack"));
+                    file.setStatut(rs.getString("statut"));
+                    file.setTimestamp(rs.getTimestamp("timestamp"));
+
+
+                    conversation.add(file);
+
+                } else {
+                   Message message = new Message(
+                           rs.getString("sender_id"),
+                           "MESSAGE",
+                           rs.getString("content"),
+                           rs.getString("receiver_id")
+                   );
+                    message.setAck(rs.getString("ack"));
+                    message.setStatut(rs.getString("statut"));
+                    message.setTimestamp(rs.getTimestamp("timestamp"));
+                    conversation.add(message);
+
+                }
+
+
             }
         } catch (SQLException e) {
         System.err.println("[SERVER] GET CHAT DETAILS ERROR MESSAGE: ");
@@ -345,8 +392,8 @@ public class Database {
 
             stmt.setString(1, read);
             stmt.setString(2, message.getSender());
-            stmt.setString(3, message.getContent());
-
+            if( message.getType().equals("MESSAGE")) stmt.setString(3, message.getContent());
+            else stmt.setString(3, message.getFileName());
             stmt.executeUpdate();
     }
 
@@ -359,7 +406,9 @@ public class Database {
         Connection connection = Database.getConnection();
         PreparedStatement stmt = connection.prepareStatement(sql);
 
-        stmt.setString(1, message.getContent());
+        if( message.getType().equals("MESSAGE")) stmt.setString(1, message.getContent());
+        else stmt.setString(1, message.getFileName());
+
         stmt.setString(2, message.getSender());
         stmt.setString(3, message.getRecipient());
 
