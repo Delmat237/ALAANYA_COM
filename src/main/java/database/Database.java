@@ -188,7 +188,7 @@ public class Database {
 
 
      public static User getUser(String userId) throws SQLException{
-                String sql = "SELECT phone_number, grade, division, clearance_level, username FROM users WHERE phone_number= ?";
+                String sql = "SELECT phone_number, grade, division, username FROM users WHERE phone_number= ?";
                 Connection conn = Database.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                   stmt.setString(1, userId);

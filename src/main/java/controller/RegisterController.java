@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import database.Database;
 import model.User;
 import socket.Client;
 
@@ -84,6 +85,9 @@ public class RegisterController {
                
                 //l'enregistrement se fait dans la bd du serveur distants et en local  si tous se passe bien du coté serveur centrale
                 Client.addUserRequest(user.getPhone_Number(),user.getPasswordHash(),user.getGrade(),user.getDivision(),user.getUsername());
+
+                //Enregistrer l'user en local
+                Database.addUser(user);
 
             }
 

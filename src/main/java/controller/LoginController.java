@@ -63,7 +63,6 @@ public class LoginController {
                     ViewUtils.loadMainView(militaryId, errorLabel,1);
                 } else {
                     ViewUtils.loadMainView(militaryId, errorLabel,0);
-                    errorLabel.setText("Connexion au serveur Socket échouée.");
                 }
             } else {
 

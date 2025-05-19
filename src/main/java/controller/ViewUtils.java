@@ -35,9 +35,6 @@ public class ViewUtils {
             if (user != null) {
                 System.out.println("Données recu : "+user.toString() +"acces à l'application");
 
-                //Enregistrer l'user en local
-                Database.addUser(user);
-
                 mainController.setUser(user,statut);
             } else {
                 errorLabel.setText("Utilisateur introuvable dans la base de données.");
