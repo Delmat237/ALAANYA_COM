@@ -27,7 +27,7 @@ public class Client {
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
             .create();
 
-    private static final String CENTRAL_SERVER_IP = "127.0.0.1";
+    private static final String CENTRAL_SERVER_IP = "192.168.194.11";
     private static final int CENTRAL_SERVER_PORT = 8080;
 
     public interface NotificationListener {

@@ -1,37 +1,102 @@
 /* register.css */
 
 /* Arrière-plan général */
-.register-grid {
-    -fx-background-color: #1E3A24; /* Vert foncé, couleur proche de l'armée camerounaise */
+.register-pane {
+    -fx-background-color: #2b682bb2; /* Vert foncé, couleur proche de l'armée camerounaise */
     -fx-padding: 20px;
     -fx-alignment: center;
 }
 
-/* Label */
-.register-label {
-    -fx-text-fill: #FFC107; /* Jaune doré */
-    -fx-font-size: 14px;
+.register-box{
+    -fx-max-width: 400px;
+    -fx-background-color: rgba(255, 255, 255, 0.479);
+    -fx-border-color:#4b87cc8a;
+    -fx-border-radius:10px;
+    -fx-background-radius:10px;
+    -fx-max-height: 200px;
+    -fx-background-color: #155c1565;
+}
+
+.register-title{
+    -fx-text-fill:#21367a;
+    -fx-font-size:20px;
+    -fx-padding:60px 0px 0px 0px;
     -fx-font-weight: bold;
+}
+
+.telephone-box{
+    -fx-background-color:#b5b9b944;
+    -fx-pref-width:120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+    -fx-padding:5px 0px 5px 20px;
+}
+
+.username-box{
+    -fx-background-color:#b5b9b944;
+    -fx-pref-width:120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+    -fx-padding:5px 0px 5px 20px;
+}
+.password-box{
+    -fx-background-color:#b5b9b944;
+    -fx-pref-width:120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+    -fx-padding:5px 0px 5px 20px;
+}
+
+.password-field{
+    -fx-background-color: transparent; /* Blanc pour les champs */
+    -fx-text-fill: #333333; /* Texte noir */
+    /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
+    -fx-border-radius: 50px;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+}
+
+.grade-box{
+    -fx-background-color:#b5b9b944;
+    -fx-pref-width:120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+    -fx-padding:5px 0px 5px 20px;
+}
+
+.division-box{
+    -fx-background-color:#b5b9b944;
+    -fx-pref-width:120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+    -fx-padding:5px 0px 5px 20px;
 }
 
 /* Champ de texte */
 .register-text-field {
-    -fx-background-color: #FFFFFF; /* Blanc */
+    -fx-background-color: transparent; /* Blanc pour les champs */
     -fx-text-fill: #333333; /* Texte noir */
-    -fx-border-color: #4CAF50; /* Bordure verte */
-    -fx-border-radius: 5px;
+    /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
     -fx-font-size: 14px;
-    -fx-padding: 8px;
+    -fx-padding: 5px;
+}
+
+.grade-label{
+    -fx-padding: 2px;
 }
 
 /* ComboBox */
 .register-combo-box {
-    -fx-background-color: #FFFFFF;
+    -fx-background-color: transparent;
     -fx-text-fill: #333333;
-    -fx-border-color: #4CAF50;
-    -fx-border-radius: 5px;
+    -fx-border-color: transparent;
     -fx-font-size: 14px;
-    -fx-padding: 8px;
+    -fx-padding: 0px 0px 2px 0px;
 }
 
 /* Bouton */

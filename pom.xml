@@ -115,7 +115,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>23</release>
+                    <release>21</release>
                 </configuration>
             </plugin>
 
@@ -129,7 +129,7 @@
                     <addModules>javafx.controls,javafx.fxml,javafx.graphics,javafx.swing,java.desktop</addModules>
                     <version>${javafx.version}</version>
 
-                    //Gestion de lla memoire
+                    
                     <jvmArgs>
                         --add-opens=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED
                         -Xms512m

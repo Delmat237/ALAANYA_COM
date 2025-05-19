@@ -2,33 +2,119 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
 <?import java.net.URL?>
-<GridPane alignment="CENTER" hgap="10" vgap="10"
+
+
+<StackPane alignment="CENTER"
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="controller.RegisterController"
-         stylesheets="@css/register-style.css">
+         stylesheets="@css/register-style.css" 
+         styleClass="register-pane">
  
+    <VBox spacing="25" alignment="CENTER" styleClass="register-box">
 
-    <Label text="Enregistrement Militaire" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+        <Label text="INSCRIPTION"  styleClass="register-title"/>
+              
+        <HBox VBox.vgrow="NEVER"  styleClass ="telephone-box" spacing="5">
+                <VBox.margin>
+                    <Insets top="0" right ="50" bottom="0" left="50" />
+                </VBox.margin>
+                
+                <Label text="" styleClass="login-label">
+                    <graphic>
+                            <ImageView fitWidth="25" fitHeight="25" preserveRatio="true" >
+                                    <image>
+                                            <Image url= "@images/telephone-1.png"></Image>
+                                    </image>
+                            </ImageView>
+                    </graphic>
+                </Label>
+                <TextField fx:id="militaryIdField" styleClass="register-text-field" promptText="numero de telephone" text="+2376"
+                />
+        </HBox>
 
-    <Label text="TELEPHONE (+2376********):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="militaryIdField" GridPane.columnIndex="1" GridPane.rowIndex="1" 
-    text="+2376"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="username-box" spacing="5">
+                <VBox.margin>
+                    <Insets top="0" right ="50" bottom="0" left="50" />
+                </VBox.margin>
+                
+                <Label text="" styleClass="login-label">
+                    <graphic>
+                            <ImageView fitWidth="25" fitHeight="25" preserveRatio="true" >
+                                    <image>
+                                            <Image url= "@images/user.png"></Image>
+                                    </image>
+                            </ImageView>
+                    </graphic>
+                </Label>
+                <TextField fx:id="usernameIdField" styleClass="register-text-field" promptText="nom d'utilisateur"
+                />
+        </HBox>
 
-    <Label text="USERNAME :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <TextField fx:id="usernameIdField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="15">
+                <VBox.margin>
+                    <Insets top="0" right ="50" bottom="0" left="50" />
+                </VBox.margin>
+                <Label text="" styleClass="login-label">
+                    <graphic>
+                            <ImageView fitWidth="25" fitHeight="25" preserveRatio="true" >
+                                    <image>
+                                            <Image url= "@images/password-1.png"></Image>
+                                    </image>
+                            </ImageView>
+                    </graphic> 
+                </Label>
+                <PasswordField fx:id="passwordField" styleClass="password-field" promptText="mot de passe"
+                            />
 
-    <Label text="Mot de passe:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-    <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        </HBox>
 
-    <Label text="Grade:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-    <ComboBox fx:id="gradeCombo" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="grade-box" spacing="5" prefWidth="100" prefHeight="15">
+                <VBox.margin>
+                    <Insets top="0" right ="50" bottom="0" left="50" />
+                </VBox.margin>
+                <Label text="Grade" styleClass="grade-label">
+                    <graphic>
+                            <ImageView fitWidth="25" fitHeight="25" preserveRatio="true" >
+                                    <image>
+                                            <Image url= "@images/grade.png"></Image>
+                                    </image>
+                            </ImageView>
+                    </graphic> 
+                </Label>
+                <ComboBox fx:id="gradeCombo" styleClass="register-combo-box"
+                        value="Choisissez une option">
+                </ComboBox>
+        </HBox>
+        
+        <HBox VBox.vgrow="NEVER"  styleClass ="division-box" spacing="5">
+                <VBox.margin>
+                    <Insets top="0" right ="50" bottom="0" left="50" />
+                </VBox.margin>
+                
+                <Label text="" styleClass="login-label">
+                    <graphic>
+                            <ImageView fitWidth="25" fitHeight="25" preserveRatio="true" >
+                                    <image>
+                                            <Image url= "@images/.png"></Image>
+                                    </image>
+                            </ImageView>
+                    </graphic>
+                </Label>
+                <TextField fx:id="divisionIdField" styleClass="register-text-field" promptText="numéro de division"
+                />
+        </HBox>
 
-    <Label text="Division:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-    <TextField fx:id="divisionField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        <Button text="Créer le compte" onAction="#handleRegistration" styleClass="register-button"/>
+        <Label fx:id="errorLabel" style="-fx-text-fill: RED;" />
+        <Button text="go back" onAction="#loadLoginView">
+        </Button>
+        
+    </VBox>
 
-    <Button text="Créer le compte" onAction="#handleRegistration" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-    <Label fx:id="errorLabel" style="-fx-text-fill: RED;" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-</GridPane>
+
+</StackPane>
