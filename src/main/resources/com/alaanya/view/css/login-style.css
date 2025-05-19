@@ -2,9 +2,11 @@
 
 /* Arrière-plan général */
 .login-pane {
-    /*-fx-background-image: url("images/back3.jpg");
-    -fx-background-repeat: no-repeat; /* Vert foncé, couleur proche de l'armée camerounaise */
-    -fx-background-color:#0a570a9c;
+    -fx-background-image: url("images/back6.jpeg");
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
+    /*-fx-background-color:#0a570a9c;*/
     -fx-padding: 20px;
     -fx-alignment: center;
 }
@@ -19,7 +21,7 @@
 }
 
 .login-title{
-    -fx-text-fill:#f0f1f3;
+    -fx-text-fill:#133f96;
     -fx-font-size:20px;
     -fx-padding:60px 0px 0px 0px;
     -fx-font-weight: bold;
@@ -55,7 +57,11 @@
     /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
     -fx-font-size: 14px;
     -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
 }
+
+
+
 .password-field{
     -fx-background-color: transparent; /* Blanc pour les champs */
     -fx-text-fill: #141010; /* Texte noir */
@@ -63,6 +69,7 @@
     -fx-border-radius: 50px;
     -fx-font-size: 14px;
     -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
 }
 /* Bouton */
 .login-button {

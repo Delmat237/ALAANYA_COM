@@ -2,23 +2,24 @@
 
 /* Arrière-plan général */
 .register-pane {
-    -fx-background-color: #2b682bb2; /* Vert foncé, couleur proche de l'armée camerounaise */
-    -fx-padding: 20px;
+    -fx-background-image: url("images/back5.jpeg");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size:cover;/* Vert foncé, couleur proche de l'armée camerounaise */
+    -fx-padding: 50px  0px 0px 200px;
     -fx-alignment: center;
 }
 
 .register-box{
-    -fx-max-width: 400px;
-    -fx-background-color: rgba(255, 255, 255, 0.479);
-    -fx-border-color:#4b87cc8a;
+    -fx-max-width: 500px;
+    -fx-background-color:transparent;
+    -fx-border-color:#4b87cc00;
     -fx-border-radius:10px;
     -fx-background-radius:10px;
     -fx-max-height: 200px;
-    -fx-background-color: #155c1565;
 }
 
 .register-title{
-    -fx-text-fill:#21367a;
+    -fx-text-fill:#1f43bd;
     -fx-font-size:20px;
     -fx-padding:60px 0px 0px 0px;
     -fx-font-weight: bold;
@@ -57,6 +58,7 @@
     -fx-border-radius: 50px;
     -fx-font-size: 14px;
     -fx-padding: 5px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
 }
 
 .grade-box{
@@ -84,6 +86,7 @@
     /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
     -fx-font-size: 14px;
     -fx-padding: 5px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
 }
 
 .grade-label{

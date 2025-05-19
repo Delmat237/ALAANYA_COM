@@ -30,7 +30,7 @@
                             </graphic>
                      </Label>
                      <TextField fx:id="militaryIdField" styleClass="login-text-field" promptText="numero de telephone"
-                                   />
+                                 style=""  />
               </HBox>
 
               <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="12">
