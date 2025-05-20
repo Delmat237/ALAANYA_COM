@@ -1,12 +1,21 @@
 /* dark-theme.css */
 
 /* Arrière-plan général */
-.root {
-    -fx-base: #34495E; /* Bleu marine sombre (couleur de base) */
-    -fx-background: #2C3E50; /* Fond plus foncé pour l'application */
-    -fx-control-inner-background: #34495E; /* Arrière-plan des zones de contrôle (champs, listes) */
-    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); /* Arrière-plan alternatif pour les zones de contrôle */
+.pane {
+    -fx-background-image: url("images/back2.jpg");
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
+    /*-fx-background-color:#0a570a9c;*/
+    -fx-padding: 20px;
+    -fx-alignment: center;
 }
+/*.root {*/
+/*    -fx-base: #34495E; !* Bleu marine sombre (couleur de base) *!*/
+/*    -fx-background: #2C3E50; !* Fond plus foncé pour l'application *!*/
+/*    -fx-control-inner-background: #34495E; !* Arrière-plan des zones de contrôle (champs, listes) *!*/
+/*    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); !* Arrière-plan alternatif pour les zones de contrôle *!*/
+/*}*/
 
 
 .top {

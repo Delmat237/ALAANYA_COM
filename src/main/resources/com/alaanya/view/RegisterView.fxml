@@ -1,59 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
+<StackPane
+        xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controller.RegisterController"
+           stylesheets="@css/register-style.css"
+           styleClass="register-pane">
 
-<GridPane alignment="CENTER" hgap="10" vgap="10"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="controller.RegisterController"
-          stylesheets="@css/register-style.css">
+    <VBox spacing="25" alignment="CENTER" styleClass="register-box">
 
-    <!-- Titre -->
-    <Label text="Enregistrement Militaire" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+        <Label text="INSCRIPTION"  styleClass="register-title"/>
 
-    <!-- Téléphone -->
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
-        <FontIcon iconLiteral="fas-phone" iconSize="14"/>
-        <TextField fx:id="militaryIdField" text="+2376"/>
-    </HBox>
-    <Label text="TELEPHONE (+2376********):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="telephone-box" spacing="5">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
 
-    <!-- Nom d'utilisateur -->
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
-        <FontIcon iconLiteral="fas-user" iconSize="14"/>
-        <TextField fx:id="usernameIdField"/>
-    </HBox>
-    <Label text="USERNAME :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                        <Image url="@images/telephone-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <TextField fx:id="militaryIdField" styleClass="register-text-field" promptText="numero de telephone" text="+237"
+            />
+        </HBox>
 
-    <!-- Mot de passe -->
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
-        <FontIcon iconLiteral="fas-lock" iconSize="14"/>
-        <PasswordField fx:id="passwordField"/>
-    </HBox>
-    <Label text="Mot de passe:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="username-box" spacing="5">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
 
-    <!-- Grade -->
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
-        <FontIcon iconLiteral="fas-medal" iconSize="14"/>
-        <ComboBox fx:id="gradeCombo"/>
-    </HBox>
-    <Label text="Grade:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                        <Image url="@images/user.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <TextField fx:id="usernameIdField" styleClass="register-text-field" promptText="nom d'utilisateur"
+            />
+        </HBox>
 
-    <!-- Division -->
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
-        <FontIcon iconLiteral="fas-shield-alt" iconSize="14"/>
-        <TextField fx:id="divisionField"/>
-    </HBox>
-    <Label text="Division:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <HBox VBox.vgrow="NEVER"  styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="15">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                        <Image url="@images/password-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <PasswordField fx:id="passwordField" styleClass="password-field" promptText="mot de passe"
+            />
 
-    <!-- Bouton -->
-    <Button text="Créer le compte" onAction="#handleRegistration" GridPane.columnIndex="1" GridPane.rowIndex="6">
-        <graphic>
-            <FontIcon iconLiteral="fas-user-plus" iconSize="14"/>
-        </graphic>
-    </Button>
+        </HBox>
 
-    <!-- Message d'erreur -->
-    <Label fx:id="errorLabel" style="-fx-text-fill: RED;" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-</GridPane>
+        <HBox VBox.vgrow="NEVER"  styleClass ="grade-box" spacing="5" prefWidth="100" prefHeight="15">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
+            <Label text="Grade" styleClass="grade-label">
+                <graphic>
+                    <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                        <Image url="@images/grade.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <ComboBox fx:id="gradeCombo" styleClass="register-combo-box"
+                      value="Choisissez une option">
+            </ComboBox>
+        </HBox>
+
+        <HBox VBox.vgrow="NEVER"  styleClass ="division-box" spacing="5">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
+
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                        <Image url="@images/dot.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <TextField fx:id="divisionIdField" styleClass="register-text-field" promptText="numéro de division"
+            />
+        </HBox>
+
+        <Button text="Créer le compte" onAction="#handleRegistration" styleClass="register-button"/>
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="As déjà un compte ?" styleClass="login-label"/>
+            <Hyperlink text="Se connecter" onAction="#loadLoginView" styleClass="create-account-link"/>
+        </HBox>
+        <Label fx:id="errorLabel" style="-fx-text-fill: RED;" />
+
+
+
+    </VBox>
+
+
+</StackPane>

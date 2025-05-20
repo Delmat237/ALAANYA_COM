@@ -33,10 +33,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -205,9 +202,19 @@ public class MainController {
 
         scrollPane.setVvalue(1.0);
 
-        //initialisation du style
 
+        defaultCenterVBox.setVisible(true);
         showChatArea(false);
+
+
+        //mettre le theme par defaut
+
+//        Stage stage = (Stage) contactsTabPane.getScene().getWindow();
+//        Scene scene = stage.getScene();
+//        scene.getStylesheets().clear();
+//        scene.getStylesheets().add(lightThemeUrl.toExternalForm());
+
+
     }
 
     public void ContactListView(ListView<Contact> listView) {
@@ -307,31 +314,35 @@ public class MainController {
     private void handleIncomingMessage(Message message) {
         Platform.runLater(() -> {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
-            if (!Objects.equals(message.getType(), "ACK_READ")) {
-                //affiche une notification
+            if (!Objects.equals(message.getType(), "ACK_READ")) { //si le message n'est pas un accusé de reception
+                //affiche une notification si le contact couraant n'est pas le recepteur
                 if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
+
                     showInfo("Nouveau message de "+message.getSender(),message.getContent());
-                //Mise à jour du dernier message
+                //Mise à jour du contact en enregistrant le lastmessage
                 try {
                     Database.updateContact(message);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
 
+                //Si le message recu est un message
                 if (Objects.equals(message.getType(), "MESSAGE"))
+                    //ajouter dans la zone de chat
                     MessageController.addMessage(chatVBox, message.getSender(), message.getContent(), false, "read",message.getTimestamp());
                 else
                     FileController.addFile(chatVBox, message.getSender(), message.getFileName(), false);
 
+                //envoyer une confirmation de lecture
                 Message readAck = new Message(user.getPhone_Number(), "ACK_READ", "read", message.getSender());
                 new MessageSender(recipientAddress, MESSAGE_PORT, readAck).start();
 
-                // Mettre à jour dans la base de données
-                try {
-                    Database.updateMessageStatus(message, "read");
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+            }
+            // Mettre à jour du status du message  dans la base de données
+            try {
+                Database.updateMessageStatus(message, "read");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
 
         });
@@ -344,6 +355,7 @@ public class MainController {
     private void showChatArea(boolean show) {
         chatAreaVBox.setVisible(show);
         defaultCenterVBox.setVisible(!show);
+
     }
 
     public void setUser(User user, int state) throws SQLException {
@@ -363,9 +375,7 @@ public class MainController {
 
     }
 
-    public User getUser() {
-        return user;
-    }
+    public User getUser() {return user;}
 
     /**
      * Ajoute un contact à la liste de contacts de l'utilisateur.
@@ -407,7 +417,6 @@ public class MainController {
                 Message message = new Message(user.getPhone_Number(), "MESSAGE", messageText, recipientId);
                 message.setAck("sent");
                 message.setStatut("delivered");
-                //Recupération de l'address IP actuell du destinataire
 
                 //RecipentAddress
                 System.out.println("Son addresse est " + recipientAddress);
@@ -417,11 +426,14 @@ public class MainController {
                         String currentAddress = notification.getMessage();
                         selectedUserStatut.setText("online");
                         new MessageSender(currentAddress, MESSAGE_PORT, message).start();
-                    } else selectedUserStatut.setText("offline");
+                        //Ajout du message dans la zone de chat
+                        MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "read",message.getTimestamp());
+                    } else {
+                        selectedUserStatut.setText("offline");
+                        //Ajout du message dans la zone de chat en marquant non envoyé
+                        MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "delivered",message.getTimestamp());
+                    }
                 });
-
-                //Ajout du message dans la zone de chat
-                MessageController.addMessage(chatVBox, user.getPhone_Number(), message.getContent(), true, "read",message.getTimestamp());
 
                 //Ajout dans la BD
                 Database.saveMessage(message);
@@ -431,7 +443,7 @@ public class MainController {
                 messageTextField.clear();
             } else {
                 System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
-                // Afficher un message d'erreur à l'utilisateur
+
             }
         } else {
             System.out.println("Veuillez sélectionner un contact et saisir un message.");
@@ -451,8 +463,6 @@ public class MainController {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
             String recipientId = selectedContact.getPhone_number();
             sendFile(sender, recipientId); // Call the sendFile method
-
-
         } else {
 
             Alert alert = new Alert(Alert.AlertType.ERROR, "No user logged in", ButtonType.OK);
@@ -530,7 +540,7 @@ public class MainController {
             receiver.interrupt();
             fileReceiver.interrupt();
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/alaanya/view/LoginView.fxml"));
-            GridPane loginView = loader.load();
+            StackPane loginView = loader.load();
 
             Scene scene = new Scene(loginView);
             Stage stage;
@@ -688,7 +698,6 @@ public class MainController {
     // Méthode pour basculer entre les thèmes (sombre et clair)
     @FXML
     private void toggleThemeAction() {
-        // Vérifiez si les ressources CSS existent dans le chemin spécifié
 
         // Si les fichiers CSS ne sont pas trouvés, afficher une erreur dans la console
         if (darkThemeUrl == null || lightThemeUrl == null) {
@@ -702,11 +711,11 @@ public class MainController {
         boolean isDarkMode = scene.getStylesheets().contains(darkThemeUrl.toExternalForm());
 
         if (isDarkMode) {
-            System.out.println("Dark theme");
+
             scene.getStylesheets().clear();
             scene.getStylesheets().add(lightThemeUrl.toExternalForm());
         } else {
-            System.out.println("light theme");
+
             scene.getStylesheets().clear();
             scene.getStylesheets().add(darkThemeUrl.toExternalForm());
         }

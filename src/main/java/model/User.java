@@ -19,6 +19,7 @@ public class User {
     private String sessionToken;
     private String lastLogin;
     private String username;
+    private String profilePicture;
 
 
     public User(String phone_Number, String grade, String division,String username) {
@@ -125,5 +126,9 @@ public class User {
                 ", Grade='" + grade + '\'' +
                 ", Division=" + division +
                 '}';
+    }
+
+    public String getProfilePicture() {
+        return this.profilePicture;
     }
 }

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 @SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal","exports"})
@@ -16,7 +16,7 @@ public class MainApp extends Application {
 
     private static final Logger LOGGER = Logger.getLogger(MainApp.class.getName());
     private static Stage primaryStage;
-    private GridPane rootLayout;
+    private StackPane rootLayout;
 
     @Override
     public void start(Stage primaryStage) {
@@ -36,7 +36,7 @@ public class MainApp extends Application {
             // Load root layout from FXML file.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainApp.class.getResource("/com/alaanya/view/LoginView.fxml"));
-            rootLayout = (GridPane) loader.load();
+            rootLayout = (StackPane) loader.load();
 
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);

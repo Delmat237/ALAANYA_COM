@@ -1,9 +1,19 @@
 /* military-theme.css */
 
 /* Arrière-plan général */
-.root {
-    -fx-background-color: #ffffff; /* Bleu marine foncé pour fond général */
+
+.pane {
+    -fx-background-image: url("images/back4.jpeg");
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
+    /*-fx-background-color:#0a570a9c;*/
+    -fx-padding: 20px;
+    -fx-alignment: center;
 }
+/*.root {*/
+/*    -fx-background-color: #ffffff; !* Bleu marine foncé pour fond général *!*/
+/*}*/
 
 .top {
     -fx-background-color: #34495E; /* Gris-bleu, ton militaire */

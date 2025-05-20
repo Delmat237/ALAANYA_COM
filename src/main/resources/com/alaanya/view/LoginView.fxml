@@ -1,46 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
+<StackPane prefWidth="400" prefHeight="600" styleClass="login-pane"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controller.LoginController"
+           stylesheets="@css/login-style.css">
 
-<GridPane alignment="CENTER" hgap="10" vgap="10"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="controller.LoginController"
-          stylesheets="@css/login-style.css">
+    <VBox spacing="30" alignment="CENTER" styleClass="login-box">
+        <Label text="CONNEXION"  styleClass="login-title"/>
 
-    <!-- Téléphone -->
-    <Label text="TELEPHONE :" styleClass="login-label"
-           GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="0">
-        <FontIcon iconLiteral="fas-phone" iconSize="14"/>
-        <TextField fx:id="militaryIdField" styleClass="login-text-field"/>
-    </HBox>
+        <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="telephone-box">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
 
-    <!-- Mot de passe -->
-    <Label text="Mot de Passe:" styleClass="login-label"
-           GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
-        <FontIcon iconLiteral="fas-lock" iconSize="14"/>
-        <PasswordField fx:id="passwordField" styleClass="password-field"/>
-    </HBox>
+            <Label styleClass="login-label" >
+                <graphic>
+                    <ImageView fitWidth="30" fitHeight="30" preserveRatio="true">
+                        <Image url="@images/telephone-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <TextField fx:id="militaryIdField" styleClass="login-text-field" promptText="numero de telephone"  text="+237"/>
+        </HBox>
 
-    <!-- Bouton de connexion -->
-    <Button text="Connexion" onAction="#handleLogin" styleClass="login-button"
-            GridPane.columnIndex="1" GridPane.rowIndex="2">
-        <graphic>
-            <FontIcon iconLiteral="fas-sign-in-alt" iconSize="14"/>
-        </graphic>
-    </Button>
+        <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="12">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="30" fitHeight="30" preserveRatio="true">
+                        <Image url="@images/password-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <PasswordField fx:id="passwordField" styleClass="password-field" promptText="mot de passe"
+            />
 
-    <!-- Lien de création de compte -->
-    <HBox alignment="CENTER" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="3">
-        <Label text="Nouvel utilisateur ?" styleClass="login-label"/>
-        <Hyperlink text="Créer un compte" onAction="#loadRegisterView" styleClass="create-account-link"/>
-    </HBox>
+        </HBox>
 
-    <!-- Message d'erreur -->
-    <Label fx:id="errorLabel" styleClass="login-error-message"
-           GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+        <Button text="Connexion" onAction="#handleLogin" styleClass="login-button"
+        />
 
-</GridPane>
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="Nouvel utilisateur ?" styleClass="login-label"/>
+            <Hyperlink text="Créer un compte" onAction="#loadRegisterView" styleClass="create-account-link"/>
+        </HBox>
+
+        <Label fx:id="errorLabel" styleClass="login-error-message"
+        />
+    </VBox>
+
+</StackPane>

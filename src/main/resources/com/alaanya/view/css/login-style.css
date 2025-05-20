@@ -1,55 +1,95 @@
-/* Style général du conteneur */
-.login-grid {
-    -fx-background-color: #1E3A24; /* Vert militaire foncé */
-    -fx-padding: 30px;
+/* login.css */
+
+/* Arrière-plan général */
+.login-pane {
+    -fx-background-image: url("images/back6.jpeg");
+
+    -fx-background-repeat: no-repeat;
+    -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
+    /*-fx-background-color:#0a570a9c;*/
+    -fx-padding: 20px;
     -fx-alignment: center;
-    -fx-spacing: 15px;
 }
 
-/* Labels */
-.login-label {
-    -fx-text-fill: rgba(17, 77, 168, 0.64); /* Doré pour contraste militaire */
-    -fx-font-size: 14px;
+.login-box{
+    -fx-max-width: 330px;
+    -fx-background-color: transparent;
+    -fx-border-color:#4b87cc00;
+    -fx-border-radius:10px;
+    -fx-background-radius:10px;
+    -fx-max-height: 200px;
+}
+
+.login-title{
+    -fx-text-fill:#133f96;
+    -fx-font-size:20px;
+    -fx-padding:60px 0px 0px 0px;
     -fx-font-weight: bold;
 }
 
-/* Champ texte (téléphone, etc.) */
-.login-text-field,
-.password-field {
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #1E1E1E;
-    -fx-border-color: #4CAF50;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
+.telephone-box{
+    -fx-background-color:#b5b9b97e;
+    -fx-pref-width:100px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+}
+.password-box{
+    -fx-background-color:#b5b9b979;
+    -fx-pref-width:100px;
+    -fx-border-radius: 20px;
+    -fx-background-radius:20px;
+}
+/* Label */
+.login-label {
+    /*-fx-text-fill: #0e0f0f; /* Jaune doré pour un contraste fort mais adapté */
     -fx-font-size: 14px;
-    -fx-padding: 6px 8px;
+    /*-fx-font-weight: bold;*/
+    -fx-padding: 10px;
+    -fx-backgound:transparent;
 }
 
-/* Bouton de connexion */
+
+/* Champ de texte */
+.login-text-field {
+    -fx-background-color: transparent; /* Blanc pour les champs */
+    -fx-text-fill: #161616; /* Texte noir */
+    /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
+}
+
+
+
+.password-field{
+    -fx-background-color: transparent; /* Blanc pour les champs */
+    -fx-text-fill: #141010; /* Texte noir */
+    /*-fx-border-color: #4CAF50; /* Vert pour les bordures */
+    -fx-border-radius: 50px;
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
+}
+/* Bouton */
 .login-button {
     -fx-background-color: #4CAF50; /* Vert armée */
     -fx-text-fill: white;
-    -fx-font-size: 15px;
+    -fx-font-size: 16px;
     -fx-padding: 10px 20px;
-    -fx-background-radius: 6px;
-    -fx-border: none;
+    -fx-border-radius: 5px;
 }
 
-/* Bouton de connexion - effet hover */
-.login-button:hover {
-    -fx-background-color: #81c885;
-}
-
-/* Lien "Créer un compte" */
+/* Lien */
 .create-account-link {
-    -fx-text-fill: #9c07ff; /* Doré */
-    -fx-font-size: 13px;
+    -fx-text-fill: #9c07ff; /* Jaune doré pour le lien */
+    -fx-font-size: 14px;
     -fx-underline: true;
 }
 
 /* Message d'erreur */
 .login-error-message {
-    -fx-text-fill: #FF3D00; /* Rouge militaire fort */
-    -fx-font-size: 13px;
+    -fx-text-fill: #FF5722; /* Rouge pour les erreurs */
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
 }

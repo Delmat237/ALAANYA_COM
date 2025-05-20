@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
 
 public class RegisterController {
+    public TextField divisionIdField;
     @FXML private TextField militaryIdField;
     @FXML private TextField usernameIdField;
     @FXML private PasswordField passwordField;
@@ -38,9 +39,6 @@ public class RegisterController {
         );
         // Charger la feuille de style
         Scene scene = militaryIdField.getScene();
-        if (scene != null) {
-            scene.getStylesheets().add(getClass().getResource("/com/alaanya/view/css/style.css").toExternalForm());
-        }
     }
 
     @FXML
