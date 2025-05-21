@@ -20,12 +20,12 @@ public class VideoCallManager {
     private static VideoSender sender;
     private   VideoReceiver receiver;
     private static CameraService camera;
-    private static Timeline callTimer;
+    private  Timeline callTimer;
 
 
     private final Runnable onHangUp;
 
-    private static int secondsElapsed = 0;
+    private  int secondsElapsed = 0;
 
     public VideoCallManager(ImageView localView, ImageView remoteView,
                             Label callDurationLabel,
@@ -49,7 +49,7 @@ public class VideoCallManager {
         }
     }
 
-    public static void startSending(String ip, int port) {
+    public  void startSending(String ip, int port) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> localView.setImage(fxImage));
@@ -66,7 +66,7 @@ public class VideoCallManager {
         }
     }
 
-    private static void startCallTimer() {
+    private  void startCallTimer() {
         secondsElapsed = 0;
         callTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             secondsElapsed++;

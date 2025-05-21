@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import audio.AudioCallManager;
-import audio.AudioSetup;
 import com.alaanya.MainApp;
 
+import audio.AudioCallManager;
+import audio.AudioSetup;
 import database.Database;
 import file.FileReceiver;
 import file.FileSender;
@@ -28,12 +28,23 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox; // Ensure this import is correct and the class exists in the specified package
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -42,7 +53,7 @@ import message.MessageSender;
 import model.Contact;
 import model.Message;
 import model.User;
-import signal.CallSignaler; // Ensure this import is correct and the class exists in the specified package
+import signal.CallSignaler;
 import socket.Client;
 import utils.SoundPlayer;
 import video.VideoCallManager;
@@ -107,6 +118,7 @@ public class MainController {
 
     private URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
     private URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
+    
     private User user;
     public static String recipientAddress;
 
@@ -180,12 +192,12 @@ public class MainController {
                 Platform.runLater(() -> {
                     if ("AUDIO".equals(type)) {
                         openAudioChat(ip, "Appel accepté !");
-                        AudioCallManager.startSending(ip, AUDIO_PORT);
+                        //AudioCallManager.startSending(ip, AUDIO_PORT);
                         
                     } else if ("VIDEO".equals(type)) {
                         openVideoChat(ip, "Appel accepté !");
                         //commence a 
-                        VideoCallManager.startSending(ip,VIDEO_PORT);
+                       // VideoCallManager.startSending(ip,VIDEO_PORT);
 
                     }
                 });

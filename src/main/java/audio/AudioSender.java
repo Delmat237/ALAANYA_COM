@@ -36,8 +36,11 @@ public class AudioSender extends Thread {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("IL a raccroché");
-                e.printStackTrace();
+              
+               System.err.println("Error in AudioSender: " + e.getMessage());
+            } catch (Error e) {
+              
+                System.err.println("Error in AudioSender: " + e.getMessage());
 
             } finally {
                 audioSetup.closeMicrophone();

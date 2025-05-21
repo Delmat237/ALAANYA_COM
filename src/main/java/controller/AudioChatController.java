@@ -14,11 +14,11 @@ import javafx.util.Duration;
 public class AudioChatController {
     private final AudioCallManager callManager = new AudioCallManager();
 
-    @FXML private static Label callDurationLabel;
+    @FXML private  Label callDurationLabel;
     @FXML private Button endCallButton;
 
-    private static Timeline callTimer;
-    private static int secondsElapsed = 0;
+    private  Timeline callTimer;
+    private  int secondsElapsed = 0;
 
     public void initCall(String ip, String username) {
         AudioCallManager.startReceiving(MainController.AUDIO_PORT);
@@ -45,7 +45,7 @@ public class AudioChatController {
         }
     }
 
-    public static void startCallTimer() {
+    public  void startCallTimer() {
         secondsElapsed = 0;
         if (callDurationLabel == null) {
             System.err.println("Call duration label is not initialized.");
