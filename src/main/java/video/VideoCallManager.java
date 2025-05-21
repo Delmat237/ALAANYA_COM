@@ -1,17 +1,15 @@
 package video;
 
 import controller.VideoChatController;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.util.Duration;
 import signal.CallSignaler;
 
 import static controller.VideoChatController.*;
+import controller.MainController;
 
 public class VideoCallManager {
 
@@ -20,12 +18,12 @@ public class VideoCallManager {
     private static VideoSender sender;
     private   VideoReceiver receiver;
     private static CameraService camera;
-    private  Timeline callTimer;
+
 
 
     private final Runnable onHangUp;
 
-    private  int secondsElapsed = 0;
+
 
     public VideoCallManager(ImageView localView, ImageView remoteView,
                             Label callDurationLabel,
@@ -49,7 +47,7 @@ public class VideoCallManager {
         }
     }
 
-    public  void startSending(String ip, int port) {
+    public static  void startSending(String ip, int port) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> localView.setImage(fxImage));
@@ -59,45 +57,14 @@ public class VideoCallManager {
             camera.start();
             sender = new VideoSender(ip, port, camera);
             sender.start();
-            startCallTimer();
+           
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du démarrage de l’envoi vidéo :");
 
         }
     }
 
-    private  void startCallTimer() {
-        secondsElapsed = 0;
-        callTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            secondsElapsed++;
-            int minutes = secondsElapsed / 60;
-            int seconds = secondsElapsed % 60;
-            if (callDurationLabel != null) {
-                Platform.runLater(() ->
-                        callDurationLabel.setText(String.format("Durée : %02d:%02d", minutes, seconds)));
-            } else {
-                System.out.println("⚠️ callDurationLabel est null !");
-            }
-        }));
-        callTimer.setCycleCount(Timeline.INDEFINITE);
-        callTimer.play();
-    }
-
-    private void stopCallTimer() {
-        if (callTimer != null) {
-            callTimer.stop();
-            callTimer = null;
-        }
-
-        secondsElapsed = 0;
-
-        if (callDurationLabel != null) {
-            Platform.runLater(() -> callDurationLabel.setText("Durée : 00:00"));
-        } else {
-            System.out.println("⚠️ callDurationLabel est null !");
-        }
-    }
-
+  
     public void hangUp() {
         System.out.println("📞 Fin de l’appel...");
 
@@ -116,8 +83,17 @@ public class VideoCallManager {
             camera = null;
         }
 
-        stopCallTimer();
-
+        if (signaler != null && MainController.recipientAddress != null) {
+            signaler.sendCallEnd(MainController.recipientAddress, "VIDEO");
+        } else {
+            System.err.println("Erreur : signaler ou recipientAddress est nul.");
+        }
+        if (VideoChatController.callDurationLabel != null) {
+            VideoChatController.callDurationLabel.setText("Durée : 00:00");
+        } else {
+            System.err.println("Erreur : callDurationLabel est nul.");
+        }
+      
         if (onHangUp != null) {
             Platform.runLater(onHangUp);
         }
