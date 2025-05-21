@@ -3,7 +3,7 @@
 /* Arrière-plan général */
 
 .pane {
-    -fx-background-image: url("images/back4.jpeg");
+    -fx-background-image: url("images/imagelight2.jpg");
 
     -fx-background-repeat: no-repeat;
     -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
@@ -14,7 +14,9 @@
 /*.root {*/
 /*    -fx-background-color: #ffffff; !* Bleu marine foncé pour fond général *!*/
 /*}*/
-
+.header{
+    -fx-background-color:#FFFFFF;
+}
 .top {
     -fx-background-color: #34495E; /* Gris-bleu, ton militaire */
 }
@@ -23,8 +25,12 @@
     -fx-background-color: #2C3E50; /* Même fond que la root pour cohérence */
 }
 
-.center {
-    -fx-background-color: #34495E;
+.center,.chatVBox {
+    /* -fx-background-color: red; Test de visibilité */
+    -fx-background-image: url("images/imagelight3.jpg");
+    -fx-background-repeat: no-repeat;
+      -fx-background-size:cover;
+       -fx-border-width: 3px;
 }
 
 /* Barres et boutons */
