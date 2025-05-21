@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal"})
 
 public class RegisterController {
-    @ FXML private TextField divisionIdField;
+
     @FXML private TextField militaryIdField;
     @FXML private TextField usernameIdField;
     @FXML private PasswordField passwordField;

@@ -91,7 +91,7 @@
                     </ImageView>
                 </graphic>
             </Label>
-            <TextField fx:id="divisionIdField" styleClass="register-text-field" promptText="Division"
+            <TextField fx:id="divisionField" styleClass="register-text-field" promptText="Division"
             />
         </HBox>
 
