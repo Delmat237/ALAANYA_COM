@@ -28,6 +28,6 @@ public class SoundPlayer {
     public static void stopSound(){
         try {
             clip.stop();
-        }catch (Exception _){}
+        }catch (Exception e){}
     }
 }

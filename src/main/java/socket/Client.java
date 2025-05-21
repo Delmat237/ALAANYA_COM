@@ -28,7 +28,7 @@ public class Client {
             .create();
 
     private static final String CENTRAL_SERVER_IP = "127.0.0.1";
-    private static final int CENTRAL_SERVER_PORT = 8080;
+    private static final int CENTRAL_SERVER_PORT = 7000;
 
     public interface NotificationListener {
         void onNotificationReceived(Notification notification);
