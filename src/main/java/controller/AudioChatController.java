@@ -1,6 +1,6 @@
 package controller;
 
-import audio.*;
+import audio.AudioCallManager;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -20,7 +20,7 @@ public class AudioChatController {
     private static int secondsElapsed = 0;
 
     public void initCall(String ip, String username) {
-        callManager.startReceiving(MainController.AUDIO_PORT);
+        AudioCallManager.startReceiving(MainController.AUDIO_PORT);
         AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
         startCallTimer();
     }
@@ -28,7 +28,7 @@ public class AudioChatController {
 
     @FXML
     public void initialize() {
-        endCallButton.setOnAction(e -> {
+        endCallButton.setOnAction(_ -> {
             stopCallTimer();
             callManager.stopAll();
             ((Stage) endCallButton.getScene().getWindow()).close();
@@ -37,6 +37,9 @@ public class AudioChatController {
 
     public static void startCallTimer() {
         secondsElapsed = 0;
+        if (callDurationLabel == null) {
+            System.err.println("Call duration label is not initialized.");
+        } else {
         callDurationLabel.setText("Durée : 00:00");
         callTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             secondsElapsed++;
@@ -45,6 +48,7 @@ public class AudioChatController {
         }));
         callTimer.setCycleCount(Animation.INDEFINITE);
         callTimer.play();
+        }
     }
 
     private void stopCallTimer() {

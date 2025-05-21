@@ -31,6 +31,16 @@ public class CallSignaler {
             instance = new CallSignaler();
         }
         return instance;
+
+    }
+
+    public static void stopInstance() {
+        System.out.println("Instance courant "+instance);
+        if (instance != null) {
+            instance.stopListening();
+            instance = null;
+            System.out.println("Instance de CallSignaler arrêtée."+instance);
+        }
     }
 
 

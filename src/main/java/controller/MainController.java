@@ -177,9 +177,12 @@ public class MainController {
                 Platform.runLater(() -> {
                     if ("AUDIO".equals(type)) {
                         openAudioChat(ip, "Appel accepté !");
-
+                        AudioCallManager.startSending(ip, AUDIO_PORT);
+                        
                     } else if ("VIDEO".equals(type)) {
                         openVideoChat(ip, "Appel accepté !");
+                        //commence a 
+                        VideoCallManager.startSending(ip,VIDEO_PORT);
 
                     }
                 });
@@ -187,8 +190,10 @@ public class MainController {
 
             @Override
             public void onCallDeclined(String ip) {
-                Platform.runLater(() ->
-                        showInfo("Appel refusé", "L’utilisateur a refusé l’appel.")
+                Platform.runLater(() ->{
+                        showInfo("Appel refusé", "L’utilisateur a refusé l’appel.");
+                        CallSignaler.stopInstance();
+                        }
                 );
             }
         });

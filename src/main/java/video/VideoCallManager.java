@@ -18,7 +18,7 @@ public class VideoCallManager {
     private final CallSignaler signaler = CallSignaler.getInstance();
 
     private static VideoSender sender;
-    private VideoReceiver receiver;
+    private   VideoReceiver receiver;
     private static CameraService camera;
     private static Timeline callTimer;
 
@@ -36,7 +36,7 @@ public class VideoCallManager {
         this.onHangUp = onHangUp;
     }
 
-    public void startReceiving(int port) {
+    public  void startReceiving(int port) {
         try {
             receiver = new VideoReceiver(port, frame -> {
                 Image fxImage = SwingFXUtils.toFXImage(frame, null);

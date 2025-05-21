@@ -28,7 +28,7 @@ public class MessageSender extends Thread {
         ) {
             String json = gson.toJson(message);
             dos.writeUTF(json);
-            System.out.println("Message envoyé : " + message.getContent());
+            System.out.println("Message envoyé : " + message.getContent() + " à " + socket.getInetAddress().getHostAddress() + ":" + port);
         } catch (IOException e) {
             e.printStackTrace();
         }
