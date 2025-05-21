@@ -24,6 +24,7 @@ public class CallSignaler {
         void onCallReceived(String fromUser, String ip, String type);
         void onCallAccepted(String ip, String type);
         void onCallDeclined(String ip);
+        void onCallEnd(String ip,String callType);
     }
 
     public static synchronized CallSignaler getInstance() {
@@ -60,6 +61,15 @@ public class CallSignaler {
             writer.println(accepted
                     ? "CALL_ACCEPTED:" + callType
                     : "CALL_DECLINED:" + callType);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendCallEnd(String remoteIP, String type) {
+        try (Socket socket = new Socket(remoteIP, MainController.SIGNAL_PORT);
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+            writer.println("CALL_END:" + type);
         } catch (IOException e) {
             e.printStackTrace();
         }

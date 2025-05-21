@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+
 public class AudioChatController {
     private final AudioCallManager callManager = new AudioCallManager();
 
@@ -28,11 +29,20 @@ public class AudioChatController {
 
     @FXML
     public void initialize() {
-        endCallButton.setOnAction(_ -> {
-            stopCallTimer();
-            callManager.stopAll();
-            ((Stage) endCallButton.getScene().getWindow()).close();
-        });
+        endCallButton.setOnAction(_ -> stopCall());
+    }
+
+    public  void stopCall( ){
+        stopCallTimer();
+        callManager.stopAll();
+        ((Stage) endCallButton.getScene().getWindow()).close();
+
+        //envoie un signal à l'interloccuteur qu'on a raccroché
+        if (MainController.signaler != null && MainController.recipientAddress != null) {
+            MainController.signaler.sendCallEnd(MainController.recipientAddress, "AUDIO");
+        } else {
+            System.err.println("Error: signaler or recipientAddress is null.");
+        }
     }
 
     public static void startCallTimer() {

@@ -108,7 +108,7 @@ public class MainController {
     private URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
     private URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
     private User user;
-    private static String recipientAddress;
+    public static String recipientAddress;
 
     private ObservableList<Contact> messageContacts = FXCollections.observableArrayList();
     private ObservableList<Contact> allContacts = FXCollections.observableArrayList();
@@ -126,6 +126,9 @@ public class MainController {
 
     private boolean isCallDialogOpen = false;
 
+    //Signaler pour gerer les signalisation lors des appels
+    public static CallSignaler signaler;
+    private  AudioChatController controller;
     private int seconds = 0;
     private Timeline callTimer;
 
@@ -150,7 +153,7 @@ public class MainController {
         fileReceiver.start();
 
         //Initialization pour l'attente des appels
-        CallSignaler signaler = CallSignaler.getInstance(); // Singleton instance
+        signaler = CallSignaler.getInstance(); // Singleton instance
         signaler.listenForCallRequests(new CallSignaler.CallListener() {
             @Override
             public void onCallReceived(String fromUser, String ip, String type) {
@@ -185,6 +188,16 @@ public class MainController {
                         VideoCallManager.startSending(ip,VIDEO_PORT);
 
                     }
+                });
+            }
+
+            //ecoute si l'interloccuteur a raccroché
+            @Override
+            public void onCallEnd(String ip, String type){
+                Platform.runLater(() -> {
+                    showInfo("Appel terminé", "L'appel a été terminé.");
+                    CallSignaler.stopInstance();
+                   // controller.stopCall(ip,type);
                 });
             }
 
@@ -733,7 +746,7 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
-            AudioChatController controller = loader.getController();
+           controller = loader.getController();
             controller.initCall(ip, username);
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
