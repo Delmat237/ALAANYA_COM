@@ -29,7 +29,7 @@ public class ViewUtils {
 
             // Récupérer l'utilisateur depuis la base de données
           
-            System.out.println("Recuperation des données depuis la bd centrale");
+            System.out.println("[view utils] :Recuperation des données depuis la bd centrale");
 
             User user = getUserByMilitaryId(militaryId);
             if (user != null) {
@@ -37,7 +37,7 @@ public class ViewUtils {
 
                 mainController.setUser(user,statut);
             } else {
-                errorLabel.setText("Utilisateur introuvable dans la base de données.");
+                errorLabel.setText("Utilisateur introuvable // Erreur de connection.");
                 return;
             }
 

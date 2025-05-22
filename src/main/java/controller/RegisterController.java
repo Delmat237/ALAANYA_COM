@@ -86,15 +86,18 @@ public class RegisterController {
 
                 //Enregistrer l'user en local
                 Database.addUser(user);
+                // Utilisation de la méthode de ViewUtils pour charger la vue principale
+                errorLabel.setText("Compte créé avec succès !");
+
+                //Renvoyer sur la page de Login
+                loadLoginView();
+                // ViewUtils.loadMainView(user.getPhone_Number(), errorLabel,1);
 
             }
+            errorLabel.setText("Erreur de connection !");
 
-            // Utilisation de la méthode de ViewUtils pour charger la vue principale
-            errorLabel.setText("Compte créé avec succès !");
 
-            //Renvoyer sur la page de Login
-            loadLoginView();
-            // ViewUtils.loadMainView(user.getPhone_Number(), errorLabel,1);
+
 
         } catch (SQLException | NoSuchAlgorithmException e) {
             errorLabel.setText("Erreur : " + e.getMessage());
