@@ -1,21 +1,21 @@
 package socket;
 
-import java.io.*;
-import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import database.Database;
 import model.Message;
 import model.Notification;
 import model.User;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
+import java.io.*;
+import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
-@SuppressWarnings({"CallToPrintStackTrace","FieldMayBeFinal"})
-
+@SuppressWarnings({"CallToPrintStackTrace", "FieldMayBeFinal"})
 public class Client {
 
+    private static Socket socketCentral;
     private static BufferedWriter outCentral;
     private static BufferedReader inCentral;
 
@@ -26,23 +26,25 @@ public class Client {
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
             .create();
 
-    private static final String CENTRAL_SERVER_IP = "127.0.0.1";
+    private static final String CENTRAL_SERVER_IP = "10.2.64.14";
     private static final int CENTRAL_SERVER_PORT = 7000;
 
     public interface NotificationListener {
         void onNotificationReceived(Notification notification);
     }
 
-    private static NotificationListener notificationListener;
+    /**
+     * Connexion au serveur central
+     */
+    public static boolean connectToServer() {
+        if (isConnectedToServer && socketCentral != null && socketCentral.isConnected()) {
+            return true; // Déjà connecté
+        }
 
-
-    //Connection au serveur centrale
-    public static boolean connectToServer(){
         try {
-            try (Socket socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT)) {
-                outCentral = new BufferedWriter(new OutputStreamWriter(socketCentral.getOutputStream()));
-                inCentral = new BufferedReader(new InputStreamReader(socketCentral.getInputStream()));
-            }
+            socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
+            outCentral = new BufferedWriter(new OutputStreamWriter(socketCentral.getOutputStream()));
+            inCentral = new BufferedReader(new InputStreamReader(socketCentral.getInputStream()));
 
             isConnectedToServer = true;
             System.out.println("[CLIENT] Connected to central server");
@@ -54,192 +56,143 @@ public class Client {
             return false;
         }
     }
-    
-    /*
-     * params
-     * userId : id of the user
-     * NotificationListener : listener to notify when the address is received
-     * ACTION :  
-     * allow to take user address
-     */
+
     public static void requestAddress(String userId, NotificationListener listener) {
-        if (!isConnectedToServer) {
-            System.err.println("[CLIENT] Not connected to central server.");
+        if (!connectToServer()) {
+            System.err.println("[CLIENT] Cannot request address, not connected.");
             return;
         }
 
         try {
-            // Send request for user's address
-            System.out.println("j'envoie la requete");
-            Message requestMessage = new Message("SERVER", "REQUEST_ADDRESS", userId,"CENTRAL_SERVER");
-            System.out.println("le message est constitué");
-
-            // Assure-toi que la connexion est établie et que outCentral/inCentral sont initialisés
-
-            connectToServer();
-            // Sérialiser en JSON et envoyer
+            Message requestMessage = new Message("SERVER", "REQUEST_ADDRESS", userId, "CENTRAL_SERVER");
             String jsonRequest = gson.toJson(requestMessage);
 
-            System.out.println("[CLIENT] Sending JSON: " + jsonRequest);
-            outCentral.write(jsonRequest +"\n");
+            outCentral.write(jsonRequest + "\n");
             outCentral.flush();
 
-            System.out.println("[CLIENT] Address request sent for user: " + userId);
+            System.out.println("[CLIENT] Requesting address for: " + userId);
 
-            // Bon :
             String jsonResponse = inCentral.readLine();
             Notification response = gson.fromJson(jsonResponse, Notification.class);
 
             if (response != null) {
                 listener.onNotificationReceived(response);
-                System.out.println("[CLIENT] Received address response: " + response.getMessage());
+                System.out.println("[CLIENT] Received address: " + response.getMessage());
             } else {
-                System.err.println("[CLIENT] Received null or invalid notification.");
+                System.err.println("[CLIENT] Invalid response received.");
             }
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Error requesting Address: " + e.getMessage());
-            e.printStackTrace();
 
+        } catch (IOException e) {
+            System.err.println("[CLIENT] Error during address request: " + e.getMessage());
         }
     }
-    public static void authUserRequest(String userId,String password, NotificationListener listener) throws SQLException{
-         connectToServer(); //etablir la connection avec le server centrale
 
-        if (!isConnectedToServer) {
-            System.err.println("[CLIENT] Not connected to central server.");
-            //RECUPERER LES INFORMATIONS EN LOCAL
-            String msg =  Database.authUser(userId, password);
-            listener.onNotificationReceived(new Notification(msg.split("&&")[0], msg.split("&&")[1],5,"LOCALHOST")); // Notify listener with the response
-            System.out.println("[CLIENT] Authentification response: "+msg.split("&&")[0] +" : "+msg.split("&&")[1]);
+    public static void authUserRequest(String userId, String password, NotificationListener listener) throws SQLException {
+        if (!connectToServer()) {
+            String msg = Database.authUser(userId, password);
+            listener.onNotificationReceived(new Notification(msg.split("&&")[0], msg.split("&&")[1], 5, "LOCALHOST"));
+            System.out.println("[CLIENT] Local auth: " + msg);
             return;
         }
 
         try {
-            // Send request for user's address
-            Message requestMessage = new Message("SERVER", "AUTHENTICATE_USER", userId+"&&"+password,"CENTRAL_SERVER");
-
-            // Sérialiser en JSON et envoyer
+            Message requestMessage = new Message("SERVER", "AUTHENTICATE_USER", userId + "&&" + password, "CENTRAL_SERVER");
             String jsonRequest = gson.toJson(requestMessage);
-            System.out.println("[CLIENT] Sending JSON: " + jsonRequest);
-            outCentral.write(jsonRequest +"\n");
+
+            outCentral.write(jsonRequest + "\n");
             outCentral.flush();
 
-            System.out.println("[CLIENT] Authentificate request starting for : " + userId);
-
-            // Lire la réponse JSON
-
             String jsonResponse = inCentral.readLine();
-
-            // Désérialiser en Notification
             Notification notification = gson.fromJson(jsonResponse, Notification.class);
 
             if (notification != null) {
                 listener.onNotificationReceived(notification);
-                System.out.println("[CLIENT] Authentification response: " + notification.getMessage());
+                System.out.println("[CLIENT] Auth response: " + notification.getMessage());
             } else {
-                System.err.println("[CLIENT] Unexpected response type: " + notification.getType());
+                System.err.println("[CLIENT] Auth failed: null response");
             }
 
         } catch (IOException e) {
-            System.err.println("[CLIENT] Error requesting authentificate: " + e.getMessage());
+            System.err.println("[CLIENT] Auth error: " + e.getMessage());
         }
     }
 
-    public static void addUserRequest(String military_id, String password_hash, String grade, String division, String username ) throws SQLException,NoSuchAlgorithmException{
-        if (!isConnectedToServer) {
+    public static void addUserRequest(String military_id, String password_hash, String grade, String division, String username) throws SQLException, NoSuchAlgorithmException {
+        if (!connectToServer()) {
             System.err.println("[CLIENT] Not connected to central server.");
             return;
         }
 
         try {
-            // Send request for user's address
-            Message requestMessage = new Message("SERVER", "SAVE_USER", military_id+"&&"+
-                    password_hash+"&&"+grade+"&&"+division+"&&"+ "&&"+ username,"CENTRAL_SERVER");
-            connectToServer();
-            // Conversion en JSON
-            String jsonRequest = gson.toJson(requestMessage);
+            String payload = military_id + "&&" + password_hash + "&&" + grade + "&&" + division + "&&" + username;
+            Message requestMessage = new Message("SERVER", "SAVE_USER", payload, "CENTRAL_SERVER");
 
-            // Envoi via le flux texte
-            System.out.println("[CLIENT] Sending JSON: " + jsonRequest);
-            outCentral.write(jsonRequest +"\n");
+            String jsonRequest = gson.toJson(requestMessage);
+            outCentral.write(jsonRequest + "\n");
             outCentral.flush();
 
-            System.out.println("[CLIENT] Saving request starting for : " + military_id);
+            System.out.println("[CLIENT] Saving user: " + military_id);
 
-            // Lecture de la réponse JSON
             String jsonResponse = inCentral.readLine();
             Notification notification = gson.fromJson(jsonResponse, Notification.class);
 
-            if (notification != null) {
-                System.out.println("[CLIENT] SAVING response: " + notification.getMessage());
-                if (notification.getMessage().equals("TRUE")){
-                    //ENREGISTREMENT DE L'USER EN LOCAL
-                    
-                    User user = new User(military_id, grade, division, username);
-                    user.setPasswordHash(password_hash);
-                    Database.addUser(user);
-                }
-
+            if (notification != null && "TRUE".equals(notification.getMessage())) {
+                User user = new User(military_id, grade, division, username);
+                user.setPasswordHash(password_hash);
+                Database.addUser(user);
+                System.out.println("[CLIENT] User saved locally.");
             } else {
-                System.err.println("[CLIENT] Unexpected response type: " + notification.getClass().getName());
+                System.err.println("[CLIENT] User save failed or rejected.");
             }
-//
+
         } catch (IOException e) {
-            System.err.println("[CLIENT] Error requesting SAVE: " + e.getMessage());
+            System.err.println("[CLIENT] Error saving user: " + e.getMessage());
         }
     }
-    public static User getUserRequest(String military_id) throws SQLException{
-        //METHODE PERMETTANT DE RECUPERER LES INFORMATINOS SUR L'USER
-         if (!isConnectedToServer) {
-             // VERIFICATION DE LA CONNEXION AVEC LA SERVEEUR CENTRAL
-             
-             System.err.println("[CLIENT] Not connected to central server.");
+
+    public static User getUserRequest(String military_id) throws SQLException {
+        if (!connectToServer()) {
             return Database.getUser(military_id);
         }
 
         try {
-            connectToServer();
-            // Send request for user's address
-            Message requestMessage = new Message("SERVER", "GET_USER", military_id,"CENTRAL_SERVER");
-            //connectToServer();
-            // Convert to JSON
+            Message requestMessage = new Message("SERVER", "GET_USER", military_id, "CENTRAL_SERVER");
             String jsonRequest = gson.toJson(requestMessage);
 
-            // Send via text stream
-            System.out.println("[CLIENT] Sending JSON: " + jsonRequest);
-            outCentral.write(jsonRequest +"\n");
+            outCentral.write(jsonRequest + "\n");
             outCentral.flush();
 
-            System.out.println("[CLIENT] GETTING request starting for : " + military_id);
+            System.out.println("[CLIENT] Getting user info for: " + military_id);
 
-            // Read JSON response
             String jsonResponse = inCentral.readLine();
-            System.out.println("Requete d'authentification envoyé , reception de reponse"+jsonResponse);
-            // Parse JSON response into Notification
             Notification notification = gson.fromJson(jsonResponse, Notification.class);
 
-            if (notification != null) {
-                if (notification.getMessage() == null) {
-                    System.out.println("Aucune notification reçu");
-                    return null;
-                }else{
-                      User user = new User(notification.getMessage().split("&&")[0],
-                                notification.getMessage().split("&&")[1],
-                                notification.getMessage().split("&&")[2],
-                                notification.getMessage().split("&&")[3]);
-                      user.setPasswordHash(notification.getMessage().split("&&")[4]);
-                    return user;
-                }
-
-            } else {
-                System.err.println("[CLIENT] Unexpected response type: " + notification.getClass().getName());
+            if (notification != null && notification.getMessage() != null) {
+                String[] parts = notification.getMessage().split("&&");
+                User user = new User(parts[0], parts[1], parts[2], parts[3]);
+                user.setPasswordHash(parts[4]);
+                return user;
             }
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Error requesting GET: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+
+        } catch (IOException | NoSuchAlgorithmException e) {
+            System.err.println("[CLIENT] Error retrieving user: " + e.getMessage());
         }
+
         return null;
     }
 
+    /**
+     * Déconnexion du serveur central
+     */
+    public static void disconnectFromServer() {
+        try {
+            if (socketCentral != null && !socketCentral.isClosed()) {
+                socketCentral.close();
+            }
+            isConnectedToServer = false;
+            System.out.println("[CLIENT] Disconnected from server.");
+        } catch (IOException e) {
+            System.err.println("[CLIENT] Error while disconnecting: " + e.getMessage());
+        }
+    }
 }
