@@ -14,7 +14,7 @@ public class CameraService {
     private final int cameraIndex;
 
     public CameraService(Consumer<BufferedImage> frameConsumer) {
-        this(frameConsumer, 0);
+        this(frameConsumer, findAvailableCameraIndex());
     }
 
     public CameraService(Consumer<BufferedImage> frameConsumer, int cameraIndex) {
@@ -26,6 +26,10 @@ public class CameraService {
      * Tente de démarrer la caméra. Retourne true si succès, false sinon.
      */
     public boolean startCamera() {
+        if (cameraIndex == -1) {
+            System.err.println("❌ Aucune caméra disponible !");
+            return false;
+        }
         try {
             grabber = new OpenCVFrameGrabber(cameraIndex);
             grabber.start();
@@ -65,10 +69,13 @@ public class CameraService {
             stopCamera();
         }
     }
+
+    /**
+     * Retourne l'état de démarrage de la caméra.
+     */
     public boolean isStarted() {
         return running;
     }
-
 
     /**
      * Stoppe la capture et libère les ressources.
@@ -77,7 +84,7 @@ public class CameraService {
         running = false;
 
         try {
-            if (captureThread != null) {
+            if (captureThread != null && captureThread.isAlive() && Thread.currentThread() != captureThread) {
                 captureThread.join();
             }
 
@@ -92,7 +99,7 @@ public class CameraService {
     }
 
     /**
-     * Capture manuellement une image (instantané)
+     * Capture manuellement une image (instantané).
      */
     public BufferedImage grabCurrentFrame() throws Exception {
         if (!running || grabber == null) {
@@ -100,5 +107,21 @@ public class CameraService {
         }
         Frame frame = grabber.grab();
         return (frame != null) ? converter.convert(frame) : null;
+    }
+
+    /**
+     * Recherche l'index d'une caméra disponible.
+     */
+    public static int findAvailableCameraIndex() {
+        for (int i = 0; i < 10; i++) {
+            try (OpenCVFrameGrabber testGrabber = new OpenCVFrameGrabber(i)) {
+                testGrabber.start();
+                testGrabber.stop();
+                return i;
+            } catch (FrameGrabber.Exception ignored) {
+                // Caméra indisponible, on continue
+            }
+        }
+        return -1; // aucune caméra disponible
     }
 }
