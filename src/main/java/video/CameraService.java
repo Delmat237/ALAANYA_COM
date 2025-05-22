@@ -14,7 +14,8 @@ public class CameraService {
     private final int cameraIndex;
 
     public CameraService(Consumer<BufferedImage> frameConsumer) {
-        this(frameConsumer, findAvailableCameraIndex());
+        //this(frameConsumer, findAvailableCameraIndex());
+        this(frameConsumer, 0);
     }
 
     public CameraService(Consumer<BufferedImage> frameConsumer, int cameraIndex) {

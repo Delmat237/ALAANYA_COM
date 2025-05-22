@@ -193,7 +193,6 @@ public class MainController {
                         
                     } else if ("VIDEO".equals(type)) {
                         openVideoChat(ip,  selectedContact.getName());
-                        //commence a 
                         VideoCallManager.startSending(ip,VIDEO_PORT);
 
                     }
@@ -343,7 +342,7 @@ public class MainController {
             // Envoyer une confirmation de lecture si le message recu n'est pas deja une confirmation de lecture
             if (!Objects.equals(message.getType(), "ACK_READ")) { //si le message n'est pas un accusé de reception
                 //affiche une notification si le contact couraant n'est pas le recepteur
-                if(!Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
+                if(Objects.equals(message.getRecipient(), selectedContact.getPhone_number()))
 
                     showInfo("Nouveau message de "+message.getSender(),message.getContent());
                 //Mise à jour du contact en enregistrant le lastmessage
