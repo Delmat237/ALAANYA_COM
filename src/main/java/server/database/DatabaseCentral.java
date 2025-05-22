@@ -87,7 +87,7 @@ public class DatabaseCentral {
                         CREATE TABLE IF NOT EXISTS users (
                          id INT AUTO_INCREMENT PRIMARY KEY,
             
-                         phone_Number VARCHAR(15) UNIQUE NOT NULL,
+                         phone_Number VARCHAR(20) UNIQUE NOT NULL,
                          password_hash VARCHAR(64) NOT NULL,
                          grade VARCHAR(50) NOT NULL,
                          division VARCHAR(50) NOT NULL,
@@ -141,7 +141,7 @@ public class DatabaseCentral {
         }
 
         public static String getUser(String militaryId) throws SQLException{
-            String sql = "SELECT phone_Number, grade, division, username FROM users WHERE  phone_Number= ?";
+            String sql = "SELECT * FROM users WHERE  phone_Number= ?";
             Connection conn = DatabaseCentral.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql);
               stmt.setString(1, militaryId);
@@ -155,8 +155,8 @@ public class DatabaseCentral {
                                             rs.getString("phone_Number")+"&&"+
                                             rs.getString("grade")+"&&"+
                                             rs.getString("division")+"&&"+
-                                    
-                                            rs.getString("username");
+                                            rs.getString("username")+"&&"+
+                                            rs.getString("password_hash");
 
                                 
                                     System.out.println("[CENTRAL SERVER] getting success (user found) for: " + militaryId);
@@ -203,25 +203,23 @@ public class DatabaseCentral {
           }
         }
 
-        public static String getHostAddress(String requestedUserId) throws SQLException {
-           Connection conn = DatabaseCentral.getConnection();
-           
-           String sql = "SELECT * FROM connectedUser WHERE user_id= ?";
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             stmt.setString(1, requestedUserId);
+    public static String getHostAddress(String requestedUserId) throws SQLException {
+        Connection conn = DatabaseCentral.getConnection();
 
-          ResultSet rs = stmt.executeQuery();
+        String sql = "SELECT ip_address FROM connectedUser WHERE user_id = ? ORDER BY timeLastConnection DESC LIMIT 1";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, requestedUserId);
 
-              if (rs.next()) {
-                       
-                        System.out.println("[CENTRAL SERVER] Getting Address  (user  found) for: " + requestedUserId);
-                        return rs.getString("user_address");
-                 
-          }
+        ResultSet rs = stmt.executeQuery();
 
-          
-          return null;
-
+        if (rs.next()) {
+            System.out.println("[CENTRAL SERVER] Getting latest Address for user: " + requestedUserId);
+            return rs.getString("ip_address");
         }
+
+        System.out.println("[CENTRAL SERVER] No address found for user: " + requestedUserId);
+        return null;
+    }
+
 
 }
