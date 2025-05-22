@@ -17,6 +17,10 @@
 .header{
     -fx-background-color:#FFFFFF;
 }
+.down{
+   -fx-background-color:#FFFFFF;
+     -fx-text-fill: #000000;
+}
 .top {
     -fx-background-color: #34495E; /* Gris-bleu, ton militaire */
 }
@@ -59,7 +63,7 @@
 }
 .text-field, .password-field, .combo-box {
     -fx-background-color: #34495E; /* Gris foncé pour les champs */
-    -fx-text-fill: #ECF0F1; /* Blanc cassé pour texte */
+    -fx-text-fill: #000000; /* Blanc cassé pour texte */
     -fx-border-color: #27AE60; /* Bordure verte */
 }
 

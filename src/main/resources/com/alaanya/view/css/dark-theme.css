@@ -2,7 +2,7 @@
 
 /* Arrière-plan général */
 .pane {
-    -fx-background-image: url("images/back2.jpg");
+    -fx-background-image: url("images/imagelight.jpg");
 
     -fx-background-repeat: no-repeat;
     -fx-background-size:cover; /* Vert foncé, couleur proche de l'armée camerounaise */
@@ -16,7 +16,13 @@
 /*    -fx-control-inner-background: #34495E; !* Arrière-plan des zones de contrôle (champs, listes) *!*/
 /*    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); !* Arrière-plan alternatif pour les zones de contrôle *!*/
 /*}*/
-
+.header{
+    -fx-background-color:#FFFFFF;
+}
+.down{
+   -fx-background-color:#FFFFFF;
+     -fx-text-fill: #000000;
+}
 
 .top {
     -fx-background-color: #34495E; /* Gris foncé pour la barre de titre */
@@ -27,7 +33,10 @@
 }
 
 .center {
-    -fx-background-color: #34495E; /* Gris foncé pour la zone centrale */
+     -fx-background-image: url("images/imagelight4.jpg");
+        -fx-background-repeat: no-repeat;
+          -fx-background-size:cover;
+           -fx-border-width: 3px;
 }
 
 /* Barres et boutons */
@@ -66,7 +75,7 @@
 
 .text-field, .password-field, .combo-box {
     -fx-background-color: #2C3E50; /* Bleu foncé pour les champs */
-    -fx-text-fill: #ECF0F1; /* Texte blanc cassé */
+    -fx-text-fill: #000000; /* Texte blanc cassé */
     -fx-border-color: #27AE60; /* Bordure verte militaire */
 }
 
