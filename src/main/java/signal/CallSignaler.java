@@ -132,6 +132,11 @@ public class CallSignaler {
                     listener.onCallAccepted(ip, callType);
                 } else if (line.startsWith("CALL_DECLINED:")) {
                     listener.onCallDeclined(ip);
+                    CallSignaler.stopInstance();
+                } else if (line.startsWith("CALL_END:")) {
+                    String callType = line.substring("CALL_END:".length());
+                    listener.onCallEnd(ip, callType);
+                    CallSignaler.stopInstance(); // 🔁 stop après fin
                 }
             }
         } catch (IOException e) {

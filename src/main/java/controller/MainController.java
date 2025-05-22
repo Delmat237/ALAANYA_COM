@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,7 @@ import javafx.scene.layout.HBox; // Ensure this import is correct and the class 
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -45,6 +47,7 @@ import message.MessageSender;
 import model.Contact;
 import model.Message;
 import model.User;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 import signal.CallSignaler;
 import socket.Client;
@@ -119,7 +122,7 @@ public class MainController {
 
     private ObservableList<Contact> messageContacts = FXCollections.observableArrayList();
     private ObservableList<Contact> allContacts = FXCollections.observableArrayList();
-    private Contact selectedContact;
+    public static Contact selectedContact;
     private final AudioSetup audioSetup = new AudioSetup();
 
     static int FILE_PORT = 5001;
@@ -735,32 +738,59 @@ public class MainController {
 
 
     private void openAudioChat(String ip, String username) {
-        logger.info("Appele accepté");
+        logger.info("Appel accepté");
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
+
+            // Récupération du contrôleur et initialisation
             AudioChatController controller = loader.getController();
             controller.initCall(ip, username);
+
+            // Création de la fenêtre
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Appel avec " + username);
+
+            // Fermeture manuelle : on libère l'appel audio + CallSignaler
+            stage.setOnCloseRequest(event -> {
+                logger.info("❌ Fermeture de la fenêtre d'appel audio.");
+                if (controller != null) {
+                    controller.cleanup(); // 💡 À implémenter dans AudioChatController
+                }
+                CallSignaler.stopInstance();
+            });
+
             stage.show();
+
         } catch (IOException e) {
+            logger.severe("Erreur ouverture appel audio : " + e.getMessage());
             e.printStackTrace();
         }
     }
+
     public void openVideoChat(String ip, String username) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
             Parent root = loader.load();
 
             VideoChatController videoChatController = loader.getController();
-
             videoChatController.setup(ip, username);
 
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");
             stage.setScene(new Scene(root));
+
+            // 🔁 Ajout de la gestion fermeture de la fenêtre
+            stage.setOnCloseRequest(event -> {
+                System.out.println("❌ Fenêtre fermée manuellement.");
+                if (videoChatController != null) {
+                    videoChatController.cleanup(); // Appel d’une méthode à créer
+                }
+                CallSignaler.stopInstance(); // Libération de l’instance
+            });
+
             stage.show();
 
         } catch (IOException e) {
@@ -769,14 +799,44 @@ public class MainController {
         }
     }
 
+
     private boolean showConfirmationDialog(String message) {
-        //SONNERIE
-        String soundCallRinging = "/sounds/urgent.wav";
-        SoundPlayer.playSound(soundCallRinging);
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
-        alert.setTitle("Nouvel appel");
-        alert.setHeaderText(null);
-        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+        // Sonnerie
+        SoundPlayer.playSound("/sounds/urgent.wav");
+
+        // Création de l'alerte
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("📞 Nouvel appel");
+        alert.setHeaderText("Voulez-vous accepter l'appel ?");
+        alert.setContentText(message);
+
+        // Création des boutons personnalisés avec icônes FontIcon
+        ButtonType acceptBtnType = new ButtonType("Accepté", ButtonBar.ButtonData.YES);
+        ButtonType declineBtnType = new ButtonType("Refusé", ButtonBar.ButtonData.NO);
+        alert.getButtonTypes().setAll(acceptBtnType, declineBtnType);
+
+        // Ajout d'icônes après lookup
+        DialogPane pane = alert.getDialogPane();
+
+        // Icône verte pour Accepté
+        Button acceptBtn = (Button) pane.lookupButton(acceptBtnType);
+        FontIcon acceptIcon = new FontIcon(FontAwesomeSolid.CHECK_CIRCLE);
+        acceptIcon.setIconSize(18);
+        acceptIcon.setIconColor(Color.GREEN);
+        acceptBtn.setGraphic(acceptIcon);
+        acceptBtn.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
+
+        // Icône rouge pour Refusé
+        Button declineBtn = (Button) pane.lookupButton(declineBtnType);
+        FontIcon declineIcon = new FontIcon(FontAwesomeSolid.TIMES_CIRCLE);
+        declineIcon.setIconSize(18);
+        declineIcon.setIconColor(Color.RED);
+        declineBtn.setGraphic(declineIcon);
+        declineBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+
+        // Affichage de l'alerte
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.orElse(declineBtnType) == acceptBtnType;
     }
 
     private void showError(String title, String message) {

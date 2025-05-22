@@ -14,6 +14,7 @@ import video.VideoCallManager;
 
 public class VideoChatController {
 
+    @FXML private Label callerLabel;
     @FXML private  ImageView localView;
     @FXML private  ImageView remoteView;
     @FXML private  Label callDurationLabel;
@@ -48,6 +49,7 @@ public class VideoChatController {
                     endCallButton.setDisable(true);
                 }
         );
+        callerLabel.setText(MainController.selectedContact.getName());
 
         videoManager.startReceiving(MainController.VIDEO_PORT);
         if (!VideoCallManager.startSending(ip, MainController.VIDEO_PORT)) {
@@ -94,4 +96,10 @@ public class VideoChatController {
             System.out.println("⚠️ callDurationLabel est null !");
         }
     }
+    public void cleanup() {
+        if (videoManager != null) {
+            videoManager.hangUp();
+        }
+    }
+
 }

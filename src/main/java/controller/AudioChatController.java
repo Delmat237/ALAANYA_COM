@@ -13,6 +13,7 @@ import javafx.util.Duration;
 
 public class AudioChatController {
     private final AudioCallManager callManager = new AudioCallManager();
+    @FXML private Label callerLabel;
 
     @FXML private  Label callDurationLabel;
     @FXML private Button endCallButton;
@@ -24,6 +25,7 @@ public class AudioChatController {
         AudioCallManager.startReceiving(MainController.AUDIO_PORT);
         AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
         startCallTimer();
+        callerLabel.setText(MainController.selectedContact.getName());
     }
 
 
@@ -58,6 +60,12 @@ public class AudioChatController {
         }));
         callTimer.setCycleCount(Animation.INDEFINITE);
         callTimer.play();
+        }
+    }
+
+    public void cleanup() {
+        if (callManager != null) {
+            callManager.stopAll(); // méthode qui libère micro, socket, etc.
         }
     }
 
