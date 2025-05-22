@@ -781,6 +781,9 @@ public class MainController {
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");
             stage.setScene(new Scene(root));
+            stage.setResizable(true);
+            stage.setMinHeight(800);
+            stage.setMinWidth(800);
 
             // 🔁 Ajout de la gestion fermeture de la fenêtre
             stage.setOnCloseRequest(event -> {
