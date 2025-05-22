@@ -62,7 +62,7 @@
     -fx-font-size: 1em;
 }
 .text-field, .password-field, .combo-box {
-    -fx-background-color: #34495E; /* Gris foncé pour les champs */
+    -fx-background-color: #FFFFFF; /* Gris foncé pour les champs */
     -fx-text-fill: #000000; /* Blanc cassé pour texte */
     -fx-border-color: #27AE60; /* Bordure verte */
 }

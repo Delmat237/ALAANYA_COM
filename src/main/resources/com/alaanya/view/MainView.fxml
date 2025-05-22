@@ -42,7 +42,7 @@
                 <Tab text="Mes contacts">
                     <VBox spacing="5" >
                         <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
-                        <TextField fx:id="searchTextField" promptText="Rechercher..." styleClass="down" style="-fx-background-color: #FFFFFF"/>
+                        <TextField fx:id="searchTextField" promptText="Rechercher..."/>
                         <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
                     </VBox>
                 </Tab>
@@ -66,10 +66,10 @@
                     </padding>
                     <Label text="Numéro de téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                     <TextField fx:id="phoneNumberField" promptText="Ex: 690123456" GridPane.columnIndex="1"
-                               GridPane.rowIndex="0" GridPane.columnSpan="2" style="-fx-background-color: #FFFFFF"/>
+                               GridPane.rowIndex="0" GridPane.columnSpan="2" />
                     <Label text="Pseudo (nickname):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                     <TextField fx:id="nicknameField" promptText="Ex: Capitaine X" GridPane.columnIndex="1"
-                               GridPane.rowIndex="1" GridPane.columnSpan="2" style="-fx-background-color: #FFFFFF"/>
+                               GridPane.rowIndex="1" GridPane.columnSpan="2"/>
                     <Button text="Ajouter contact" onAction="#addContact" GridPane.columnIndex="1" GridPane.rowIndex="2"
                             GridPane.columnSpan="2" alignment="CENTER"/>
                 </GridPane>
@@ -101,7 +101,7 @@
                         <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
                         <Label fx:id="selectedUserStatut" styleClass="state"/>
                         <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS" >
-                            <Button onAction="#callUser">
+                            <Button onAction="#callUser" styleClass="header" >
                                 <graphic>
                                     <FontIcon iconLiteral="fas-phone" iconSize="16"/>
                                 </graphic>
@@ -135,7 +135,7 @@
 
                     <!-- Zone de saisie -->
                     <HBox spacing="5.0" >
-                        <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"  styleClass="down"  style="-fx-background-color: #FFFFFF"/>
+                        <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
                         <Button onAction="#sendMessage">
                             <graphic>
                                 <FontIcon iconLiteral="fas-paper-plane" iconSize="16"/>
