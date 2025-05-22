@@ -18,6 +18,9 @@ public class VideoCallManager {
     private static VideoSender sender;
     private   VideoReceiver receiver;
     private static CameraService camera;
+    private static ImageView localView;
+    private static ImageView remoteView;
+    private static Label callDurationLabel;
 
 
 
@@ -28,9 +31,9 @@ public class VideoCallManager {
     public VideoCallManager(ImageView localView, ImageView remoteView,
                             Label callDurationLabel,
                             Runnable onCallAccepted, Runnable onHangUp) {
-        VideoChatController.localView  = localView;
-        VideoChatController.remoteView = remoteView;
-        VideoChatController.callDurationLabel = callDurationLabel;
+                                VideoCallManager.localView = localView;
+                                VideoCallManager.remoteView = remoteView;
+                                VideoCallManager.callDurationLabel = callDurationLabel;
         this.onHangUp = onHangUp;
     }
 
@@ -64,7 +67,7 @@ public class VideoCallManager {
         }
     }
 
-  
+
     public void hangUp() {
         System.out.println("📞 Fin de l’appel...");
 
@@ -88,8 +91,8 @@ public class VideoCallManager {
         } else {
             System.err.println("Erreur : signaler ou recipientAddress est nul.");
         }
-        if (VideoChatController.callDurationLabel != null) {
-            VideoChatController.callDurationLabel.setText("Durée : 00:00");
+        if (callDurationLabel != null) {
+            callDurationLabel.setText("Durée : 00:00");
         } else {
             System.err.println("Erreur : callDurationLabel est nul.");
         }

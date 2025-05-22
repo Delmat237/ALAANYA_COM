@@ -18,7 +18,6 @@ public class Client {
 
     private static BufferedWriter outCentral;
     private static BufferedReader inCentral;
-    private static Socket socketCentral;
 
     private static boolean isConnectedToServer = false;
     public static String userId;
@@ -27,7 +26,7 @@ public class Client {
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
             .create();
 
-    private static final String CENTRAL_SERVER_IP = "10.2.64.89";
+    private static final String CENTRAL_SERVER_IP = "127.0.0.1";
     private static final int CENTRAL_SERVER_PORT = 7000;
 
     public interface NotificationListener {
@@ -40,9 +39,10 @@ public class Client {
     //Connection au serveur centrale
     public static boolean connectToServer(){
         try {
-            socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
-            outCentral = new BufferedWriter(new OutputStreamWriter(socketCentral.getOutputStream()));
-            inCentral = new BufferedReader(new InputStreamReader(socketCentral.getInputStream()));
+            try (Socket socketCentral = new Socket(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT)) {
+                outCentral = new BufferedWriter(new OutputStreamWriter(socketCentral.getOutputStream()));
+                inCentral = new BufferedReader(new InputStreamReader(socketCentral.getInputStream()));
+            }
 
             isConnectedToServer = true;
             System.out.println("[CLIENT] Connected to central server");

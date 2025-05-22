@@ -118,7 +118,7 @@ public class MainController {
 
     private URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
     private URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
-    
+
     private User user;
     public static String recipientAddress;
 
@@ -138,21 +138,16 @@ public class MainController {
 
     private boolean isCallDialogOpen = false;
 
-    //Signaler pour gerer les signalisation lors des appels
+    //Signaler pour gerer la signalisation lors des appels
     public static CallSignaler signaler;
-    private  AudioChatController controller;
     private int seconds = 0;
     private Timeline callTimer;
-
-    private String SoundStart = "/sounds/start.wav";
-    private String SoundCallRinging = "/sounds/urgent.wav";
-    private String SoundNotification = "/sounds/not.wav";
-    private String SoundError = "/sounds/tone.wav";
 
     @FXML
     public void initialize() throws SQLException {
 
-        SoundPlayer.playSound(SoundStart);
+        String soundStart = "/sounds/start.wav";
+        SoundPlayer.playSound(soundStart);
 
         //Thread de reception des messages texte
         receiver = new MessageReceiver(MESSAGE_PORT);
@@ -191,13 +186,14 @@ public class MainController {
             public void onCallAccepted(String ip, String type) {
                 Platform.runLater(() -> {
                     if ("AUDIO".equals(type)) {
-                        openAudioChat(ip, "Appel accepté !");
-                        //AudioCallManager.startSending(ip, AUDIO_PORT);
+                        AudioCallManager.startSending(ip, AUDIO_PORT);
+                        openAudioChat(ip, selectedContact.getName());
+                        
                         
                     } else if ("VIDEO".equals(type)) {
-                        openVideoChat(ip, "Appel accepté !");
+                        openVideoChat(ip,  selectedContact.getName());
                         //commence a 
-                       // VideoCallManager.startSending(ip,VIDEO_PORT);
+                        VideoCallManager.startSending(ip,VIDEO_PORT);
 
                     }
                 });
@@ -209,7 +205,7 @@ public class MainController {
                 Platform.runLater(() -> {
                     showInfo("Appel terminé", "L'appel a été terminé.");
                     CallSignaler.stopInstance();
-                   // controller.stopCall(ip,type);
+                   //controller.stopCall(ip,type);
                 });
             }
 
@@ -758,7 +754,7 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
-           controller = loader.getController();
+            AudioChatController controller = loader.getController();
             controller.initCall(ip, username);
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
@@ -773,9 +769,9 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/VideoChat.fxml"));
             Parent root = loader.load();
 
-            VideoChatController controller = loader.getController();
+            VideoChatController videoChatController = loader.getController();
 
-            controller.setup(ip, username);
+            videoChatController.setup(ip, username);
 
             Stage stage = new Stage();
             stage.setTitle("Appel Vidéo");
@@ -790,7 +786,8 @@ public class MainController {
 
     private boolean showConfirmationDialog(String message) {
         //SONNERIE
-        SoundPlayer.playSound(SoundCallRinging);
+        String soundCallRinging = "/sounds/urgent.wav";
+        SoundPlayer.playSound(soundCallRinging);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
         alert.setTitle("Nouvel appel");
         alert.setHeaderText(null);
@@ -798,7 +795,8 @@ public class MainController {
     }
 
     private void showError(String title, String message) {
-        SoundPlayer.playSound(SoundError);
+        String soundError = "/sounds/tone.wav";
+        SoundPlayer.playSound(soundError);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -807,7 +805,8 @@ public class MainController {
     }
     // Méthode pour afficher une information sous forme d'alerte
     private void showInfo(String title, String message) {
-        SoundPlayer.playSound(SoundNotification);
+        String soundNotification = "/sounds/not.wav";
+        SoundPlayer.playSound(soundNotification);
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle(title);
         info.setContentText(message);

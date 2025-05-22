@@ -13,19 +13,17 @@ import video.VideoCallManager;
 
 public class VideoChatController {
 
-    @FXML
-    public static ImageView localView;
-    @FXML
-    public static ImageView remoteView;
-    @FXML
-    public static Label callDurationLabel;
+    @FXML private  ImageView localView;
+    @FXML private  ImageView remoteView;
+    @FXML private  Label callDurationLabel;
     @FXML private Button endCallButton;
 
     private VideoCallManager videoManager;
 
     private  Timeline callTimer;
     private  int secondsElapsed = 0;
-    
+
+
     public void initialize() {
         endCallButton.setOnAction(e -> {
             if (videoManager != null) {
@@ -51,7 +49,7 @@ public class VideoChatController {
         );
 
         videoManager.startReceiving(MainController.VIDEO_PORT);
-        videoManager.startSending(ip, MainController.VIDEO_PORT);
+        VideoCallManager.startSending(ip, MainController.VIDEO_PORT);
         startCallTimer();
     }
 
@@ -87,5 +85,4 @@ public class VideoChatController {
             System.out.println("⚠️ callDurationLabel est null !");
         }
     }
-
 }

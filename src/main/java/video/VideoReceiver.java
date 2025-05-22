@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 
 public class VideoReceiver extends Thread {
     private final int port;
-    private final Consumer<BufferedImage> consumer;
+    private  Consumer<BufferedImage> consumer;
     private volatile boolean running = true;
     private Socket client;
 
