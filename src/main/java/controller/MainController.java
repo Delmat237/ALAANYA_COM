@@ -165,6 +165,8 @@ public class MainController {
             public void onCallReceived(String fromUser, String ip, String type) {
                 if (isCallDialogOpen) return;
                 isCallDialogOpen = true;
+                if (selectedContact == null)
+
                 Platform.runLater(() -> {
                     boolean accepted = showConfirmationDialog("Appel " + type + " de " + fromUser);
                     SoundPlayer.stopSound();
@@ -202,7 +204,6 @@ public class MainController {
             @Override
             public void onCallEnd(String ip, String type){
                 Platform.runLater(() -> {
-                    showInfo("Appel terminé", "L'appel a été terminé.");
                     CallSignaler.stopInstance();
                    //controller.stopCall(ip,type);
                 });

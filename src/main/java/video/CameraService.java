@@ -26,10 +26,7 @@ public class CameraService {
      * Tente de démarrer la caméra. Retourne true si succès, false sinon.
      */
     public boolean startCamera() {
-        if (cameraIndex == -1) {
-            System.err.println("❌ Aucune caméra disponible !");
-            return false;
-        }
+
         try {
             grabber = new OpenCVFrameGrabber(cameraIndex);
             grabber.start();
@@ -113,15 +110,18 @@ public class CameraService {
      * Recherche l'index d'une caméra disponible.
      */
     public static int findAvailableCameraIndex() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             try (OpenCVFrameGrabber testGrabber = new OpenCVFrameGrabber(i)) {
                 testGrabber.start();
                 testGrabber.stop();
+                System.out.println("✅ Caméra disponible détectée à l’index " + i);
                 return i;
             } catch (FrameGrabber.Exception ignored) {
                 // Caméra indisponible, on continue
+                System.out.println("⛔ Caméra non disponible à l’index " + i);
             }
         }
-        return -1; // aucune caméra disponible
+        System.err.println("❌ Aucune caméra détectée !");
+        return 0; // fallback sur index 0
     }
 }

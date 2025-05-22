@@ -25,7 +25,7 @@ public class AudioChatController {
         AudioCallManager.startReceiving(MainController.AUDIO_PORT);
         AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
         startCallTimer();
-        callerLabel.setText(MainController.selectedContact.getName());
+        callerLabel.setText(username);
     }
 
 

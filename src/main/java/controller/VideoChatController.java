@@ -49,7 +49,7 @@ public class VideoChatController {
                     endCallButton.setDisable(true);
                 }
         );
-        callerLabel.setText(MainController.selectedContact.getName());
+        callerLabel.setText(username);
 
         videoManager.startReceiving(MainController.VIDEO_PORT);
         if (!VideoCallManager.startSending(ip, MainController.VIDEO_PORT)) {
