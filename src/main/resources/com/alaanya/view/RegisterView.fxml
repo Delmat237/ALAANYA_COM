@@ -8,7 +8,7 @@
 <StackPane
         xmlns:fx="http://javafx.com/fxml"
            fx:controller="controller.RegisterController"
-           stylesheets="@css/register-style.css"
+           stylesheets="@../../../css/register-style.css"
            styleClass="register-pane">
 
     <VBox spacing="25" alignment="CENTER" styleClass="register-box">

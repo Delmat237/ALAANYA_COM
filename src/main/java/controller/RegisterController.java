@@ -119,7 +119,7 @@ public class RegisterController {
     public void postInit() {
         Scene scene = militaryIdField.getScene();
         if (scene != null) {
-            scene.getStylesheets().add(getClass().getResource("/com/alaanya/view/css/style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
         }
     }
 

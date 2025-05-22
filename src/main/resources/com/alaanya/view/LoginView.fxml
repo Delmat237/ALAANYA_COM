@@ -8,7 +8,7 @@
 <StackPane prefWidth="400" prefHeight="600" styleClass="login-pane"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="controller.LoginController"
-           stylesheets="@css/login-style.css">
+           stylesheets="@../../../css/login-style.css">
 
     <VBox spacing="30" alignment="CENTER" styleClass="login-box">
         <Label text="CONNEXION"  styleClass="login-title"/>

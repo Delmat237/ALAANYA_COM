@@ -1,0 +1,114 @@
+/* === dark-theme.css === */
+/* Thème sombre militaire avec fond texturé */
+
+.pane {
+    -fx-background-image: url("images/imagelight.jpg");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-padding: 20px;
+    -fx-alignment: center;
+}
+
+/* === Zones principales === */
+
+.top, .ToolBar {
+    -fx-background-color: #17202A; /* Noir bleuté militaire */
+}
+
+.left {
+    -fx-background-color: #1C2833; /* Bleu nuit */
+}
+
+.center, .chatVBox {
+    -fx-background-image: url("images/imagelight4.jpg");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-border-width: 3px;
+}
+
+/* === Texte & libellés === */
+
+
+/* Textes */
+.label, .title ,.ToolBar {
+    -fx-text-fill: #01011e; /* Texte en blanc cassé pour un bon contraste */
+    -fx-font-size: 1em;
+}
+
+.state {
+    -fx-text-fill: #58D68D; /* Vert vif pour l’état en ligne */
+    -fx-font-weight: bold;
+}
+
+.data {
+    -fx-text-fill: #F4D03F; /* Jaune doré, bon contraste */
+    -fx-font-weight: bold;
+}
+
+/* === Champs de saisie === */
+
+.text-field, .password-field, .combo-box {
+    -fx-background-color: #212F3C;
+    -fx-text-fill: #ECF0F1;
+    -fx-border-color: #27AE60;
+    -fx-border-width: 1px;
+}
+
+/* === Boutons === */
+
+.button {
+    -fx-background-color: #229954; /* Vert militaire foncé */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.button:hover {
+    -fx-background-color: #2ECC71;
+}
+
+/* === ScrollPane === */
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* === Messages du chat === */
+
+.chat-message {
+    -fx-background-color: #117864; /* Vert kaki foncé */
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px;
+}
+
+/* === Panneau ajout contact === */
+
+.add-contact-pane {
+    -fx-background-color: #1B2631;
+    -fx-text-fill: #ECF0F1;
+}
+
+/* === Divers === */
+
+.separator {
+    -fx-background-color: #85929E;
+}
+
+.down {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #000000;
+}
+
+.header {
+    -fx-background-color: #1C1C1C;
+}
+
+/* Onglets sans en-tête */
+.hidden-tab-header .tab-header-area {
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+    visibility: hidden;
+}

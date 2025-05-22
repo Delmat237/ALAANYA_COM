@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.alaanya.MainApp;
@@ -28,16 +29,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -53,9 +45,11 @@ import message.MessageSender;
 import model.Contact;
 import model.Message;
 import model.User;
+import org.kordamp.ikonli.javafx.FontIcon;
 import signal.CallSignaler;
 import socket.Client;
 import utils.SoundPlayer;
+import utils.ThemeManager;
 import video.VideoCallManager;
 
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
@@ -64,6 +58,7 @@ public class MainController {
 
 
     @FXML public VBox downloadsVBox;
+    @FXML private Button toggleThemeButton;
     @FXML private ScrollPane scrollPane;
     @FXML private TabPane mainTabPane;
     @FXML
@@ -115,9 +110,9 @@ public class MainController {
     @FXML
     private ListView<Contact> allContactsListView;
 
+    private FontIcon lightIcon = new FontIcon("fas-sun");
+    private FontIcon darkIcon = new FontIcon("fas-moon");
 
-    private URL darkThemeUrl = getClass().getResource("/com/alaanya/view/css/dark-theme.css");
-    private URL lightThemeUrl = getClass().getResource("/com/alaanya/view/css/light-theme.css");
 
     private User user;
     public static String recipientAddress;
@@ -143,6 +138,7 @@ public class MainController {
     private int seconds = 0;
     private Timeline callTimer;
 
+    private static final Logger logger = Logger.getLogger(MainController.class.getName());
     @FXML
     public void initialize() throws SQLException {
 
@@ -235,11 +231,12 @@ public class MainController {
 
         //mettre le theme par defaut
 
-//        Stage stage = (Stage) contactsTabPane.getScene().getWindow();
-//        Scene scene = stage.getScene();
-//        scene.getStylesheets().clear();
-//        scene.getStylesheets().add(lightThemeUrl.toExternalForm());
-
+        Platform.runLater(() -> {
+            Scene scene = contactsTabPane.getScene();
+            if (scene != null) {
+                ThemeManager.applyCurrentTheme(scene); // Par défaut : LIGHT
+            }
+        });
 
     }
 
@@ -412,7 +409,7 @@ public class MainController {
         String nickname = nicknameField.getText();
 
         if (phone == null || phone.isEmpty() || nickname == null || nickname.isEmpty()) {
-            System.out.println("Veuillez remplir tous les champs.");
+            logger.info("Veuillez remplir tous les champs.");
             return;
         }
 
@@ -423,7 +420,7 @@ public class MainController {
         allContacts.setAll(Database.getAllContacts());
 
         allContactsListView.setItems(allContacts);
-        System.out.println("Ajout du contact: " + nickname + " (" + phone + ")");
+        logger.info("Ajout du contact: " + nickname + " (" + phone + ")");
     }
 
 
@@ -434,7 +431,7 @@ public class MainController {
     private void sendMessage() throws SQLException {
         SoundPlayer.playSound("sounds/pop.mp3");
         String messageText = messageTextField.getText(); //recuperation du message saisir
-        System.out.println("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
+        logger.info("Je m'apprete à envoyer le message " + messageText + "à " + selectedContact);
 
         if (!messageText.isEmpty() && selectedContact != null) {
             // Extraire l'ID du contact sélectionné en utilisant la méthode appropriée
@@ -445,7 +442,7 @@ public class MainController {
                 message.setStatut("delivered");
 
                 //RecipentAddress
-                System.out.println("Son addresse est " + recipientAddress);
+                logger.info("Son addresse est " + recipientAddress);
                 // Avant chaque envoi (message ou fichier), assure-toi de récupérer l'adresse
                 Client.requestAddress(recipientId, notification -> {
                     if ("ADDRESS_RESPONSE".equals(notification.getType())) {
@@ -468,11 +465,11 @@ public class MainController {
                 Database.updateContact(message);
                 messageTextField.clear();
             } else {
-                System.out.println("Erreur : Impossible d'extraire l'ID du contact.");
+                logger.info("Erreur : Impossible d'extraire l'ID du contact.");
 
             }
         } else {
-            System.out.println("Veuillez sélectionner un contact et saisir un message.");
+            logger.info("Veuillez sélectionner un contact et saisir un message.");
         }
     }
 
@@ -519,7 +516,7 @@ public class MainController {
                 //Ajout du fichier dans la zone de chat
                 FileController.addFile(chatVBox, selectedFile.getPath(), fileName, true);
 
-                System.out.println("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
+                logger.info("[CLIENT] Sending file: " + fileName + " (" + fileData.length + " bytes)");
             } catch (IOException e) {
 
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Error reading file: " + e.getMessage(), ButtonType.OK);
@@ -527,7 +524,7 @@ public class MainController {
 
             }
         } else {
-            System.out.println("[CLIENT] File selection cancelled.");
+            logger.info("[CLIENT] File selection cancelled.");
         }
     }
 
@@ -574,7 +571,7 @@ public class MainController {
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
-            System.err.println(e.getMessage() + " : " + e.getCause());
+            logger.warning(e.getMessage() + " : " + e.getCause());
         }
     }
 
@@ -592,14 +589,14 @@ public class MainController {
     @FXML
     private void handleSearchKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER) {
-            System.out.println("Recherche d'un contact");
+            logger.info("Recherche d'un contact");
             searchUsers();
         }
     }
 
     @FXML
     public void searchContacts(ActionEvent event) {
-        System.out.println("Recherche d'un contact");
+        logger.info("Recherche d'un contact");
         searchUsers();
     }
 
@@ -724,33 +721,21 @@ public class MainController {
     // Méthode pour basculer entre les thèmes (sombre et clair)
     @FXML
     private void toggleThemeAction() {
+        Scene scene = toggleThemeButton.getScene();
+        if (scene != null) {
+            ThemeManager.toggleTheme(scene);
 
-        // Si les fichiers CSS ne sont pas trouvés, afficher une erreur dans la console
-        if (darkThemeUrl == null || lightThemeUrl == null) {
-            System.err.println("Erreur : Fichier CSS non trouvé !");
-            return;  // Quitter la méthode si le fichier CSS est manquant
-        }
-
-        Stage stage = (Stage) contactsTabPane.getScene().getWindow();
-        Scene scene = stage.getScene();
-
-        boolean isDarkMode = scene.getStylesheets().contains(darkThemeUrl.toExternalForm());
-
-        if (isDarkMode) {
-
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(lightThemeUrl.toExternalForm());
-        } else {
-
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(darkThemeUrl.toExternalForm());
+            if (ThemeManager.getCurrentTheme() == ThemeManager.Theme.DARK) {
+                toggleThemeButton.setGraphic(lightIcon);
+            } else {
+                toggleThemeButton.setGraphic(darkIcon);
+            }
         }
     }
 
 
-
     private void openAudioChat(String ip, String username) {
-        System.out.println("Appele accepté");
+        logger.info("Appele accepté");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/audio_chat.fxml"));
             Parent root = loader.load();
@@ -780,7 +765,7 @@ public class MainController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
+            logger.warning("Erreur lors du chargement de la vue d'appel vidéo : " + e.getMessage());
         }
     }
 
