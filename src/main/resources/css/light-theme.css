@@ -17,11 +17,11 @@
 /*    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); !* Arrière-plan alternatif pour les zones de contrôle *!*/
 /*}*/
 .header{
-    -fx-background-color:#000000;
+    -fx-background-color:#779cc3;
 }
 .down{
     -fx-background-color:#FFFFFF;
-    -fx-text-fill: #000000;
+    -fx-text-fill: #34495E;
 }
 
 .top {
@@ -41,7 +41,7 @@
 
 /* Barres et boutons */
 .ToolBar {
-    -fx-background-color: #000000; /* Bleu foncé pour la barre d'outils */
+    -fx-background-color: #779cc3; /* Bleu foncé pour la barre d'outils */
 }
 
 .ToolBar .label {
@@ -68,13 +68,15 @@
     -fx-text-fill: #19b50d; /* Texte en blanc cassé pour un bon contraste */
     -fx-font-size: 1em;
 }
+.data{
+}
 /* -------------------------------------------------------
    Texte (lisibilité améliorée)
    ------------------------------------------------------- */
 
 
 .text-field, .password-field, .combo-box {
-    -fx-background-color: #000000; /* Bleu foncé pour les champs */
+    -fx-background-color: rgba(16, 71, 154, 0.64); /* Bleu foncé pour les champs */
     -fx-text-fill: #FFFFFF; /* Texte blanc cassé */
     -fx-border-color: #27AE60; /* Bordure verte militaire */
 }

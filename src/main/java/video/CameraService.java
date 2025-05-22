@@ -5,89 +5,100 @@ import org.bytedeco.javacv.*;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
-public class CameraService extends Thread {
+public class CameraService {
     private OpenCVFrameGrabber grabber;
+    private final Java2DFrameConverter converter = new Java2DFrameConverter();
     private final Consumer<BufferedImage> frameConsumer;
-    private final Java2DFrameConverter converter;
-    private volatile boolean running = true;
-    private volatile boolean started = false;
+    private Thread captureThread;
+    private volatile boolean running = false;
     private final int cameraIndex;
 
     public CameraService(Consumer<BufferedImage> frameConsumer) {
-        this(frameConsumer, 0); // Par défaut utilise la caméra index 0
+        this(frameConsumer, 0);
     }
 
     public CameraService(Consumer<BufferedImage> frameConsumer, int cameraIndex) {
         this.frameConsumer = frameConsumer;
-        this.converter = new Java2DFrameConverter();
         this.cameraIndex = cameraIndex;
     }
 
-    @Override
-    public void run() {
-        grabber = new OpenCVFrameGrabber(cameraIndex);
-
+    /**
+     * Tente de démarrer la caméra. Retourne true si succès, false sinon.
+     */
+    public boolean startCamera() {
         try {
+            grabber = new OpenCVFrameGrabber(cameraIndex);
             grabber.start();
-            started = true;
-            System.out.println("Caméra démarrée (index " + cameraIndex + ").");
+            running = true;
 
+            captureThread = new Thread(this::captureLoop);
+            captureThread.start();
+
+            System.out.println("📸 Caméra démarrée (index " + cameraIndex + ")");
+            return true;
+
+        } catch (FrameGrabber.Exception e) {
+            System.err.println("❌ Échec démarrage caméra (index " + cameraIndex + ") : " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void captureLoop() {
+        try {
             while (running) {
                 Frame frame = grabber.grab();
-
                 if (frame == null) {
                     System.err.println("⚠️ Frame nulle capturée !");
                     continue;
                 }
 
-                BufferedImage img = converter.convert(frame);
-                if (img != null && frameConsumer != null) {
-                    frameConsumer.accept(img);
+                BufferedImage image = converter.convert(frame);
+                if (image != null && frameConsumer != null) {
+                    frameConsumer.accept(image);
                 }
 
                 Thread.sleep(33); // ~30 FPS
             }
-
         } catch (Exception e) {
-            System.err.println("❌ Erreur lors du démarrage ou de la capture de la caméra :");
-            e.printStackTrace();
-
+            System.err.println("❌ Erreur dans la capture vidéo : " + e.getMessage());
         } finally {
-            try {
-                if (grabber != null) {
-                    grabber.stop();
-                    grabber.release();
-                }
-            } catch (Exception e) {
-                System.err.println("❌ Erreur lors de la libération du grabber :");
-                e.printStackTrace();
-            }
-            started = false;
-            System.out.println("🎥 Caméra arrêtée.");
+            stopCamera();
         }
     }
-
     public boolean isStarted() {
-        return started;
+        return running;
     }
 
-    public void stopCapture() {
+
+    /**
+     * Stoppe la capture et libère les ressources.
+     */
+    public void stopCamera() {
         running = false;
-        if (started) {
-            try {
-                this.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+        try {
+            if (captureThread != null) {
+                captureThread.join();
             }
+
+            if (grabber != null) {
+                grabber.stop();
+                grabber.release();
+                System.out.println("🎥 Caméra arrêtée.");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erreur arrêt caméra : " + e.getMessage());
         }
     }
 
+    /**
+     * Capture manuellement une image (instantané)
+     */
     public BufferedImage grabCurrentFrame() throws Exception {
-        if (!started || grabber == null) {
-            throw new IllegalStateException("⚠️ Grabber non démarré !");
+        if (!running || grabber == null) {
+            throw new IllegalStateException("⚠️ Caméra non démarrée !");
         }
         Frame frame = grabber.grab();
         return (frame != null) ? converter.convert(frame) : null;
     }
-
 }

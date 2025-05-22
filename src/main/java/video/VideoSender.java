@@ -7,14 +7,15 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-
-@SuppressWarnings("printStackTrace")
+/**
+ * Cette classe gère l'envoi du flux vidéo via TCP à un hôte distant.
+ */
 public class VideoSender extends Thread {
     private final String host;
     private final int port;
     private final CameraService camera;
-    private volatile boolean running = true;
 
+    private volatile boolean running = true;
 
     public VideoSender(String host, int port, CameraService camera) {
         this.host = host;
@@ -24,39 +25,53 @@ public class VideoSender extends Thread {
 
     @Override
     public void run() {
-        if(running) {
-            try (Socket socket = new Socket(host, port);
+        try (Socket socket = new Socket(host, port);
+             OutputStream out = socket.getOutputStream()) {
 
-        
-                 OutputStream out = socket.getOutputStream()) {
-                    //attend que la camera demarre
-            while (!camera.isStarted()) {
+            System.out.println("📡 Connexion établie avec " + host + ":" + port);
+
+            // Attend que la caméra démarre
+            while (!camera.isStarted() && running) {
                 Thread.sleep(50);
             }
-                //ce qui se passe pendant a l'envoi du flux
-            while (!interrupted()) {
-            BufferedImage frame = camera.grabCurrentFrame();
-            if (frame != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(frame, "jpg", baos);
-                byte[] imageBytes = baos.toByteArray();
 
-                // Envoyer la taille
-                out.write(ByteBuffer.allocate(4).putInt(imageBytes.length).array());
-                // Envoyer l'image
-                out.write(imageBytes);
-                out.flush();
+            // Envoi continu tant que le thread est actif
+            while (running && !isInterrupted()) {
+                try {
+                    BufferedImage frame = camera.grabCurrentFrame();
+
+                    if (frame != null) {
+                        // Convertit l'image en tableau de bytes
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ImageIO.write(frame, "jpg", baos);
+                        byte[] imageBytes = baos.toByteArray();
+
+                        // Envoie la taille (4 octets) suivie des données de l'image
+                        out.write(ByteBuffer.allocate(4).putInt(imageBytes.length).array());
+                        out.write(imageBytes);
+                        out.flush();
+                    }
+
+                    Thread.sleep(33); // ~30 FPS
+
+                } catch (Exception e) {
+                    System.err.println("⚠️ Erreur lors de l'envoi du frame : " + e.getMessage());
+                    break;
+                }
             }
-            Thread.sleep(100);
+
+        } catch (Exception e) {
+            System.err.println("❌ Impossible de se connecter à " + host + ":" + port + " : " + e.getMessage());
         }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        System.out.println("📴 Fin de l'envoi vidéo.");
     }
+
+    /**
+     * Stoppe proprement le thread d’envoi.
+     */
     public void stopSending() {
         running = false;
+        this.interrupt();
     }
-
 }

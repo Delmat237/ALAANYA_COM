@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -49,7 +50,15 @@ public class VideoChatController {
         );
 
         videoManager.startReceiving(MainController.VIDEO_PORT);
-        VideoCallManager.startSending(ip, MainController.VIDEO_PORT);
+        if (!VideoCallManager.startSending(ip, MainController.VIDEO_PORT)) {
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Caméra indisponible");
+                alert.setContentText("Votre caméra n'a pas pu démarrer.");
+                alert.showAndWait();
+            });
+        }
+
         startCallTimer();
     }
 

@@ -1,6 +1,5 @@
 package video;
 
-import controller.VideoChatController;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
@@ -8,7 +7,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import signal.CallSignaler;
 
-import static controller.VideoChatController.*;
 import controller.MainController;
 
 public class VideoCallManager {
@@ -50,21 +48,21 @@ public class VideoCallManager {
         }
     }
 
-    public static  void startSending(String ip, int port) {
+    public static boolean startSending(String ip, int port) {
         camera = new CameraService(frame -> {
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> localView.setImage(fxImage));
         });
 
-        try {
-            camera.start();
-            sender = new VideoSender(ip, port, camera);
-            sender.start();
-           
-        } catch (Exception e) {
-            System.err.println("❌ Erreur lors du démarrage de l’envoi vidéo :");
-
+        if (!camera.startCamera()) {
+            System.err.println("⚠️ Caméra non disponible. Envoi vidéo annulé.");
+            return false; // Ne pas continuer si la caméra échoue
         }
+
+        sender = new VideoSender(ip, port, camera);
+        sender.start();
+
+        return false;
     }
 
 
@@ -82,7 +80,7 @@ public class VideoCallManager {
         }
 
         if (camera != null) {
-            camera.stopCapture();
+            camera.stopCamera();
             camera = null;
         }
 

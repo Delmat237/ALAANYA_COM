@@ -111,12 +111,12 @@
                                     <FontIcon iconLiteral="fas-phone" iconSize="16"/>
                                 </graphic>
                             </Button>
-                            <Button onAction="#startVideoCall">
+                            <Button onAction="#startVideoCall"  styleClass="header">
                                 <graphic>
                                     <FontIcon iconLiteral="fas-video" iconSize="16"/>
                                 </graphic>
                             </Button>
-                            <Button onAction="#showOptions">
+                            <Button onAction="#showOptions"  styleClass="header">
                                 <graphic>
                                     <FontIcon iconLiteral="fas-ellipsis-v" iconSize="16"/>
                                 </graphic>
