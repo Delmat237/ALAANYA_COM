@@ -1,18 +1,6 @@
 /* military-theme.css */
 
 /* Arrière-plan général */
-<<<<<<< Updated upstream:src/main/resources/com/alaanya/view/css/dark-theme.css
-.root {
-    -fx-base: #34495E; /* Bleu marine sombre (couleur de base) */
-    -fx-background: #2C3E50; /* Fond plus foncé pour l'application */
-    -fx-control-inner-background: #34495E; /* Arrière-plan des zones de contrôle (champs, listes) */
-    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 20%); /* Arrière-plan alternatif pour les zones de contrôle */
-}
-
-
-.top {
-    -fx-background-color: #34495E; /* Gris foncé pour la barre de titre */
-=======
 
 .Main-pane {
     -fx-background-image: url("images/imagelight3.jpg");
@@ -40,7 +28,6 @@
     -fx-min-width: 200;
     -fx-min-height: 200;
     
->>>>>>> Stashed changes:src/main/resources/css/light-theme.css 
 }
 
 .left-tab-header .tab{
@@ -49,19 +36,6 @@
     -fx-background-color: transparent;
 }
 
-<<<<<<< Updated upstream:src/main/resources/com/alaanya/view/css/dark-theme.css
-.center {
-    -fx-background-color: #34495E; /* Gris foncé pour la zone centrale */
-}
-
-/* Barres et boutons */
-.ToolBar {
-    -fx-background-color: #2C3E50; /* Bleu foncé pour la barre d'outils */
-}
-
-.ToolBar .label {
-    -fx-text-fill: #ECF0F1; /* Texte blanc cassé pour les labels */
-=======
 .left-tab-header .tab:selected{
     -fx-border-color: yellow transparent   transparent transparent ;
     -fx-border-width: 5 0 0 0;
@@ -85,7 +59,6 @@
     -fx-background-color: #fcfcfc; /* Blanc pour les champs */
     -fx-text-fill: #161616; /* Texte noir */
     -fx-border-color:rgb(126, 124, 124); /* Vert pour les bordures */
->>>>>>> Stashed changes:src/main/resources/css/light-theme.css
     -fx-font-size: 14px;
     -fx-padding: 8px;
     -fx-prompt-text-fill: rgb(66, 64, 64);
@@ -136,11 +109,6 @@
 .chat-area-box{
     -fx-background-color: #4babe2;
 }
-<<<<<<< Updated upstream:src/main/resources/com/alaanya/view/css/dark-theme.css
-/* -------------------------------------------------------
-   Texte (lisibilité améliorée)
-   ------------------------------------------------------- */
-=======
 
 .profile-btn{
     -fx-border-radius: 50px;
@@ -171,7 +139,6 @@
     -fx-background-color: transparent; /* Vert armée, ton militaire */
     
 }
->>>>>>> Stashed changes:src/main/resources/css/light-theme.css
 
 .message-area {
     -fx-background-image: url("images/imagelight3.jpg");
@@ -179,15 +146,8 @@
     -fx-background-size: cover;
 }
 
-<<<<<<< Updated upstream:src/main/resources/com/alaanya/view/css/dark-theme.css
-.text-field, .password-field, .combo-box {
-    -fx-background-color: #2C3E50; /* Bleu foncé pour les champs */
-    -fx-text-fill: #ECF0F1; /* Texte blanc cassé */
-    -fx-border-color: #27AE60; /* Bordure verte militaire */
-=======
 .scroll-msg-area {
     -fx-background-color: transparent;
->>>>>>> Stashed changes:src/main/resources/css/light-theme.css
 }
 
 
@@ -226,11 +186,6 @@
 
 /* Séparateur */
 .separator {
-<<<<<<< Updated upstream:src/main/resources/com/alaanya/view/css/dark-theme.css
-    -fx-background-color: #FFFFFF;
-}
-=======
     -fx-background-color: #7F8C8D; /* Gris sombre pour séparation */
 }
 
->>>>>>> Stashed changes:src/main/resources/css/light-theme.css

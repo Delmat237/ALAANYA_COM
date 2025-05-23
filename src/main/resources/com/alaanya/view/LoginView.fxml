@@ -1,66 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<StackPane prefWidth="400" prefHeight="600" styleClass="login-pane"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controller.LoginController"
+           stylesheets="@../../../css/login-style.css">
 
-<?import java.net.URL?>
+    <VBox spacing="30" alignment="CENTER" styleClass="login-box">
+        <Label text="CONNEXION"  styleClass="login-title"/>
 
-<StackPane alignment="CENTER" prefWidth="400" prefHeight="600" styleClass="login-pane"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="controller.LoginController"
-          stylesheets="@css/login-style.css">
-       <VBox spacing="30" alignment="CENTER" styleClass="login-box">
-              <Label text="CONNEXION"  styleClass="login-title"/>
-              
-              <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="telephone-box">
-                     <VBox.margin>
-                            <Insets top="0" right ="50" bottom="0" left="50" />
-                     </VBox.margin>
-                     
-                     <Label text="" styleClass="login-label">
-                            <graphic>
-                                   <ImageView fitWidth="30" fitHeight="30" preserveRatio="true" >
-                                          <image>
-                                                 <Image url= "@images/telephone-1.png"></Image>
-                                          </image>
-                                   </ImageView>
-                            </graphic>
-                     </Label>
-                     <TextField fx:id="militaryIdField" styleClass="login-text-field" promptText="numero de telephone"
-                                 style=""  />
-              </HBox>
+        <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="telephone-box">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
 
-              <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="12">
-                     <VBox.margin>
-                            <Insets top="0" right ="50" bottom="0" left="50" />
-                     </VBox.margin>
-                     <Label text="" styleClass="login-label">
-                            <graphic>
-                                   <ImageView fitWidth="30" fitHeight="30" preserveRatio="true" >
-                                          <image>
-                                                 <Image url= "@images/password-1.png"></Image>
-                                          </image>
-                                   </ImageView>
-                            </graphic> 
-                     </Label>
-                     <PasswordField fx:id="passwordField" styleClass="password-field" promptText="mot de passe"
-                                   />
+            <Label styleClass="login-label" >
+                <graphic>
+                    <ImageView fitWidth="30" fitHeight="30" preserveRatio="true">
+                        <Image url="@images/telephone-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <TextField fx:id="militaryIdField" styleClass="login-text-field" promptText="numero de telephone"  text="+237"/>
+        </HBox>
 
-              </HBox>
+        <HBox VBox.vgrow="NEVER" alignment="CENTER" styleClass ="password-box" spacing="5" prefWidth="100" prefHeight="12">
+            <VBox.margin>
+                <Insets right ="50" left="50" />
+            </VBox.margin>
+            <Label styleClass="login-label">
+                <graphic>
+                    <ImageView fitWidth="30" fitHeight="30" preserveRatio="true">
+                        <Image url="@images/password-1.png"/>
+                    </ImageView>
+                </graphic>
+            </Label>
+            <PasswordField fx:id="passwordField" styleClass="password-field" promptText="mot de passe"
+            />
 
-              <Button text="Connexion" onAction="#handleLogin" styleClass="login-button"
-                     />
+        </HBox>
 
-              <HBox alignment="CENTER" spacing="5">
-                     <Label text="Nouvel utilisateur ?" styleClass="login-label"/>
-                     <Hyperlink text="Créer un compte" onAction="#loadRegisterView" styleClass="create-account-link"/>
-              </HBox>
+        <Button text="Connexion" onAction="#handleLogin" styleClass="login-button"
+        />
 
-              <Label fx:id="errorLabel" styleClass="login-error-message"
-                     />
-       </VBox>
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="Nouvel utilisateur ?" styleClass="login-label"/>
+            <Hyperlink text="Créer un compte" onAction="#loadRegisterView" styleClass="create-account-link"/>
+        </HBox>
+
+        <Label fx:id="errorLabel" styleClass="login-error-message"
+        />
+    </VBox>
 
 </StackPane>

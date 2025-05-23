@@ -111,6 +111,15 @@
     -fx-border-radius: 5px;
 }
 
+/* Label */
+.login-label {
+    /*-fx-text-fill: #0e0f0f; /* Jaune doré pour un contraste fort mais adapté */
+    -fx-font-size: 14px;
+    /*-fx-font-weight: bold;*/
+    -fx-padding: 10px;
+    -fx-backgound:transparent;
+}
+
 /* Message d'erreur */
 .register-error-message {
     -fx-text-fill: #FF5722; /* Rouge pour les erreurs */
