@@ -1,6 +1,7 @@
 package video;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -15,6 +16,8 @@ public class VideoSender extends Thread {
     private final int port;
     private final CameraService camera;
 
+    private static final int TARGET_WIDTH = 640;
+    private static final int TARGET_HEIGHT = 480;
     private volatile boolean running = true;
 
     public VideoSender(String host, int port, CameraService camera) {
@@ -38,34 +41,42 @@ public class VideoSender extends Thread {
             // Envoi continu tant que le thread est actif
             while (running && !isInterrupted()) {
                 try {
-                    BufferedImage frame = camera.grabCurrentFrame();
+                    BufferedImage original = camera.grabCurrentFrame();
 
-                    if (frame != null) {
-                        // Convertit l'image en tableau de bytes
+                    if (original != null) {
+                        BufferedImage resized = resizeImage(original, TARGET_WIDTH, TARGET_HEIGHT);
+
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ImageIO.write(frame, "jpg", baos);
+                        ImageIO.write(resized, "jpg", baos);
                         byte[] imageBytes = baos.toByteArray();
 
-                        // Envoie la taille (4 octets) suivie des données de l'image
                         out.write(ByteBuffer.allocate(4).putInt(imageBytes.length).array());
                         out.write(imageBytes);
                         out.flush();
                     }
 
                     Thread.sleep(33); // ~30 FPS
-
                 } catch (Exception e) {
                     System.err.println("⚠️ Erreur lors de l'envoi du frame : " + e.getMessage());
                     break;
                 }
             }
-
         } catch (Exception e) {
             System.err.println("❌ Impossible de se connecter à " + host + ":" + port + " : " + e.getMessage());
         }
 
         System.out.println("📴 Fin de l'envoi vidéo.");
     }
+
+    private BufferedImage resizeImage(BufferedImage original, int width, int height) {
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = resized.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(original, 0, 0, width, height, null);
+        g.dispose();
+        return resized;
+    }
+
 
     /**
      * Stoppe proprement le thread d’envoi.

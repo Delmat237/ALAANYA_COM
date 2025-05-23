@@ -1,5 +1,6 @@
 package video;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,6 +18,10 @@ public class VideoReceiver extends Thread {
     private volatile boolean running = true;
     private Socket client;
 
+
+    private static final int TARGET_WIDTH = 640;
+    private static final int TARGET_HEIGHT = 480;
+
     public VideoReceiver(int port, Consumer<BufferedImage> consumer) {
         this.port = port;
         this.consumer = consumer;
@@ -30,19 +35,17 @@ public class VideoReceiver extends Thread {
 
             while (running && !interrupted()) {
                 try {
-                    // Lire la taille de l'image (4 octets)
                     byte[] sizeBytes = in.readNBytes(4);
                     if (sizeBytes.length < 4) break;
 
                     int size = ByteBuffer.wrap(sizeBytes).getInt();
-
-                    // Lire l'image elle-même
                     byte[] imageBytes = in.readNBytes(size);
                     if (imageBytes.length < size) break;
 
-                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
-                    if (img != null) {
-                        consumer.accept(img);
+                    BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
+                    if (original != null) {
+                        BufferedImage resized = resizeImage(original, TARGET_WIDTH, TARGET_HEIGHT);
+                        consumer.accept(resized);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -52,6 +55,15 @@ public class VideoReceiver extends Thread {
         } catch (IOException e) {
             System.err.println("❌ Erreur sur VideoReceiver : " + e.getMessage());
         }
+    }
+
+    // 🔧 Méthode de redimensionnement
+    private BufferedImage resizeImage(BufferedImage original, int width, int height) {
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = resized.createGraphics();
+        g.drawImage(original, 0, 0, width, height, null);
+        g.dispose();
+        return resized;
     }
 
     public void stopReceiving() {
