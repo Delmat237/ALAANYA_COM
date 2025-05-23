@@ -34,10 +34,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox; // Ensure this import is correct and the class exists in the specified package
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
@@ -61,6 +58,7 @@ public class MainController {
 
 
     @FXML public VBox downloadsVBox;
+    @FXML private BorderPane mainBorderPane;
     @FXML private Button toggleThemeButton;
     @FXML private ScrollPane scrollPane;
     @FXML private TabPane mainTabPane;

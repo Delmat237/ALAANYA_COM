@@ -1,114 +1,213 @@
 /* === dark-theme.css === */
 /* Thème sombre militaire avec fond texturé */
 
-.pane {
-    -fx-background-image: url("images/imagelight.jpg");
-    -fx-background-repeat: no-repeat;
-    -fx-background-size: cover;
-    -fx-background-position: center;
-    -fx-padding: 20px;
-    -fx-alignment: center;
-}
-
-/* === Zones principales === */
-
-.top, .ToolBar {
-    -fx-background-color: #17202A; /* Noir bleuté militaire */
-}
-
-.left {
-    -fx-background-color: #1C2833; /* Bleu nuit */
-}
-
-.center, .chatVBox {
+/* Arrière-plan général */
+.Main-pane {
     -fx-background-image: url("images/imagelight4.jpg");
     -fx-background-repeat: no-repeat;
     -fx-background-size: cover;
-    -fx-border-width: 3px;
+    -fx-alignment: center;
 }
 
-/* === Texte & libellés === */
-
-
-/* Textes */
-.label, .title ,.ToolBar {
-    -fx-text-fill: #01011e; /* Texte en blanc cassé pour un bon contraste */
-    -fx-font-size: 1em;
-}
-
-.state {
-    -fx-text-fill: #58D68D; /* Vert vif pour l’état en ligne */
-    -fx-font-weight: bold;
-}
-
-.data {
-    -fx-text-fill: #F4D03F; /* Jaune doré, bon contraste */
-    -fx-font-weight: bold;
-}
-
-/* === Champs de saisie === */
-
-.text-field, .password-field, .combo-box {
-    -fx-background-color: #212F3C;
-    -fx-text-fill: #ECF0F1;
-    -fx-border-color: #27AE60;
-    -fx-border-width: 1px;
-}
-
-/* === Boutons === */
-
-.button {
-    -fx-background-color: #229954; /* Vert militaire foncé */
+/* Infos utilisateur */
+.lab-info {
     -fx-text-fill: white;
-    -fx-font-weight: bold;
 }
 
-.button:hover {
-    -fx-background-color: #2ECC71;
+/* Conteneur des onglets gauche */
+.left-tab-header {
+    -fx-border-color: transparent #454645 transparent transparent;
+    -fx-border-width: 0px 2px 0px 0px;
 }
 
-/* === ScrollPane === */
+.left-tab-header .tab-header-background,
+.left-tab-header .tab-header-area {
+    -fx-background-color: #294c61;
+    -fx-padding: 5;
+    -fx-min-width: 200;
+    -fx-min-height: 200;
+}
 
-.scroll-pane {
+.left-tab-header .tab {
+    -fx-padding: 5;
+    -fx-border-color: transparent;
     -fx-background-color: transparent;
 }
 
-/* === Messages du chat === */
-
-.chat-message {
-    -fx-background-color: #117864; /* Vert kaki foncé */
-    -fx-text-fill: white;
-    -fx-background-radius: 8px;
-    -fx-padding: 6px;
+.left-tab-header .tab:selected {
+    -fx-border-color: yellow transparent transparent transparent;
+    -fx-border-width: 5 0 0 0;
+    -fx-background-color: transparent;
 }
 
-/* === Panneau ajout contact === */
+/* Zone contacts / discussions */
+.contacts-box {
+    -fx-background-color: #1818759d;
+}
 
+.disc-title {
+    -fx-text-fill: #133f96;
+    -fx-padding: 10px 0px 0px 0px;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.search-field {
+    -fx-background-color: #fcfcfc;
+    -fx-text-fill: #161616;
+    -fx-border-color: rgb(126, 124, 124);
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
+    -fx-border-radius: 50px;
+    -fx-background-radius: 50px;
+}
+
+.discussions-lv {
+    -fx-background-color: #f8f9fa;
+}
+
+.discussions-lv .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #918e8eb7 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Bouton ajout de contact */
+.add-contact-btn {
+    -fx-background-color: #4CAF50;
+    -fx-border-color: #4CAF50;
+    -fx-border-radius: 50px;
+    -fx-background-radius: 50px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0.2, 3, 3);
+    -fx-cursor: hand;
+}
+
+.add-box {
+    -fx-background-color: #b5b9b97e;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+}
+
+.add-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #161616;
+    -fx-border-color: rgb(126, 124, 124);
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
+    -fx-prompt-text-fill: rgb(66, 64, 64);
+    -fx-border-radius: 50px;
+    -fx-background-radius: 50px;
+}
+
+.all-contacts-box {
+    -fx-background-color: #072d66af;
+}
+
+.contacts-lv .list-cell {
+    -fx-border-color: transparent transparent #575555 transparent;
+}
+
+.contacts-title {
+    -fx-text-fill: #133f96;
+    -fx-padding: 0px 0px 30px 0px;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+/* Header du chat */
+.chat-header {
+    -fx-background-color: #294c61;
+    -fx-pref-height:  40px;
+}
+
+/* Conteneur principal de la zone de chat */
+.chat-area-box {
+    -fx-background-color: #294c61;
+}
+
+.name-label {
+    -fx-text-fill: white;
+}
+
+.profile-btn {
+    -fx-border-radius: 50px;
+    -fx-background-radius: 50px;
+}
+
+.send-box {
+    -fx-background-color: #b5b9b944;
+    -fx-pref-width: 120px;
+    -fx-pref-height: 40px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 5px 0px 5px 20px;
+}
+
+.mes-txt-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333;
+    -fx-border-color: transparent transparent #767976 transparent;
+    -fx-border-width: 0px 0px 1px 0px;
+    -fx-background-radius: 50px;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+    -fx-prompt-text-fill: rgb(245, 241, 241);
+}
+
+.chat-button {
+    -fx-background-color: transparent;
+}
+
+.chat-button:hover {
+    -fx-background-radius: 50px;
+    -fx-border-radius: 50px;
+    -fx-background-color: #a2afa8;
+}
+
+.message-area {
+    -fx-background-image: url("images/imagelight4.jpg");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+}
+
+.scroll-msg-area {
+    -fx-background-color: transparent;
+}
+
+/* Statut de l'utilisateur */
+.state {
+    -fx-text-fill: #19b50d;
+    -fx-font-size: 1em;
+}
+
+/* Survol bouton ajout de contact */
+.add-contact-btn:hover {
+    -fx-background-radius: 50px;
+    -fx-border-radius: 50px;
+    -fx-background-color: #15c43b;
+}
+
+/* Message dans la conversation */
+.chat-message {
+    -fx-background-color: #16A085;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-radius: 5px;
+}
+
+/* Pane ajout de contact */
 .add-contact-pane {
-    -fx-background-color: #1B2631;
+    -fx-background-color: #2C3E50;
     -fx-text-fill: #ECF0F1;
 }
 
-/* === Divers === */
-
+/* Séparateurs */
 .separator {
-    -fx-background-color: #85929E;
+    -fx-background-color: #7F8C8D;
 }
-
-.down {
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #000000;
+.discussions-tab {
 }
-
-.header {
-    -fx-background-color: #1C1C1C;
-}
-
-/* Onglets sans en-tête */
-.hidden-tab-header .tab-header-area {
-    -fx-padding: 0;
-    -fx-pref-height: 0;
-    -fx-min-height: 0;
-    -fx-max-height: 0;
-    visibility: hidden;
+.infos-tab {
 }

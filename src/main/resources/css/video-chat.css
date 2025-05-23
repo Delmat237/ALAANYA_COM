@@ -1,0 +1,42 @@
+/* video-chat.css */
+
+/* Fond général */
+.video-chat-root {
+    -fx-background-color: linear-gradient(to bottom, #f0f2f5, #d6e0ea);
+}
+
+/* Conteneur vertical central */
+.video-chat-container {
+    -fx-spacing: 20;
+    -fx-alignment: center;
+}
+
+/* Label du nom de l'appelant */
+.caller-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Label de durée de l'appel */
+.duration-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #27ae60;
+}
+
+/* Style des vues vidéo */
+.video-view {
+    -fx-border-color: #2c3e50;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+}
+
+/* Bouton pour raccrocher */
+.end-call-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}

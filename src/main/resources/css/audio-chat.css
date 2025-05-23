@@ -1,0 +1,30 @@
+/* audio-chat.css */
+
+/* Fond et disposition globale */
+.audio-chat-container {
+    -fx-padding: 40;
+    -fx-background-color: linear-gradient(to bottom, #f2f2f2, #d9d9d9);
+}
+
+/* Style du label du nom d'appelant */
+.caller-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Style du label de durée d'appel */
+.duration-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #27ae60;
+}
+
+/* Style du bouton de fin d'appel */
+.end-call-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+}
