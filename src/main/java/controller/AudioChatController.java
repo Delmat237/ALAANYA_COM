@@ -28,11 +28,28 @@ public class AudioChatController {
 
     @FXML
     public void initialize() {
+<<<<<<< Updated upstream
         endCallButton.setOnAction(e -> {
             stopCallTimer();
             callManager.stopAll();
             ((Stage) endCallButton.getScene().getWindow()).close();
         });
+=======
+    endCallButton.setOnAction(_ -> stopCall());
+    }
+
+    public  void stopCall( ){
+        stopCallTimer();
+        callManager.stopAll();
+        ((Stage) endCallButton.getScene().getWindow()).close();
+
+        //envoie un signal à l'interloccuteur qu'on a raccroché
+        if (MainController.signaler != null && MainController.recipientAddress != null) {
+            MainController.signaler.sendCallEnd(MainController.recipientAddress, "AUDIO");
+        } else {
+            System.err.println("Error: signaler or recipientAddress is null.");
+        }
+>>>>>>> Stashed changes
     }
 
     private void startCallTimer() {

@@ -22,7 +22,7 @@ public class ViewUtils {
          * statut 1 = online , 0 = notonline
          */
         try {
-            FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource("/com/alaanya/view/MainView.fxml"));
+            FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource("/com/alaanya/view/MainView1.fxml"));
             Parent root = loader.load();
 
             MainController mainController = loader.getController();

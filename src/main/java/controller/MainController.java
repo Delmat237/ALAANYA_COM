@@ -54,8 +54,15 @@ import video.VideoCallManager;
 @SuppressWarnings({"CallToPrintStackTrace","unused","FieldMayBeFinal","exports"})
 
 public class MainController {
+<<<<<<< Updated upstream
 
 
+=======
+    @FXML public VBox downloadsVBox;
+    @FXML private Button toggleThemeButton;
+    @FXML private ScrollPane scrollPane;
+    @FXML private TabPane mainTabPane;
+>>>>>>> Stashed changes
     @FXML
     private TabPane contactsTabPane;
     @FXML
@@ -101,7 +108,7 @@ public class MainController {
     @FXML
     private TextField nicknameField;
     @FXML
-    private ListView<Contact> contactListView; //LISTE DE CONTACT QUI SERA AFFICHÉ
+    private ListView<Contact> contactListView; //LISTE DE CONTACT QUI SERA AFFICHÉE
     @FXML
     private ListView<Contact> allContactsListView;
 

@@ -5,7 +5,12 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
+<<<<<<< Updated upstream
 <BorderPane prefHeight="600.0" prefWidth="900.0"
+=======
+<BorderPane prefHeight="500.0" prefWidth="900.0"
+            styleClass="pane"
+>>>>>>> Stashed changes
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="controller.MainController"
@@ -123,7 +128,49 @@
                                 </ImageView>
                             </graphic>
                         </Button>
+<<<<<<< Updated upstream
                         <Button onAction="#startVideoCall">
+=======
+                        <Label fx:id="selectedUserLabel" text="Selected User" HBox.hgrow="ALWAYS" alignment="CENTER"/>
+                        <Label fx:id="selectedUserStatut" styleClass="state"/>
+                        <HBox alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS" >
+                            <Button onAction="#callUser" styleClass="header" >
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-phone" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                            <Button onAction="#startVideoCall"  styleClass="header">
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-video" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                            <Button onAction="#showOptions"  styleClass="header">
+                                <graphic>
+                                    <FontIcon iconLiteral="fas-ellipsis-v" iconSize="16"/>
+                                </graphic>
+                            </Button>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Zone des messages -->
+                    <Label text="Chat"/>
+                    <ScrollPane fx:id="scrollPane" fitToWidth="true" VBox.vgrow="ALWAYS"
+                               style="-fx-background-color: transparent;">
+                        <content>
+                            <VBox fx:id="chatVBox" VBox.vgrow="ALWAYS" styleClass="center"/>
+                        </content>
+                    </ScrollPane>
+
+                    <!-- Zone de téléchargements (ajoutée) -->
+                    <VBox fx:id="downloadsVBox" spacing="10" visible="false" managed="false">
+                        <padding><Insets top="5.0"/></padding>
+                    </VBox>
+
+                    <!-- Zone de saisie -->
+                    <HBox spacing="5.0" >
+                        <TextField fx:id="messageTextField" HBox.hgrow="ALWAYS" onKeyPressed="#sendMessageKeyPressed"/>
+                        <Button onAction="#sendMessage">
+>>>>>>> Stashed changes
                             <graphic>
                                 <ImageView styleClass="icon" fitWidth="16" fitHeight="16" preserveRatio="true">
                                     <Image url="@images/video.png"/>
