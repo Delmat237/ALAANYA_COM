@@ -176,6 +176,7 @@ public class MainController {
                         } else if ("VIDEO".equals(type)) {
                             openVideoChat(ip, fromUser);
                             VideoCallManager.startSending(ip,VIDEO_PORT);
+                              AudioCallManager.startSending(ip, AUDIO_PORT);
                         }
                     }
                 });
@@ -192,6 +193,9 @@ public class MainController {
                     } else if ("VIDEO".equals(type)) {
                         openVideoChat(ip,  selectedContact.getName());
                         VideoCallManager.startSending(ip,VIDEO_PORT);
+
+                        //lancer l'audio egalement
+                          AudioCallManager.startSending(ip, AUDIO_PORT);
 
                     }
                 });

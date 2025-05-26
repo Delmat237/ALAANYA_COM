@@ -87,7 +87,7 @@ public class LoginController {
                 System.out.println("Fichier trouvé : " + url);
             }
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/alaanya/view/RegisterView.fxml"));
+            FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
             Stage stage = (Stage) militaryIdField.getScene().getWindow();
             stage.setScene(new Scene(root));
