@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import video.VideoCallManager;
+import audio.AudioCallManager;
 
 public class VideoChatController {
 
@@ -63,7 +64,7 @@ public class VideoChatController {
         videoManager.startReceiving(MainController.VIDEO_PORT);
         VideoCallManager.startSending(ip, MainController.VIDEO_PORT);
          AudioCallManager.startReceiving(MainController.AUDIO_PORT);
-         AudioCallManager.startSending(ip, AUDIO_PORT);
+         AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
 
         startCallTimer();
     }
