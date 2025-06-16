@@ -48,6 +48,7 @@ public class CallSignaler {
     public void sendCallRequest(String remoteIP, String username, String type) {
         try (Socket socket = new Socket(remoteIP, MainController.SIGNAL_PORT);
              PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+            System.out.println("CALL_REQUEST:" + username + ":" + type);
             writer.println("CALL_REQUEST:" + username + ":" + type);
         } catch (IOException e) {
             e.printStackTrace();

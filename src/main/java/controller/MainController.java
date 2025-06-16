@@ -2,7 +2,6 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -163,23 +162,23 @@ public class MainController {
             public void onCallReceived(String fromUser, String ip, String type) {
                 if (isCallDialogOpen) return;
                 isCallDialogOpen = true;
-                if (selectedContact == null)
 
-                Platform.runLater(() -> {
-                    boolean accepted = showConfirmationDialog("Appel " + type + " de " + fromUser);
-                    SoundPlayer.stopSound();
-                    signaler.sendCallResponse(ip, accepted, type);
-                    if (accepted) {
-                        if ("AUDIO".equals(type)) {
-                            openAudioChat(ip, fromUser);
-                            AudioCallManager.startSending(ip, AUDIO_PORT);
-                        } else if ("VIDEO".equals(type)) {
-                            openVideoChat(ip, fromUser);
-                            VideoCallManager.startSending(ip,VIDEO_PORT);
-                              AudioCallManager.startSending(ip, AUDIO_PORT);
+
+                    Platform.runLater(() -> {
+                        boolean accepted = showConfirmationDialog("Appel " + type + " de " + fromUser);
+                        SoundPlayer.stopSound();
+                        signaler.sendCallResponse(ip, accepted, type);
+                        if (accepted) {
+                            if ("AUDIO".equals(type)) {
+                                openAudioChat(ip, fromUser);
+                                AudioCallManager.startSending(ip, AUDIO_PORT);
+                            } else if ("VIDEO".equals(type)) {
+                                openVideoChat(ip, fromUser);
+                                VideoCallManager.startSending(ip,VIDEO_PORT);
+                                AudioCallManager.startSending(ip, AUDIO_PORT);
+                            }
                         }
-                    }
-                });
+                    });
             }
 
             @Override
@@ -188,14 +187,14 @@ public class MainController {
                     if ("AUDIO".equals(type)) {
                         AudioCallManager.startSending(ip, AUDIO_PORT);
                         openAudioChat(ip, selectedContact.getName());
-                        
-                        
+
+
                     } else if ("VIDEO".equals(type)) {
                         openVideoChat(ip,  selectedContact.getName());
                         VideoCallManager.startSending(ip,VIDEO_PORT);
 
                         //lancer l'audio egalement
-                          AudioCallManager.startSending(ip, AUDIO_PORT);
+                        AudioCallManager.startSending(ip, AUDIO_PORT);
 
                     }
                 });
@@ -206,15 +205,15 @@ public class MainController {
             public void onCallEnd(String ip, String type){
                 Platform.runLater(() -> {
                     CallSignaler.stopInstance();
-                   //controller.stopCall(ip,type);
+                    //controller.stopCall(ip,type);
                 });
             }
 
             @Override
             public void onCallDeclined(String ip) {
                 Platform.runLater(() ->{
-                        showInfo("Appel refusé", "L’utilisateur a refusé l’appel.");
-                        CallSignaler.stopInstance();
+                            showInfo("Appel refusé", "L’utilisateur a refusé l’appel.");
+                            CallSignaler.stopInstance();
                         }
                 );
             }

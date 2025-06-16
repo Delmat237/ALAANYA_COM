@@ -63,6 +63,8 @@ public class VideoChatController {
 
         videoManager.startReceiving(MainController.VIDEO_PORT);
         VideoCallManager.startSending(ip, MainController.VIDEO_PORT);
+
+        //Recois les audio
          AudioCallManager.startReceiving(MainController.AUDIO_PORT);
          AudioCallManager.startSending(ip, MainController.AUDIO_PORT);
 
