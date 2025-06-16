@@ -48,7 +48,16 @@ public class AudioSender extends Thread {
         }
     }
 
-    // AudioSender.java
+
+    public boolean isSending() {
+        return running;
+    }
+    public void setSending(boolean sending) {
+        this.running = sending;
+    }
+    /**
+     * Stop sending audio data.
+     */
     public void stopSending() {
         running = false;
     }

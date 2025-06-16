@@ -15,6 +15,7 @@ public class VideoSender extends Thread {
     private final String host;
     private final int port;
     private final CameraService camera;
+        private volatile boolean sending = false;
 
     private static final int TARGET_WIDTH = 640;
     private static final int TARGET_HEIGHT = 480;
@@ -85,4 +86,21 @@ public class VideoSender extends Thread {
         running = false;
         this.interrupt();
     }
+
+
+
+    // Call this when starting to send
+    public void start() {
+        sending = true;
+        // existing start logic...
+    }
+
+    
+
+    public boolean isSending() {
+        return sending;
+    }
+
+    // existing fields and methods
+
 }

@@ -12,6 +12,7 @@ public class CameraService {
     private Thread captureThread;
     private volatile boolean running = false;
     private final int cameraIndex;
+  
 
     public CameraService(Consumer<BufferedImage> frameConsumer) {
         //this(frameConsumer, findAvailableCameraIndex());
@@ -125,4 +126,14 @@ public class CameraService {
         System.err.println("❌ Aucune caméra détectée !");
         return 0; // fallback sur index 0
     }
+
+
+    public boolean isRunning() {
+        return running;
+    
 }
+}
+// ... other imports and code ...
+
+
+

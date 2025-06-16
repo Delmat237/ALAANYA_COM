@@ -42,7 +42,15 @@ public class AudioReceiver extends Thread {
             }
         }
     }
-    // AudioReceiver.java
+    public boolean isReceiving() {
+        return running;
+    }
+    public void setReceiving(boolean receiving) {
+        this.running = receiving;
+    }
+    /**
+     * Stop receiving audio data.
+     */
     public void stopReceiving() {
         running = false;
     }

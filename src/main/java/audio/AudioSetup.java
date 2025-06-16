@@ -26,6 +26,8 @@ public class AudioSetup {
             microphone.stop();
             microphone.close();
         }
+
+
     }
 
     public TargetDataLine getMicrophone() {
@@ -56,4 +58,48 @@ public class AudioSetup {
     public AudioFormat getFormat() {
         return format;
     }
+
+
+    public void muteMicrophone() {
+        if (microphone != null && microphone.isOpen()) {
+            microphone.stop();
+        }
+        // Implémentation pour désactiver le micro
+    }
+    
+    public void unmuteMicrophone() {
+        if (microphone != null && !microphone.isOpen()) {
+            try {
+                microphone.start();
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la réactivation du micro: " + e.getMessage());
+            }
+        }
+        // Implémentation pour réactiver le micro
+    }
+    public boolean isMicrophoneOpen() {
+        return microphone != null && microphone.isOpen();
+    }
+    public boolean isSpeakersOpen() {
+        return speakers != null && speakers.isOpen();
+    }
+    
+    public void setSpeakerMode(boolean enabled) {
+        if (speakers != null) {
+            if (enabled) {
+                if (!speakers.isOpen()) {
+                    try {
+                        speakers.open(format);
+                        speakers.start();
+                    } catch (LineUnavailableException e) {
+                        System.err.println("Erreur lors de l'ouverture des haut-parleurs: " + e.getMessage());
+                    }
+                }
+            } else {
+                speakers.stop();
+                speakers.close();
+            }
+        }
+    }
+
 }

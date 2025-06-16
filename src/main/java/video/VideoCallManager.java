@@ -6,68 +6,105 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import signal.CallSignaler;
-
 import controller.MainController;
 
 public class VideoCallManager {
-
+    // Instance singleton
+    private static VideoCallManager instance;
+    
+    private VideoSender sender;
+    private VideoReceiver receiver;
+    private CameraService camera;
+    private ImageView localView;
+    private ImageView remoteView;
+    private Label callDurationLabel;
+    private Runnable onHangUp;
+    private boolean isVideoEnabled = true;
     private final CallSignaler signaler = CallSignaler.getInstance();
 
-    private static VideoSender sender;
-    private   VideoReceiver receiver;
-    private static CameraService camera;
-    private static ImageView localView;
-    private static ImageView remoteView;
-    private static Label callDurationLabel;
+    // Initialisation de l'instance
+    public static void initialize(ImageView localView, ImageView remoteView,
+                                Label callDurationLabel,
+                                Runnable onCallAccepted, Runnable onHangUp) {
+        instance = new VideoCallManager(localView, remoteView, callDurationLabel, onCallAccepted, onHangUp);
+    }
 
-
-
-    private final Runnable onHangUp;
-
-
-
-    public VideoCallManager(ImageView localView, ImageView remoteView,
-                            Label callDurationLabel,
-                            Runnable onCallAccepted, Runnable onHangUp) {
-                                VideoCallManager.localView = localView;
-                                VideoCallManager.remoteView = remoteView;
-                                VideoCallManager.callDurationLabel = callDurationLabel;
+    private VideoCallManager(ImageView localView, ImageView remoteView,
+                           Label callDurationLabel,
+                           Runnable onCallAccepted, Runnable onHangUp) {
+        this.localView = localView;
+        this.remoteView = remoteView;
+        this.callDurationLabel = callDurationLabel;
         this.onHangUp = onHangUp;
     }
 
-    public  void startReceiving(int port) {
-        try {
-            receiver = new VideoReceiver(port, frame -> {
-                Image fxImage = SwingFXUtils.toFXImage(frame, null);
-                Platform.runLater(() -> remoteView.setImage(fxImage));
-            });
-            receiver.start();
-        } catch (Exception e) {
-            System.err.println("❌ Impossible de démarrer le récepteur vidéo :");
-
-        }
+    // Méthodes statiques pour l'interface publique
+    public static void startReceiving(int port) {
+        if (instance == null) throw new IllegalStateException("VideoCallManager non initialisé");
+        instance.startReceivingInstance(port);
     }
 
     public static boolean startSending(String ip, int port) {
-        camera = new CameraService(frame -> {
-            Image fxImage = SwingFXUtils.toFXImage(frame, null);
-            Platform.runLater(() -> localView.setImage(fxImage));
-        });
+        if (instance == null) throw new IllegalStateException("VideoCallManager non initialisé");
+        return instance.startSendingInstance(ip, port);
+    }
 
-        if (!camera.startCamera()) {
-            System.err.println("⚠️ Caméra non disponible. Envoi vidéo annulé.");
-            return false; // Ne pas continuer si la caméra échoue
+    public static void hangUp() {
+        if (instance != null) {
+            instance.hangUpInstance();
         }
+    }
 
-        sender = new VideoSender(ip, port, camera);
-        sender.start();
+    // Implémentations d'instance
+    private void startReceivingInstance(int port) {
+        try {
+            if (receiver == null || !receiver.isReceiving()) {
+                receiver = new VideoReceiver(port, frame -> {
+                    Image fxImage = SwingFXUtils.toFXImage(frame, null);
+                    Platform.runLater(() -> {
+                        if (remoteView != null) {
+                            remoteView.setImage(fxImage);
+                        }
+                    });
+                });
+                receiver.start();
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Impossible de démarrer le récepteur vidéo : " + e.getMessage());
+        }
+    }
 
+    private boolean startSendingInstance(String ip, int port) {
+        try {
+            if (camera == null || !camera.isRunning()) {
+                camera = new CameraService(frame -> {
+                    Image fxImage = SwingFXUtils.toFXImage(frame, null);
+                    Platform.runLater(() -> {
+                        if (localView != null && isVideoEnabled) {
+                            localView.setImage(fxImage);
+                        }
+                    });
+                });
+
+                if (!camera.startCamera()) {
+                    System.err.println("⚠️ Caméra non disponible. Envoi vidéo annulé.");
+                    return false;
+                }
+            }
+
+            if (sender == null || !sender.isSending()) {
+                sender = new VideoSender(ip, port, camera);
+                sender.start();
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors du démarrage de l'envoi vidéo : " + e.getMessage());
+        }
         return false;
     }
 
-
-    public void hangUp() {
-        System.out.println("📞 Fin de l’appel...");
+    private void hangUpInstance() {
+        System.out.println("📞 Fin de l'appel vidéo...");
 
         if (sender != null) {
             sender.stopSending();
@@ -86,17 +123,39 @@ public class VideoCallManager {
 
         if (signaler != null && MainController.recipientAddress != null) {
             signaler.sendCallEnd(MainController.recipientAddress, "VIDEO");
-        } else {
-            System.err.println("Erreur : signaler ou recipientAddress est nul.");
         }
-        if (callDurationLabel != null) {
-            callDurationLabel.setText("Durée : 00:00");
-        } else {
-            System.err.println("Erreur : callDurationLabel est nul.");
-        }
-      
-        if (onHangUp != null) {
-            Platform.runLater(onHangUp);
-        }
+
+        Platform.runLater(() -> {
+            if (callDurationLabel != null) callDurationLabel.setText("Durée : 00:00");
+            if (localView != null) localView.setImage(null);
+            if (remoteView != null) remoteView.setImage(null);
+            if (onHangUp != null) onHangUp.run();
+        });
     }
+
+    public void toggleVideo(boolean enable) {
+       
+        if (enable) {
+            if (camera != null && !camera.isRunning()) {
+                camera.startCamera();
+            }
+            if (sender != null && !sender.isSending()) {
+                sender.start();
+            }
+            isVideoEnabled = true;
+            // Code to enable video
+            System.out.println("Video enabled");
+        } else {
+            if (camera != null) {
+                camera.stopCamera();
+            }
+            if (sender != null) {
+                sender.stopSending();
+            }
+            isVideoEnabled = false;
+            // Code to disable video
+            System.out.println("Video disabled");
+        }
+    
+}
 }

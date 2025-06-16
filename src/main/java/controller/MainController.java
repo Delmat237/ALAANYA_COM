@@ -131,6 +131,8 @@ public class MainController {
     private  MessageReceiver receiver;
     private FileReceiver fileReceiver;
 
+
+
     private boolean isCallDialogOpen = false;
 
     //Signaler pour gerer la signalisation lors des appels

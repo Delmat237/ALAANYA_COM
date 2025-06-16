@@ -17,6 +17,7 @@ public class VideoReceiver extends Thread {
     private Consumer<BufferedImage> consumer;
     private volatile boolean running = true;
     private Socket client;
+       private volatile boolean receiving = false;
 
 
     private static final int TARGET_WIDTH = 640;
@@ -76,5 +77,12 @@ public class VideoReceiver extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+     
+
+    // existing fields and methods
+
+    public boolean isReceiving() {
+        return receiving;
     }
 }
