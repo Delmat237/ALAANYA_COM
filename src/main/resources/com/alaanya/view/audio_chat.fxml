@@ -3,36 +3,68 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox fx:controller="controller.AudioChatController"
-      xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:id="audioChatVBox"
-      alignment="CENTER"
-      spacing="25"
-      stylesheets="@../../../css/audio-chat.css"
-      styleClass="audio-chat-container"
->
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controller.AudioChatController"
+           stylesheets="@../../../css/audio-chat.css">
 
-    <!-- Titre de l'appelant -->
-    <Label fx:id="callerLabel"
-           text="Appel avec Capitaine X"
-           styleClass="caller-label"/>
+    <!-- Fond avec dégradé similaire à WhatsApp -->
+    <VBox fx:id="audioChatVBox" alignment="CENTER" spacing="40"
+          styleClass="audio-chat-container">
+        
+        <!-- Photo de profil (cercle) -->
+        <StackPane styleClass="profile-container">
+            <Circle radius="80" styleClass="profile-circle"/>
+            <FontIcon iconLiteral="fas-user" iconSize="50" styleClass="profile-icon"/>
+        </StackPane>
 
-    <!-- Durée de l'appel -->
-    <Label fx:id="callDurationLabel"
-           text="Durée : 00:00"
-           styleClass="duration-label"/>
+        <!-- Informations d'appel -->
+        <VBox alignment="CENTER" spacing="10">
+            <!-- Nom de l'appelant -->
+            <Label fx:id="callerLabel" text="Capitaine X" 
+                   styleClass="caller-label"/>
+            
+            <!-- Statut/Durée de l'appel -->
+            <Label fx:id="callDurationLabel" text="Appel en cours - 00:00" 
+                   styleClass="duration-label"/>
+        </VBox>
 
-    <!-- Bouton de raccrochage -->
-    <Button fx:id="endCallButton"
-            text="  Raccrocher"
-            styleClass="end-call-button">
-        <graphic>
-            <FontIcon iconLiteral="fas-phone-slash" iconSize="18" iconColor="white"/>
-        </graphic>
-    </Button>
-
-</VBox>
+        <!-- Boutons de contrôle -->
+        <HBox alignment="CENTER" spacing="30" styleClass="control-buttons">
+            <Button styleClass="control-button" tooltip="Microphone">
+                <graphic>
+                    <FontIcon iconLiteral="fas-microphone" iconSize="20"/>
+                </graphic>
+            </Button>
+            
+            <Button styleClass="control-button" tooltip="Haut-parleur">
+                <graphic>
+                    <FontIcon iconLiteral="fas-volume-up" iconSize="20"/>
+                </graphic>
+            </Button>
+            
+            <Button fx:id="endCallButton" styleClass="end-call-button" tooltip="Raccrocher">
+                <graphic>
+                    <FontIcon iconLiteral="fas-phone-slash" iconSize="24"/>
+                </graphic>
+            </Button>
+            
+            <Button styleClass="control-button" tooltip="Clavier">
+                <graphic>
+                    <FontIcon iconLiteral="fas-keyboard" iconSize="20"/>
+                </graphic>
+            </Button>
+            
+            <Button styleClass="control-button" tooltip="Ajouter un appel">
+                <graphic>
+                    <FontIcon iconLiteral="fas-user-plus" iconSize="20"/>
+                </graphic>
+            </Button>
+        </HBox>
+    </VBox>
+</StackPane>

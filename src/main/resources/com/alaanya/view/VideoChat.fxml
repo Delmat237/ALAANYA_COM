@@ -6,6 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
@@ -16,42 +17,65 @@
             styleClass="video-chat-root">
 
     <!-- Conteneur principal -->
-    <VBox alignment="CENTER" spacing="20"
-          AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
-          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
-          styleClass="video-chat-container">
-        <padding>
-            <Insets top="30" bottom="30" left="30" right="30"/>
-        </padding>
-
-        <!-- Titre ou nom de l'appelant -->
-        <Label fx:id="callerLabel"
-               text="Appel avec Capitaine X"
-               styleClass="caller-label"/>
-
-        <!-- Vues vidéo -->
-        <HBox alignment="CENTER" spacing="30">
-            <ImageView fx:id="localView"
-                       fitWidth="300" fitHeight="220"
-                       styleClass="video-view"/>
-            <ImageView fx:id="remoteView"
-                       fitWidth="300" fitHeight="220"
-                       styleClass="video-view"/>
-        </HBox>
-
-        <!-- Durée de l'appel -->
-        <Label fx:id="callDurationLabel"
-               text="Durée : 00:00"
-               visible="true"
-               styleClass="duration-label"/>
-
-        <!-- Bouton de fin d'appel -->
-        <Button fx:id="endCallButton"
-                text="  Raccrocher"
-                styleClass="end-call-button">
-            <graphic>
-                <FontIcon iconLiteral="fas-video-slash" iconSize="18" iconColor="white"/>
-            </graphic>
-        </Button>
-    </VBox>
+    <StackPane AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        
+        <!-- Vue distante (plein écran) -->
+        <ImageView fx:id="remoteView" fitWidth="100%" fitHeight="100%" 
+                   preserveRatio="true" styleClass="remote-video-view"/>
+        
+        <!-- Overlay avec informations et contrôles -->
+        <VBox alignment="CENTER" spacing="20" styleClass="video-overlay">
+            <padding>
+                <Insets top="50" bottom="50" left="30" right="30"/>
+            </padding>
+            
+            <!-- Vue locale (petite fenêtre) -->
+            <StackPane alignment="TOP_RIGHT" styleClass="local-video-container">
+                <ImageView fx:id="localView" fitWidth="120" fitHeight="160" 
+                           styleClass="local-video-view"/>
+            </StackPane>
+            
+            <!-- Nom de l'appelant -->
+            <Label fx:id="callerLabel" text="Capitaine X" 
+                   styleClass="caller-label"/>
+            
+            <!-- Statut/Durée de l'appel -->
+            <Label fx:id="callDurationLabel" text="Appel en cours - 00:00" 
+                   styleClass="duration-label"/>
+            
+            <!-- Boutons de contrôle -->
+            <HBox alignment="CENTER" spacing="30" styleClass="control-buttons">
+                <Button styleClass="control-button" tooltip="Microphone">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-microphone" iconSize="20"/>
+                    </graphic>
+                </Button>
+                
+                <Button styleClass="control-button" tooltip="Haut-parleur">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-volume-up" iconSize="20"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="endCallButton" styleClass="end-call-button" tooltip="Raccrocher">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-phone-slash" iconSize="20"/>
+                    </graphic>
+                </Button>
+                
+                <Button styleClass="control-button" tooltip="Retourner la caméra">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-sync-alt" iconSize="20"/>
+                    </graphic>
+                </Button>
+                
+                <Button styleClass="control-button" tooltip="Activer/désactiver la vidéo">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-video" iconSize="20"/>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+    </StackPane>
 </AnchorPane>

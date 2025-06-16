@@ -29,7 +29,8 @@ public class Client {
             .create();
 
     // Informations du serveur central
-    private static final String CENTRAL_SERVER_IP = "192.168.7.11";
+    private static final String CENTRAL_SERVER_IP = "192.168.207.11";
+
     private static final int CENTRAL_SERVER_PORT = 7000;
 
     private static final Logger logger = Logger.getLogger(Client.class.getName());

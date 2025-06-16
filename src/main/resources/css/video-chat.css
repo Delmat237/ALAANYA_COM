@@ -1,42 +1,89 @@
 /* video-chat.css */
 
-/* Fond général */
+/* Fond général sombre comme WhatsApp */
 .video-chat-root {
-    -fx-background-color: linear-gradient(to bottom, #f0f2f5, #d6e0ea);
+    -fx-background-color: #0e1217;
 }
 
-/* Conteneur vertical central */
-.video-chat-container {
-    -fx-spacing: 20;
-    -fx-alignment: center;
+/* Vue vidéo distante (plein écran) */
+.remote-video-view {
+    -fx-background-color: #0e1217;
+}
+
+/* Conteneur de la vue locale */
+.local-video-container {
+    -fx-background-color: transparent;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
+    -fx-padding: 10;
+}
+
+/* Vue vidéo locale (petite fenêtre) */
+.local-video-view {
+    -fx-border-color: white;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Overlay avec les contrôles */
+.video-overlay {
+    -fx-background-color: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
 }
 
 /* Label du nom de l'appelant */
 .caller-label {
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: white;
 }
 
 /* Label de durée de l'appel */
 .duration-label {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #27ae60;
+    -fx-font-size: 16px;
+    -fx-text-fill: #e1e1e1;
 }
 
-/* Style des vues vidéo */
-.video-view {
-    -fx-border-color: #2c3e50;
-    -fx-border-width: 2;
-    -fx-border-radius: 10;
+/* Conteneur des boutons de contrôle */
+.control-buttons {
+    -fx-padding: 20 0 0 0;
 }
 
-/* Bouton pour raccrocher */
+/* Style des boutons de contrôle */
+.control-button {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 50%;
+    -fx-min-width: 50px;
+    -fx-min-height: 50px;
+    -fx-max-width: 50px;
+    -fx-max-height: 50px;
+    cursor: pointer;
+    -fx-cursor: hand;
+    cursor: pointer;
+    cursor: pointer;
+    cursor: hand;
+}
+
+.control-button .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* Bouton pour raccrocher (rouge) */
 .end-call-button {
     -fx-background-color: #e74c3c;
-    -fx-text-fill: white;
-    -fx-font-size: 16px;
-    -fx-padding: 10 20;
+    -fx-background-radius: 50%;
+    -fx-min-width: 60px;
+    -fx-min-height: 60px;
+    -fx-max-width: 60px;
+    -fx-max-height: 60px;
     -fx-cursor: hand;
+    cursor: pointer;
+}
+
+.end-call-button .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* Effet de survol pour les boutons */
+.control-button:hover, .end-call-button:hover {
+    -fx-opacity: 0.8;
 }

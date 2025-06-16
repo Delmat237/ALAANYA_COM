@@ -81,6 +81,7 @@
     -fx-background-radius: 50px;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0.2, 3, 3);
     -fx-cursor: hand;
+    cursor: pointer;
 }
 
 .add-box {
